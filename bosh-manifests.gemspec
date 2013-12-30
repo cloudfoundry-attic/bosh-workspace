@@ -1,4 +1,4 @@
- coding: utf-8
+# coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'bosh/manifests/version'
@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Bosh::Manifests::VERSION
   spec.authors       = ["Ruben Koster"]
   spec.email         = ["rkoster@starkandwayne.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Create & manage bosh manifests}
+  spec.summary       = %q{Create & manage spiff based bosh manifests}
   spec.homepage      = ""
   spec.license       = "MIT"
 
