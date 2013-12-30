@@ -1,6 +1,14 @@
 # Bosh::Manifests
 
-TODO: Write a gem description
+# Usecases
+
+## Bosh-release repo
+_bosh make manifest:_
+Will create a manifest for the targeted bosh (using the correct infrastructure)
+
+## Bosh-manifests repo
+make manifests from the stubs inside the repo.
+Have some sort of `Gemfile` to specify the del
 
 ## Installation
 
