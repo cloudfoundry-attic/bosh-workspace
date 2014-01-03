@@ -20,6 +20,10 @@ require "bosh/manifests"
 
 RSpec.configure do |config|
   config.include(RSpec::Fire)
+
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
+  end
 end
 
 # load all files in spec/support/* (but not lower down)
