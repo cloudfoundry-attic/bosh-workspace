@@ -18,7 +18,8 @@ describe Bosh::Cli::Command::Manifests do
       manifest_manager = instance_double("Bosh::Manifests::ManifestManager")
       Bosh::Manifests::ManifestManager.should_receive(:discover).with(work_dir).
         and_return(manifest_manager)
-      manifest_manager.should_receive(:print_manifests)
+      manifest_manager.should_receive(:validate_manifests)
+      manifest_manager.should_receive(:to_table)
       command.manifests
     end
   end

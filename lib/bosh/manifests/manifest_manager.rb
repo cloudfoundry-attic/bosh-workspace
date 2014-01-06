@@ -1,7 +1,5 @@
 module Bosh::Manifests
   class ManifestManager
-    attr_reader :manifests
-
     def self.discover(work_dir)
       manifests_dir = File.join(work_dir, "manifests")
 
@@ -16,15 +14,30 @@ module Bosh::Manifests
     def initialize(manifest_files)
       @manifests = []
       manifest_files.each do |manifest_file|
-        manifest = Bosh::Manifests::Manifest.new(manifest_file)
-        manifest.validate
-        @manifests << manifest
+        @manifests << Bosh::Manifests::Manifest.new(manifest_file)
       end
     end
 
-    def print_manifests
-
+    def validate_manifests(options = {})
+      @manifests.each do |manifest|
+        unless manifest.valid?
+          say("Validation errors:".make_red)
+          manifest.errors.each do |error|
+            say("- #{error}")
+          end
+          err("'#{manifest.filename}' is not a valid manifest".make_red)
+        end
+      end
     end
 
+    def to_table
+      manifests_table = table do |t|
+        headings = ["Name", "File"]
+        t.headings = headings
+        @manifests.each do |manifest|
+          t << [manifest.name, manifest.filename]
+        end
+      end
+    end
   end
 end

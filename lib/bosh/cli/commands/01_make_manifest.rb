@@ -9,9 +9,12 @@ module Bosh::Cli::Command
     desc "Show the list of available manifests"
     def manifests
       manifest_manager = Bosh::Manifests::ManifestManager.discover(work_dir)
-      manifest_manager.print_manifests
-    end
+      manifest_manager.validate_manifests
 
+      nl
+      say(manifest_manager.to_table)
+      nl
+    end
 
     usage "make manifest"
     desc "Create manifest (assumes current directory to be a manifests repo)"

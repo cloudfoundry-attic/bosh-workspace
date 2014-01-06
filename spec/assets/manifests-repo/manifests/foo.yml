@@ -1,0 +1,4 @@
+name: foo
+manifests:
+  - foo/bar.yml
+meta: {}

@@ -23,7 +23,7 @@ describe Bosh::Manifests::Manifest do
       it "raises an error" do
         subject.validate
         expect(subject).to_not be_valid
-        expect(subject.errors).to eq ["Manifest should contain a valid name"]
+        expect(subject.errors).to eq ["Manifest should contain a name"]
       end
     end
 
@@ -49,5 +49,13 @@ describe Bosh::Manifests::Manifest do
 
   context "valid manifest" do
     it { should be_valid }
+
+    it "has properties" do
+      subject.validate
+      expect(subject.name).to eq name
+      expect(subject.manifests).to eq manifests
+      expect(subject.meta).to eq meta
+      expect(subject.filename).to eq "tmp"
+    end
   end
 end

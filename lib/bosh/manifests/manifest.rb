@@ -1,31 +1,44 @@
 module Bosh::Manifests
   class Manifest
     include Bosh::Cli::Validation
-    def initialize(manifest_file)
-      @manifest_file = manifest_file
+    attr_reader :name, :manifests, :meta
+
+    def initialize(file)
+      @file = file
     end
 
     def perform_validation(options = {})
-      manifest_yaml = File.read(@manifest_file)
-      manifest = Psych.load(manifest_yaml)
+      manifest_yaml = File.read(@file)
+      m = Psych.load(manifest_yaml)
 
-      step("Manifest file", "Manifest should be a hash", :fatal) do
-        manifest.is_a?(Hash)
+      if m.is_a?(Hash)
+        unless m.has_key?("name") && m["name"].is_a?(String)
+          errors << "Manifest should contain a name"
+        end
+
+        unless m.has_key?("manifests") && m["manifests"].is_a?(Array)
+          errors << "Manifest should contain manifests"
+        end
+
+        unless m.has_key?("meta") && m["meta"].is_a?(Hash)
+          errors << "Manifest should contain meta hash"
+        end
+        setup_manifest_attributes(m)
+      else
+        errors << "Manifest should be a hash"
       end
+    end
 
-      step("Manifest properties", "Manifest should contain a valid name") do
-        manifest.has_key?("name") && manifest["name"].is_a?(String)
-      end
+    def filename
+      File.basename(@file)
+    end
 
-      step("Manifest properties", "Manifest should contain manifests") do
-        manifest.has_key?("manifests") && manifest["manifests"].is_a?(Array)
-      end
+    private
 
-      step("Manifest properties", "Manifest should contain meta hash") do
-        manifest.has_key?("meta") && manifest["meta"].is_a?(Hash)
-      end
-
-      @manifest = manifest
+    def setup_manifest_attributes(manifest)
+      @name = manifest["name"]
+      @manifests = manifest["manifests"]
+      @meta = manifest["meta"]
     end
   end
 end
