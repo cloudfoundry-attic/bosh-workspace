@@ -16,7 +16,9 @@ module Bosh::Manifests
     def initialize(manifest_files)
       @manifests = []
       manifest_files.each do |manifest_file|
-        @manifests << Bosh::Manifests::Manifest.new(manifest_file)
+        manifest = Bosh::Manifests::Manifest.new(manifest_file)
+        manifest.validate
+        @manifests << manifest
       end
     end
 

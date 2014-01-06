@@ -10,10 +10,17 @@ describe Bosh::Manifests::ManifestManager do
 
     context "manifests dir exists" do
       let(:work_dir) { asset_dir("manifests-repo") }
+
       it "discovers manifests" do
         expect(subject.manifests.count).to eq 1
       end
+
+      it "validates manifests" do
+        manifest = instance_double("Bosh::Manifests::Manifest")
+        Bosh::Manifests::Manifest.should_receive(:new).and_return(manifest)
+        manifest.should_receive(:validate)
+        Bosh::Manifests::ManifestManager.discover work_dir
+      end
     end
   end
-
 end
