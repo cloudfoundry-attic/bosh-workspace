@@ -22,5 +22,9 @@ module Bosh::Manifests
       end
     end
 
+    def print_manifests
+
+    end
+
   end
 end
