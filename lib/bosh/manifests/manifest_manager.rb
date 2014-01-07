@@ -39,5 +39,11 @@ module Bosh::Manifests
         end
       end
     end
+
+    def find(name)
+      manifest = @manifests.select { |m| m.name == name }.pop
+      err("Could not find manifest: '#{name}'") unless manifest
+      manifest
+    end
   end
 end

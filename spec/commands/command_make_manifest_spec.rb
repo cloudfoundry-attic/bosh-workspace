@@ -3,30 +3,40 @@ require "bosh/cli/commands/01_make_manifest"
 describe Bosh::Cli::Command::Manifests do
 
   let(:command) { Bosh::Cli::Command::Manifests.new }
-  let(:director) { instance_double("Bosh::Cli::Director") }
   let(:work_dir) { asset_dir("manifests-repo") }
+  let(:manifest_manager) { instance_double("Bosh::Manifests::ManifestManager") }
 
   before do
     setup_home_dir
     command.add_option(:config, home_file(".bosh_config"))
     command.add_option(:non_interactive, true)
     command.stub(:work_dir).and_return(work_dir)
+    Bosh::Manifests::ManifestManager.should_receive(:discover).with(work_dir).
+      and_return(manifest_manager)
+    manifest_manager.should_receive(:validate_manifests)
   end
 
-  context "list manifests" do
-    it "prints" do
-      manifest_manager = instance_double("Bosh::Manifests::ManifestManager")
-      Bosh::Manifests::ManifestManager.should_receive(:discover).with(work_dir).
-        and_return(manifest_manager)
-      manifest_manager.should_receive(:validate_manifests)
-      manifest_manager.should_receive(:to_table)
+  describe "#manifests" do
+    let(:table) { "| Name | File |"}
+
+    it "outputs manifest table" do
+      manifest_manager.should_receive(:to_table).and_return(table)
+      command.should_receive(:nl)
+      command.should_receive(:say).with(table)
+      command.should_receive(:nl)
       command.manifests
     end
   end
 
 
-  it "creates bosh manifest" do
-    command.make_manifest
+  describe "#make_manifest" do
+    let(:name) { "foo" }
+    let(:manifest) { instance_double("Bosh::Manifests::Manifest") }
+
+    it "generates a manifest" do
+      manifest_manager.should_receive(:find).with(name).and_return(manifest)
+      command.make_manifest name
+    end
   end
 
 end
