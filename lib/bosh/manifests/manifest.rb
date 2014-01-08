@@ -1,7 +1,7 @@
 module Bosh::Manifests
   class Manifest
     include Bosh::Cli::Validation
-    attr_reader :name, :manifests, :meta
+    attr_reader :name, :templates, :meta
 
     def initialize(file)
       @file = file
@@ -16,8 +16,8 @@ module Bosh::Manifests
           errors << "Manifest should contain a name"
         end
 
-        unless m.has_key?("manifests") && m["manifests"].is_a?(Array)
-          errors << "Manifest should contain manifests"
+        unless m.has_key?("templates") && m["templates"].is_a?(Array)
+          errors << "Manifest should contain templates"
         end
 
         unless m.has_key?("meta") && m["meta"].is_a?(Hash)
@@ -37,7 +37,7 @@ module Bosh::Manifests
 
     def setup_manifest_attributes(manifest)
       @name = manifest["name"]
-      @manifests = manifest["manifests"]
+      @templates = manifest["templates"]
       @meta = manifest["meta"]
     end
   end

@@ -2,10 +2,10 @@ describe Bosh::Manifests::Manifest do
   subject { Bosh::Manifests::Manifest.new manifest_file }
   let(:manifest_file) { get_tmp_file_path(manifest) }
   let(:name) { "foo" }
-  let(:manifests) { ["path_to_bar", "path_to_baz"] }
+  let(:templates) { ["path_to_bar", "path_to_baz"] }
   let(:meta) { { "foo" => "bar" } }
   let(:manifest) {
-    { "name" => name, "manifests" => manifests, "meta" => meta }.to_yaml
+    { "name" => name, "templates" => templates, "meta" => meta }.to_yaml
   }
 
   context "invalid manifest" do
@@ -19,7 +19,7 @@ describe Bosh::Manifests::Manifest do
     end
 
     context "missing name" do
-      let(:manifest) { { "manifests" => manifests, "meta" => meta }.to_yaml }
+      let(:manifest) { { "templates" => templates, "meta" => meta }.to_yaml }
       it "raises an error" do
         subject.validate
         expect(subject).to_not be_valid
@@ -27,24 +27,23 @@ describe Bosh::Manifests::Manifest do
       end
     end
 
-    context "missing manifests" do
+    context "missing templates" do
       let(:manifest) { { "name" => name, "meta" => meta }.to_yaml }
       it "raises an error" do
         subject.validate
         expect(subject).to_not be_valid
-        expect(subject.errors).to eq ["Manifest should contain manifests"]
+        expect(subject.errors).to eq ["Manifest should contain templates"]
       end
     end
 
     context "missing meta" do
-      let(:manifest) { { "name" => name, "manifests" => manifests }.to_yaml }
+      let(:manifest) { { "name" => name, "templates" => templates }.to_yaml }
       it "raises an error" do
         subject.validate
         expect(subject).to_not be_valid
         expect(subject.errors).to eq ["Manifest should contain meta hash"]
       end
     end
-
   end
 
   context "valid manifest" do
@@ -53,7 +52,7 @@ describe Bosh::Manifests::Manifest do
     it "has properties" do
       subject.validate
       expect(subject.name).to eq name
-      expect(subject.manifests).to eq manifests
+      expect(subject.templates).to eq templates
       expect(subject.meta).to eq meta
       expect(subject.filename).to eq "tmp"
     end
