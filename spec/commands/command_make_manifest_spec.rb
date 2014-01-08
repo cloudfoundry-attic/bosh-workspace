@@ -28,15 +28,15 @@ describe Bosh::Cli::Command::Manifests do
     end
   end
 
-
-  describe "#make_manifest" do
+  describe "#build_manifest" do
     let(:name) { "foo" }
     let(:manifest) { instance_double("Bosh::Manifests::Manifest") }
+    let(:manifest_builder) { Bosh::Manifests::ManifestBuilder }
 
     it "generates a manifest" do
       manifest_manager.should_receive(:find).with(name).and_return(manifest)
-      command.make_manifest name
+      manifest_builder.should_receive(:build).with(manifest, work_dir)
+      command.build_manifest name
     end
   end
-
 end

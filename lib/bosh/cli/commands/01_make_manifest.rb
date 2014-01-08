@@ -15,11 +15,12 @@ module Bosh::Cli::Command
       nl
     end
 
-    usage "make manifest"
+    usage "build manifest"
     desc "Create manifest (assumes current directory to be a manifests repo)"
-    def make_manifest(name = nil)
+    def build_manifest(name)
       setup_manifest_manager
       manifest = @manifest_manager.find(name)
+      Bosh::Manifests::ManifestBuilder.build(manifest, work_dir)
     end
 
     private
