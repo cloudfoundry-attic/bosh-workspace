@@ -1,4 +1,4 @@
 name: foo
-manifests:
+templates:
   - foo/bar.yml
 meta: {}
