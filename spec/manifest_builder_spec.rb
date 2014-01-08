@@ -22,7 +22,7 @@ describe Bosh::Manifests::ManifestBuilder do
   describe "#merge_templates" do
     subject { Bosh::Manifests::ManifestBuilder.new manifest, work_dir }
     let(:templates) { ["foo.yml"] }
-    let(:template_path) { File.join(work_dir, "templates/foo.yml" ) }
+    let(:template_path) { File.join(work_dir, "templates/foo.yml") }
     let(:template_exists) { true }
 
     before do
@@ -39,10 +39,31 @@ describe Bosh::Manifests::ManifestBuilder do
     end
 
     context "template exists" do
-      it "generates manifest with spiff" do
-        subject.should_receive(:spiff_merge).with([template_path], target_file)
+      let(:target_dir) { File.join(work_dir, ".generated_manifests" ) }
+      let(:target_dir_exists) { true }
+
+      before do
+        File.should_receive(:exists?).with(target_dir)
+          .and_return(target_dir_exists)
         manifest.should_receive(:name).and_return(target_name)
-        subject.merge_templates
+        subject.should_receive(:spiff_merge)
+          .with([template_path], target_file)
+      end
+
+      context "missing target dir" do
+        let(:target_dir_exists) { false }
+
+        it "creates target dir" do
+          Dir.should_receive(:mkdir).with(target_dir)
+          subject.merge_templates
+        end
+      end
+
+      context "target dir exists" do
+        it "generates manifest with spiff" do
+          Dir.should_not_receive(:mkdir)
+          subject.merge_templates
+        end
       end
     end
   end

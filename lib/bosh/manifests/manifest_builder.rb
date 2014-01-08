@@ -32,7 +32,13 @@ module Bosh::Manifests
     end
 
     def target_file
-      File.join(@work_dir, ".generated_manifests", "#{@manifest.name}.yml")
+      File.join(target_dir, "#{@manifest.name}.yml")
+    end
+
+    def target_dir
+      dir = File.join(@work_dir, ".generated_manifests")
+      Dir.mkdir(dir) unless File.exists? dir
+      dir
     end
 
     def template_path(template)
