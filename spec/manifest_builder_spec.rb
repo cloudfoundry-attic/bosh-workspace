@@ -3,7 +3,7 @@ describe Bosh::Manifests::ManifestBuilder do
   let(:work_dir) { asset_dir("manifests-repo") }
   let(:target_name) { "bar" }
   let(:target_file) {
-    File.join(work_dir, ".generated_manifests", "#{target_name}.yml") }
+    File.join(work_dir, ".manifests", "#{target_name}.yml") }
 
   describe ".build" do
     subject { Bosh::Manifests::ManifestBuilder.build manifest, work_dir }
@@ -39,31 +39,36 @@ describe Bosh::Manifests::ManifestBuilder do
     end
 
     context "template exists" do
-      let(:target_dir) { File.join(work_dir, ".generated_manifests" ) }
-      let(:target_dir_exists) { true }
+      let(:dir_exists) { true }
+      let(:target_dir) { File.join(work_dir, ".manifests" ) }
+      let(:meta_file_path) {
+        File.join(work_dir, ".meta", "#{target_name}.yml") }
+      let(:meta_file) { instance_double("File") }
+      let(:meta) { { "foo" => "bar" } }
 
       before do
-        File.should_receive(:exists?).with(target_dir)
-          .and_return(target_dir_exists)
-        manifest.should_receive(:name).and_return(target_name)
+        manifest.should_receive(:name).twice.and_return(target_name)
+        manifest.should_receive(:meta).and_return(meta)
+        File.should_receive(:exists?).twice.and_return(dir_exists)
+        File.should_receive(:open).with(meta_file_path, "w")
+          .and_yield(meta_file)
+        meta_file.should_receive(:write).with({ "meta" => meta }.to_yaml)
+      end
+
+      context "no hidden dirs" do
+        let(:dir_exists) { false }
+        it "creates hidden dirs" do
+          subject.stub(:spiff_merge)
+          Dir.should_receive(:mkdir).with(/.meta/)
+          Dir.should_receive(:mkdir).with(/.manifests/)
+          subject.merge_templates
+        end
+      end
+
+      it "generates manifest with spiff" do
         subject.should_receive(:spiff_merge)
-          .with([template_path], target_file)
-      end
-
-      context "missing target dir" do
-        let(:target_dir_exists) { false }
-
-        it "creates target dir" do
-          Dir.should_receive(:mkdir).with(target_dir)
-          subject.merge_templates
-        end
-      end
-
-      context "target dir exists" do
-        it "generates manifest with spiff" do
-          Dir.should_not_receive(:mkdir)
-          subject.merge_templates
-        end
+          .with([template_path, meta_file_path], target_file)
+        subject.merge_templates
       end
     end
   end

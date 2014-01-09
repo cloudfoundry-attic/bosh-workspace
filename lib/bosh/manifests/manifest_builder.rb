@@ -13,34 +13,38 @@ module Bosh::Manifests
     end
 
     def merge_templates
-      spiff_merge spiff_template_paths, target_file
+      spiff_merge spiff_template_paths, hidden_file_path(:manifests)
     end
 
     private
 
     def spiff_template_paths
       spiff_templates = template_paths
-      # spiff_templates << meta_file
+      spiff_templates << meta_file_path
     end
 
     def template_paths
       @manifest.templates.map { |t| template_path(t) }
     end
 
-    def meta_file
-
+    def meta_file_path
+      content = { "meta" => @manifest.meta }.to_yaml
+      path = hidden_file_path(:meta)
+      File.open(path, 'w') { |file| file.write(content) }
+      path
     end
 
-    def target_file
-      File.join(target_dir, "#{@manifest.name}.yml")
+    def hidden_file_path(type)
+      File.join(hidden_dir_path(type), "#{@manifest.name}.yml")
     end
 
-    def target_dir
-      dir = File.join(@work_dir, ".generated_manifests")
+    def hidden_dir_path(name)
+      dir = File.join(@work_dir, ".#{name.to_s}")
       Dir.mkdir(dir) unless File.exists? dir
       dir
     end
 
+    # TODO move to template validator which should have access to @work_dir
     def template_path(template)
       path = File.join(@work_dir, "templates", template)
       err("Template does not exist: #{template}") unless File.exists? path
