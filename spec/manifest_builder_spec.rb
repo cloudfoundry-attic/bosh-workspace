@@ -14,7 +14,7 @@ describe Bosh::Manifests::ManifestBuilder do
       Bosh::Manifests::ManifestBuilder.should_receive(:new)
         .with(manifest, work_dir).and_return(manifest_builder)
       manifest_builder.should_receive(:merge_templates)
-        .and_return(target_file)
+      manifest_builder.should_receive(:target_file).and_return(target_file)
       expect(subject).to eq target_file
     end
   end
@@ -68,7 +68,7 @@ describe Bosh::Manifests::ManifestBuilder do
       it "generates manifest with spiff" do
         subject.should_receive(:spiff_merge)
           .with([template_path, meta_file_path], target_file)
-        subject.merge_templates
+        expect(subject.merge_templates)
       end
     end
   end

@@ -20,7 +20,8 @@ module Bosh::Cli::Command
     def build_manifest(name)
       setup_manifest_manager
       manifest = @manifest_manager.find(name)
-      Bosh::Manifests::ManifestBuilder.build(manifest, work_dir)
+      result_path = Bosh::Manifests::ManifestBuilder.build(manifest, work_dir)
+      say("Manifest build succesfull: '#{result_path}'")
     end
 
     private

@@ -36,6 +36,8 @@ describe Bosh::Cli::Command::Manifests do
     it "generates a manifest" do
       manifest_manager.should_receive(:find).with(name).and_return(manifest)
       manifest_builder.should_receive(:build).with(manifest, work_dir)
+        .and_return("target_manifest")
+      command.should_receive(:say).with(/build succesfull: 'target_manifest'/)
       command.build_manifest name
     end
   end
