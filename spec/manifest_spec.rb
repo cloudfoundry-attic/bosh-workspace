@@ -4,9 +4,13 @@ describe Bosh::Manifests::Manifest do
   let(:name) { "foo" }
   let(:templates) { ["path_to_bar", "path_to_baz"] }
   let(:meta) { { "foo" => "bar" } }
-  let(:manifest) {
-    { "name" => name, "templates" => templates, "meta" => meta }.to_yaml
-  }
+  let(:uuid) { "foo-bar-uuid" }
+  let(:manifest) { {
+      "name" => name,
+      "templates" => templates,
+      "meta" => meta,
+      "director_uuid" => uuid
+    }.to_yaml }
 
   context "invalid manifest" do
     context "not a hash" do
@@ -19,7 +23,9 @@ describe Bosh::Manifests::Manifest do
     end
 
     context "missing name" do
-      let(:manifest) { { "templates" => templates, "meta" => meta }.to_yaml }
+      let(:manifest) { {
+          "templates" => templates, "director_uuid" => uuid, "meta" => meta
+        }.to_yaml }
       it "raises an error" do
         subject.validate
         expect(subject).to_not be_valid
@@ -28,7 +34,8 @@ describe Bosh::Manifests::Manifest do
     end
 
     context "missing templates" do
-      let(:manifest) { { "name" => name, "meta" => meta }.to_yaml }
+      let(:manifest) { {
+          "name" => name, "director_uuid" => uuid, "meta" => meta }.to_yaml }
       it "raises an error" do
         subject.validate
         expect(subject).to_not be_valid
@@ -36,8 +43,20 @@ describe Bosh::Manifests::Manifest do
       end
     end
 
+    context "missing director_uuid" do
+      let(:manifest) { {
+          "name" => name, "templates" => templates, "meta" => meta }.to_yaml }
+      it "raises an error" do
+        subject.validate
+        expect(subject).to_not be_valid
+        expect(subject.errors).to eq ["Manifest should contain a director_uuid"]
+      end
+    end
+
     context "missing meta" do
-      let(:manifest) { { "name" => name, "templates" => templates }.to_yaml }
+      let(:manifest) { {
+          "name" => name, "templates" => templates, "director_uuid" => uuid
+        }.to_yaml }
       it "raises an error" do
         subject.validate
         expect(subject).to_not be_valid
@@ -55,6 +74,7 @@ describe Bosh::Manifests::Manifest do
       expect(subject.templates).to eq templates
       expect(subject.meta).to eq meta
       expect(subject.filename).to eq "tmp"
+      expect(subject.director_uuid).to eq uuid
     end
   end
 end

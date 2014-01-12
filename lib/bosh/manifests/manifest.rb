@@ -1,7 +1,7 @@
 module Bosh::Manifests
   class Manifest
     include Bosh::Cli::Validation
-    attr_reader :name, :templates, :meta
+    attr_reader :name, :templates, :director_uuid, :meta
 
     def initialize(file)
       @file = file
@@ -18,6 +18,10 @@ module Bosh::Manifests
 
         unless m.has_key?("templates") && m["templates"].is_a?(Array)
           errors << "Manifest should contain templates"
+        end
+
+        unless m.has_key?("director_uuid") && m["director_uuid"].is_a?(String)
+          errors << "Manifest should contain a director_uuid"
         end
 
         unless m.has_key?("meta") && m["meta"].is_a?(Hash)
@@ -39,6 +43,7 @@ module Bosh::Manifests
       @name = manifest["name"]
       @templates = manifest["templates"]
       @meta = manifest["meta"]
+      @director_uuid = manifest["director_uuid"]
     end
   end
 end

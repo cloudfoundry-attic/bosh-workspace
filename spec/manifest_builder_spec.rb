@@ -41,18 +41,21 @@ describe Bosh::Manifests::ManifestBuilder do
     context "template exists" do
       let(:dir_exists) { true }
       let(:target_dir) { File.join(work_dir, ".manifests" ) }
+      let(:uuid) { "foo-bar-uuid" }
       let(:meta_file_path) {
         File.join(work_dir, ".meta", "#{target_name}.yml") }
       let(:meta_file) { instance_double("File") }
       let(:meta) { { "foo" => "bar" } }
+      let(:meta_file_content) { { "director_uuid" => uuid, "meta" => meta } }
 
       before do
         manifest.should_receive(:name).twice.and_return(target_name)
         manifest.should_receive(:meta).and_return(meta)
+        manifest.should_receive(:director_uuid).and_return(uuid)
         File.should_receive(:exists?).twice.and_return(dir_exists)
         File.should_receive(:open).with(meta_file_path, "w")
           .and_yield(meta_file)
-        meta_file.should_receive(:write).with({ "meta" => meta }.to_yaml)
+        meta_file.should_receive(:write).with(meta_file_content.to_yaml)
       end
 
       context "no hidden dirs" do

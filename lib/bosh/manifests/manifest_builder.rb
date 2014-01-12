@@ -33,10 +33,16 @@ module Bosh::Manifests
     end
 
     def meta_file_path
-      content = { "meta" => @manifest.meta }.to_yaml
       path = hidden_file_path(:meta)
-      File.open(path, 'w') { |file| file.write(content) }
+      File.open(path, 'w') { |file| file.write(meta_file_content) }
       path
+    end
+
+    def meta_file_content
+      {
+        "director_uuid" => @manifest.director_uuid,
+        "meta" => @manifest.meta
+      }.to_yaml
     end
 
     def hidden_file_path(type)
