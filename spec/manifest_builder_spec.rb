@@ -43,7 +43,7 @@ describe Bosh::Manifests::ManifestBuilder do
       let(:target_dir) { File.join(work_dir, ".manifests" ) }
       let(:uuid) { "foo-bar-uuid" }
       let(:meta_file_path) {
-        File.join(work_dir, ".meta", "#{target_name}.yml") }
+        File.join(work_dir, ".stubs", "#{target_name}.yml") }
       let(:meta_file) { instance_double("File") }
       let(:meta) { { "foo" => "bar" } }
       let(:meta_file_content) { { "director_uuid" => uuid, "meta" => meta } }
@@ -62,7 +62,7 @@ describe Bosh::Manifests::ManifestBuilder do
         let(:dir_exists) { false }
         it "creates hidden dirs" do
           subject.stub(:spiff_merge)
-          Dir.should_receive(:mkdir).with(/.meta/)
+          Dir.should_receive(:mkdir).with(/.stubs/)
           Dir.should_receive(:mkdir).with(/.manifests/)
           subject.merge_templates
         end

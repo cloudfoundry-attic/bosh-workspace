@@ -25,20 +25,20 @@ module Bosh::Manifests
 
     def spiff_template_paths
       spiff_templates = template_paths
-      spiff_templates << meta_file_path
+      spiff_templates << stub_file_path
     end
 
     def template_paths
       @manifest.templates.map { |t| template_path(t) }
     end
 
-    def meta_file_path
-      path = hidden_file_path(:meta)
-      File.open(path, 'w') { |file| file.write(meta_file_content) }
+    def stub_file_path
+      path = hidden_file_path(:stubs)
+      File.open(path, 'w') { |file| file.write(stub_file_content) }
       path
     end
 
-    def meta_file_content
+    def stub_file_content
       {
         "director_uuid" => @manifest.director_uuid,
         "meta" => @manifest.meta
