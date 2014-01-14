@@ -41,4 +41,18 @@ describe Bosh::Cli::Command::Manifests do
       command.build_manifest name
     end
   end
+
+  describe "deploy" do
+    let(:deployment_cmd) { instance_double("Bosh::Cli::Command::Deployment") }
+
+    it "deploy" do
+      Bosh::Cli::Command::Deployment.should_receive(:new)
+        .and_return(deployment_cmd)
+      deployment_cmd.should_receive(:add_option).twice
+      deployment_cmd.should_receive(:add_option).with(:recreate, true)
+      deployment_cmd.should_receive(:perform)
+      command.add_option(:recreate, true)
+      command.deploy
+    end
+  end
 end
