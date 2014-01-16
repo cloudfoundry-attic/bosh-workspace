@@ -1,5 +1,5 @@
 module Bosh::Manifests
-  class Manifest
+  class DeploymentManifest
     include Bosh::Cli::Validation
     attr_reader :name, :templates, :director_uuid, :meta
 

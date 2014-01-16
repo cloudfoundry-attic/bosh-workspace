@@ -1,5 +1,5 @@
-describe Bosh::Manifests::Manifest do
-  subject { Bosh::Manifests::Manifest.new manifest_file }
+describe Bosh::Manifests::DeploymentManifest do
+  subject { Bosh::Manifests::DeploymentManifest.new manifest_file }
   let(:manifest_file) { get_tmp_file_path(manifest) }
   let(:name) { "foo" }
   let(:templates) { ["path_to_bar", "path_to_baz"] }
