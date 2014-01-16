@@ -5,23 +5,38 @@ module Bosh::Cli::Command
     include Bosh::Cli::Validation
     include Bosh::Manifests
 
-    usage "manifests"
-    desc "Show the list of available manifests"
-    def manifests
-      setup_manifest_manager
+    # Hack to unregister original deployment command
+    Bosh::Cli::Config.instance_eval("@commands.delete('deployment')")
 
-      nl
-      say(@manifest_manager.to_table)
-      nl
+    usage "deployment"
+    desc "Get/set current deployment"
+    def deployment(filename = nil)
+      unless filename.nil?
+        manifest = DeploymentManifest.new(find_deployment(filename))
+
+        unless manifest.valid?
+          say("Validation errors:".make_red)
+          manifest.errors.each do |error|
+            say("- #{error}")
+          end
+          err("'#{filename}' is not valid".make_red)
+        end
+      end
+
+      deployment_cmd(options).set_current(filename)
     end
 
-    usage "build manifest"
-    desc "Create manifest (assumes current directory to be a manifests repo)"
-    def build_manifest(name)
-      setup_manifest_manager
-      manifest = @manifest_manager.find(name)
-      result_path = Bosh::Manifests::ManifestBuilder.build(manifest, work_dir)
-      say("Manifest build succesfull: '#{result_path}'")
+    usage "prepare deployment"
+    desc "Resolve and upload required releases and stemcells"
+    def prepare
+      current_deployment.releases.each do |release|
+        release.resolve
+        release.upload unleass stemcell.exists?
+      end
+
+      current_deployment.stemcells.each do |stemcell|
+        stemcell.upload unleass stemcell.exists?
+      end
     end
 
     # Hack to unregister original deploy command
@@ -31,17 +46,13 @@ module Bosh::Cli::Command
     desc "Deploy according to the currently selected deployment manifest"
     option "--recreate", "recreate all VMs in deployment"
     def deploy
-      setup_manifest_manager
-      # build current deployment manifest
+      # setp(build current deployment manifest
+      # manifest = @manifest_manager.find(name)
+      # result_path = Bosh::Manifests::ManifestBuilder.build(manifest, work_dir)
       deployment_cmd(options).perform
     end
 
     private
-
-    def setup_manifest_manager
-      @manifest_manager = Bosh::Manifests::ManifestManager.discover(work_dir)
-      @manifest_manager.validate_manifests
-    end
 
     def deployment_cmd(options = {})
       cmd ||= Bosh::Cli::Command::Deployment.new
