@@ -62,15 +62,24 @@ describe Bosh::Cli::Command::Manifests do
   end
 
   describe "#prepare" do
-    let(:name) { "foo" }
-    let(:manifest_builder) { Bosh::Manifests::ManifestBuilder }
+    subject { command.prepare }
+    let(:releases) { ["foo", "bar"] }
+    let(:release_manager) { instance_double("Bosh::Manifests::ReleaseManager") }
 
-    xit "generates a manifest" do
-      manifest_manager.should_receive(:find).with(name).and_return(manifest)
-      manifest_builder.should_receive(:build).with(manifest, work_dir)
-        .and_return("target_manifest")
-      command.should_receive(:say).with(/build succesfull: 'target_manifest'/)
-      command.prepare name
+    before do
+      command.should_receive(:deployment_required)
+      command.should_receive(:auth_required)
+      command.should_receive(:deployment).and_return(filename_path)
+      Bosh::Manifests::DeploymentManifest.should_receive(:new)
+        .with(filename_path).and_return(manifest)
+      manifest.should_receive(:releases).and_return(releases)
+      Bosh::Manifests::ReleaseManager.should_receive(:new)
+        .with(releases).and_return(release_manager)
+      release_manager.should_receive(:update_release_repos)
+    end
+
+    it "resolves deployment requirements" do
+      subject
     end
   end
 

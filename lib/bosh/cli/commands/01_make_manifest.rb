@@ -27,16 +27,17 @@ module Bosh::Cli::Command
     end
 
     usage "prepare deployment"
-    desc "Resolve and upload required releases and stemcells"
+    desc "Resolve deployment requirements"
     def prepare
-      current_deployment.releases.each do |release|
-        release.resolve
-        release.upload unleass stemcell.exists?
-      end
+      deployment_required
+      auth_required
 
-      current_deployment.stemcells.each do |stemcell|
-        stemcell.upload unleass stemcell.exists?
-      end
+      release_manager.update_release_repos
+
+      # TODO: Implement
+      # current_deployment.stemcells.each do |stemcell|
+      #   stemcell.upload unless stemcell.exists?
+      # end
     end
 
     # Hack to unregister original deploy command
@@ -60,6 +61,14 @@ module Bosh::Cli::Command
         cmd.add_option key.to_sym, value
       end
       cmd
+    end
+
+    def deployment_manifest
+      @deployment_manifest ||= DeploymentManifest.new(deployment)
+    end
+
+    def release_manager
+      @release_manager ||= ReleaseManager.new(deployment_manifest.releases)
     end
   end
 end
