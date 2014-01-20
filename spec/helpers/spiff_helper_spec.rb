@@ -8,8 +8,14 @@ describe Bosh::Manifests::SpiffHelper do
     let(:templates) { ["foo.yml", "bar.yml"] }
     let(:target_file) { "spiffed_manifest.yml" }
 
-    before do
+    around do |example|
+      original_path = ENV["PATH"]
       ENV["PATH"] = path
+      example.run
+      ENV["PATH"] = original_path
+    end
+
+    before do
       subject.should_receive(:sh).and_yield(result)
     end
 
