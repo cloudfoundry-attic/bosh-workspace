@@ -12,6 +12,7 @@ require "rspec/core"
 require 'rspec/fire'
 
 require "tmpdir"
+require "archive/zip"
 
 # bosh_cli
 require "cli"
@@ -29,10 +30,6 @@ end
 # load all files in spec/support/* (but not lower down)
 Dir[File.dirname(__FILE__) + '/support/*'].each do |path|
   require path unless File.directory?(path)
-end
-
-def spec_asset(filename)
-  File.expand_path("../assets/#{filename}", __FILE__)
 end
 
 def files_match(filename, expected_filename)
@@ -68,11 +65,20 @@ def get_tmp_file_path(content)
   tmp_file = File.open(File.join(Dir.mktmpdir, "tmp"), "w")
   tmp_file.write(content)
   tmp_file.close
-
   tmp_file.path
 end
 
 def asset_dir(*path)
   assets_dir = File.expand_path("../assets", __FILE__)
   File.join(assets_dir, *path)
+end
+
+def extracted_asset_dir(name, *path)
+  zipped_file = asset_dir(*path)
+  target_dir = File.expand_path("../../tmp/#{name}", __FILE__)
+  unless File.directory?(target_dir)
+    FileUtils.mkdir_p(target_dir)
+    Archive::Zip.extract(zipped_file, target_dir)
+  end
+  target_dir
 end
