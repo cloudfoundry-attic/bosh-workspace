@@ -1,7 +1,7 @@
 module Bosh::Manifests
   class DeploymentManifest
     include Bosh::Cli::Validation
-    attr_reader :name, :templates, :director_uuid, :meta
+    attr_reader :name, :director_uuid, :templates, :releases, :meta
 
     def initialize(file)
       @file = file
@@ -16,12 +16,16 @@ module Bosh::Manifests
           errors << "Manifest should contain a name"
         end
 
+        unless m.has_key?("director_uuid") && m["director_uuid"].is_a?(String)
+          errors << "Manifest should contain a director_uuid"
+        end
+
         unless m.has_key?("templates") && m["templates"].is_a?(Array)
           errors << "Manifest should contain templates"
         end
 
-        unless m.has_key?("director_uuid") && m["director_uuid"].is_a?(String)
-          errors << "Manifest should contain a director_uuid"
+        unless m.has_key?("releases") && m["releases"].is_a?(Array)
+          errors << "Manifest should contain releases"
         end
 
         unless m.has_key?("meta") && m["meta"].is_a?(Hash)
@@ -33,17 +37,12 @@ module Bosh::Manifests
       end
     end
 
-    def filename
-      File.basename(@file)
-    end
-
     private
 
     def setup_manifest_attributes(manifest)
-      @name = manifest["name"]
-      @templates = manifest["templates"]
-      @meta = manifest["meta"]
-      @director_uuid = manifest["director_uuid"]
+      %w[name director_uuid templates releases meta].each do |var|
+        self.instance_variable_set "@#{var}", manifest[var]
+      end
     end
   end
 end
