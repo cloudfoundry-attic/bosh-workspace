@@ -42,16 +42,27 @@ describe Bosh::Manifests::ManifestBuilder do
       let(:dir_exists) { true }
       let(:target_dir) { File.join(work_dir, ".manifests" ) }
       let(:uuid) { "foo-bar-uuid" }
-      let(:meta_file_path) {
-        File.join(work_dir, ".stubs", "#{target_name}.yml") }
+      let(:meta_file_path) do
+        File.join(work_dir, ".stubs", "#{target_name}.yml")
+      end
       let(:meta_file) { instance_double("File") }
       let(:meta) { { "foo" => "bar" } }
-      let(:meta_file_content) { { "director_uuid" => uuid, "meta" => meta } }
+      let(:release) { { "name" => "foo", "version" => "latest" } }
+      let(:releases) { [release] }
+      let(:raw_releases) { [release.merge("git" => "release_repo.git")] }
+      let(:meta_file_content) do
+        {
+          "director_uuid" => uuid,
+          "releases" => releases,
+          "meta" => meta
+        }
+      end
 
       before do
         manifest.should_receive(:name).twice.and_return(target_name)
         manifest.should_receive(:meta).and_return(meta)
         manifest.should_receive(:director_uuid).and_return(uuid)
+        manifest.should_receive(:releases).and_return(raw_releases)
         File.should_receive(:exists?).twice.and_return(dir_exists)
         File.should_receive(:open).with(meta_file_path, "w")
           .and_yield(meta_file)

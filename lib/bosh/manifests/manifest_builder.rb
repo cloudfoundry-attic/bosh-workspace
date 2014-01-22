@@ -41,8 +41,16 @@ module Bosh::Manifests
     def stub_file_content
       {
         "director_uuid" => @manifest.director_uuid,
+        "releases" => filterd_releases,
         "meta" => @manifest.meta
       }.to_yaml
+    end
+
+    def filterd_releases
+      allowed_keys = %w[name version]
+      @manifest.releases.map do |release|
+        release.select { |key| allowed_keys.include?(key) }
+      end
     end
 
     def hidden_file_path(type)
