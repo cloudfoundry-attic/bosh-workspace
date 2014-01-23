@@ -1,7 +1,6 @@
 require "bosh/cli/commands/01_make_manifest"
 
 describe Bosh::Cli::Command::Manifests do
-
   let(:command) { Bosh::Cli::Command::Manifests.new }
   let(:work_dir) { asset_dir("manifests-repo") }
   let(:manifest) { instance_double("Bosh::Manifests::DeploymentManifest") }
@@ -17,7 +16,7 @@ describe Bosh::Cli::Command::Manifests do
   end
 
   describe "#deployment" do
-    subject { command.deployment(filename) }
+    subject { command.set_current(filename) }
 
     context "filename given" do
       let(:valid) { true }
@@ -84,14 +83,28 @@ describe Bosh::Cli::Command::Manifests do
   end
 
   describe "deploy" do
-    it "deploy" do
+    subject { command.deploy }
+    let(:deployment_manifest) {
+      instance_double("Bosh::Manifests::DeploymentManifest")
+    }
+    let(:target_file) { File.join(work_dir, ".manifests/foo.yml") }
+
+    before do
+      Bosh::Manifests::DeploymentManifest.should_receive(:new)
+        .and_return(deployment_manifest)
+      Bosh::Manifests::ManifestBuilder.should_receive(:build)
+        .with(deployment_manifest, work_dir).and_return(target_file)
       Bosh::Cli::Command::Deployment.should_receive(:new)
         .and_return(deployment_cmd)
+    end
+
+    it "deploy" do
       deployment_cmd.should_receive(:add_option).twice
       deployment_cmd.should_receive(:add_option).with(:recreate, true)
+      deployment_cmd.should_receive(:add_option).with(:deployment, target_file)
       deployment_cmd.should_receive(:perform)
       command.add_option(:recreate, true)
-      command.deploy
+      subject
     end
   end
 end

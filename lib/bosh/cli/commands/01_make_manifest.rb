@@ -10,7 +10,7 @@ module Bosh::Cli::Command
 
     usage "deployment"
     desc "Get/set current deployment"
-    def deployment(filename = nil)
+    def set_current(filename = nil)
       unless filename.nil?
         manifest = DeploymentManifest.new(find_deployment(filename))
 
@@ -47,9 +47,12 @@ module Bosh::Cli::Command
     desc "Deploy according to the currently selected deployment manifest"
     option "--recreate", "recreate all VMs in deployment"
     def deploy
-      # setp(build current deployment manifest
-      # manifest = @manifest_manager.find(name)
-      # result_path = Bosh::Manifests::ManifestBuilder.build(manifest, work_dir)
+      target_file = nil
+      step("Generating deployment manifest",
+           "Failed to generate deployment manifest") do
+        target_file = ManifestBuilder.build(deployment_manifest, work_dir)
+      end
+      options.merge!(deployment: target_file)
       deployment_cmd(options).perform
     end
 
