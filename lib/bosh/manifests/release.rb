@@ -3,7 +3,7 @@ module Bosh::Manifests
   class Release
     def initialize(release, releases_dir)
       @name = release["name"]
-      @version = release["version"].to_s
+      @version = release["version"]
       @git_uri = release["git"]
       @work_dir = File.join(releases_dir)
     end
@@ -32,10 +32,11 @@ module Bosh::Manifests
       if @version == "latest"
         available_versions.keys.sort.last
       else
-        unless available_versions[@version]
+        version = @version.to_i
+        unless available_versions[version]
           err("Could not find version: #{@version} for release: #{@name}")
         end
-        @version
+        version
       end
     end
 
@@ -46,7 +47,7 @@ module Bosh::Manifests
         Hash[Dir[File.join(repo_dir, "releases", "*.yml")].
         reject { |f| f[/index.yml/] }.
         map { |dir| File.basename(dir) }.
-        map { |version| [ version[/(\d+)/].to_s, version ] }]
+        map { |version| [ version[/(\d+)/].to_i, version ] }]
       end
     end
 
