@@ -30,7 +30,7 @@ module Bosh::Manifests
 
     def current_version
       if @version == "latest"
-        available_versions.keys.last
+        available_versions.keys.sort.last
       else
         unless available_versions[@version]
           err("Could not find version: #{@version} for release: #{@name}")
@@ -44,9 +44,9 @@ module Bosh::Manifests
     def available_versions
       @available_versions ||= begin
         Hash[Dir[File.join(repo_dir, "releases", "*.yml")].
+        reject { |f| f[/index.yml/] }.
         map { |dir| File.basename(dir) }.
-        map { |version| [ version[/(\d+)/], version ] }.
-        sort]
+        map { |version| [ version[/(\d+)/].to_s, version ] }]
       end
     end
 
