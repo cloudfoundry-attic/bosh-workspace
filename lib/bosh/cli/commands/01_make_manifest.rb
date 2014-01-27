@@ -71,7 +71,9 @@ module Bosh::Cli::Command
     end
 
     def release_manager
-      @release_manager ||= ReleaseManager.new(deployment_manifest.releases)
+      @release_manager ||= begin
+        ReleaseManager.new(deployment_manifest.releases, work_dir)
+      end
     end
   end
 end

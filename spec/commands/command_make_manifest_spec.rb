@@ -73,7 +73,7 @@ describe Bosh::Cli::Command::Manifests do
         .with(filename_path).and_return(manifest)
       manifest.should_receive(:releases).and_return(releases)
       Bosh::Manifests::ReleaseManager.should_receive(:new)
-        .with(releases).and_return(release_manager)
+        .with(releases, work_dir).and_return(release_manager)
       release_manager.should_receive(:update_release_repos)
     end
 
