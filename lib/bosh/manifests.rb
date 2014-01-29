@@ -5,7 +5,8 @@ require "cli/validation"
 
 require "bosh/manifests/helpers/spiff_helper"
 
-require "bosh/manifests/manifest_manager"
 require "bosh/manifests/manifest_builder"
-require "bosh/manifests/manifest"
+require "bosh/manifests/release_manager"
+require "bosh/manifests/release"
+require "bosh/manifests/deployment_manifest"
 require "bosh/manifests/version"
