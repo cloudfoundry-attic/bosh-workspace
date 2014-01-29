@@ -5,7 +5,7 @@ describe Bosh::Manifests::Release do
   let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
   let(:release) { Bosh::Manifests::Release.new release_data, releases_dir }
-  subject { Dir[File.join(releases_dir, name, "releases", "foo*.yml")] }
+  subject { Dir[File.join(releases_dir, name, "releases", "foo*.yml")].to_s }
 
   describe "#checkout_current_version" do
     context "latest version" do
@@ -13,7 +13,7 @@ describe Bosh::Manifests::Release do
 
       it "checks out repo" do
         release.checkout_current_version
-        expect(subject.last).to match /foo-4.yml/
+        expect(subject).to match /foo-11.yml/
       end
     end
 
@@ -22,12 +22,12 @@ describe Bosh::Manifests::Release do
 
       it "checks out repo" do
         release.checkout_current_version
-        expect(subject.last).to match /foo-2.yml/
+        expect(subject).to match /foo-2.yml/
       end
     end
 
     context "non existing version " do
-      let(:version) { "5" }
+      let(:version) { "12" }
 
       it "raises an error" do
         expect { release.checkout_current_version }.
@@ -44,7 +44,7 @@ describe Bosh::Manifests::Release do
 
       it "version 3" do
         release.checkout_current_version
-        expect(subject.last).to match /foo-3.yml/
+        expect(subject).to match /foo-3.yml/
       end
     end
 
@@ -59,7 +59,7 @@ describe Bosh::Manifests::Release do
 
       it "version 3" do
         release.checkout_current_version
-        expect(subject.last).to match /foo-3.yml/
+        expect(subject).to match /foo-3.yml/
       end
     end
   end
