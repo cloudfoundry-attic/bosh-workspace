@@ -47,10 +47,21 @@ module Bosh::Cli::Command
     desc "Deploy according to the currently selected deployment manifest"
     option "--recreate", "recreate all VMs in deployment"
     def deploy
+      if deployment_manifest.director_uuid == "current"
+        if bosh_cpi == "warden"
+          deployment_manifest.director_uuid = bosh_uuid
+        else
+          say("Please put 'director_uuid: #{bosh_uuid}' in '#{deployment}'")
+          err("'director_uuid: current' may not be used in production")
+        end
+      end
+
       target_file = nil
       step("Generating deployment manifest",
            "Failed to generate deployment manifest") do
-        target_file = ManifestBuilder.build(deployment_manifest, work_dir)
+        target_file = begin
+          ManifestBuilder.build(deployment_manifest, work_dir)
+        end
       end
       options.merge!(deployment: target_file)
       deployment_cmd(options).perform
@@ -74,6 +85,24 @@ module Bosh::Cli::Command
       @release_manager ||= begin
         ReleaseManager.new(deployment_manifest.releases, work_dir)
       end
+    end
+
+    def bosh_status
+      @bosh_status ||= begin
+        step("Fetching bosh information",
+             "Cannot fetch bosh information", :fatal) do
+          @bosh_status = director.get_status
+        end
+        @bosh_status
+      end
+    end
+
+    def bosh_uuid
+      bosh_status["uuid"]
+    end
+
+    def bosh_cpi
+      bosh_status["cpi"]
     end
   end
 end
