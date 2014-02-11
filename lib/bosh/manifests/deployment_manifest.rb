@@ -19,6 +19,12 @@ module Bosh::Manifests
           errors << "Manifest should contain a director_uuid"
         end
 
+        if @manifest.has_key?("deployments")
+          unless @manifest["deployments"].is_a?(Array)
+            errors << "Manifest: deployments should be array"
+          end
+        end
+
         unless @manifest.has_key?("templates") && @manifest["templates"].is_a?(Array)
           errors << "Manifest should contain templates"
         end

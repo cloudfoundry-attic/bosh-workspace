@@ -3,6 +3,7 @@ describe Bosh::Manifests::DeploymentManifest do
   let(:manifest_file) { get_tmp_file_path(manifest.to_yaml) }
   let(:name) { "foo" }
   let(:uuid) { "foo-bar-uuid" }
+  let(:deployments) { [ "child-deployment.yml" ] }
   let(:templates) { ["path_to_bar", "path_to_baz"] }
   let(:releases) { [
     { "name" => "foo", "version" => "latest", "git" => "example.com/foo.git" }
@@ -11,22 +12,22 @@ describe Bosh::Manifests::DeploymentManifest do
   let(:manifest) { {
     "name" => name,
     "director_uuid" => uuid,
+    "deployments" => deployments,
     "templates" => templates,
     "releases" => releases,
     "meta" => meta,
   } }
 
-  context "invalid manifest" do
-    let(:invalid_manifest) { manifest.tap { |m| m.delete(missing) } }
-    let(:manifest_file) { get_tmp_file_path(invalid_manifest.to_yaml) }
+  context "validation" do
+    let(:validation_manifest) { manifest.tap { |m| m.delete(missing) } }
+    let(:manifest_file) { get_tmp_file_path(validation_manifest.to_yaml) }
 
     before do
       subject.validate
-      expect(subject).to_not be_valid
     end
 
     context "not a hash" do
-      let(:invalid_manifest) { "foo" }
+      let(:validation_manifest) { "foo" }
       it "raises an error" do
         expect(subject.errors).to eq ["Manifest should be a hash"]
       end
@@ -64,6 +65,19 @@ describe Bosh::Manifests::DeploymentManifest do
       let(:missing) { "meta" }
       it "raises an error" do
         expect(subject.errors).to eq ["Manifest should contain meta hash"]
+      end
+    end
+
+    context "optional deployments" do
+      let(:missing) { "deployments" }
+      it { should be_valid }
+    end
+
+    context "invalid deployments" do
+      let(:deployments) { "not-an-array" }
+      let(:missing) { "none" }
+      it "raises an error" do
+        expect(subject.errors).to eq ["Manifest: deployments should be array"]
       end
     end
   end
