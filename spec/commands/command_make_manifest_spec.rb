@@ -15,7 +15,7 @@ describe Bosh::Cli::Command::Manifests do
     command.stub(:work_dir).and_return(work_dir)
   end
 
-  describe "#deployment" do
+  describe "#set_current" do
     subject { command.set_current(filename) }
 
     context "filename given" do
@@ -82,7 +82,7 @@ describe Bosh::Cli::Command::Manifests do
     end
   end
 
-  describe "deploy" do
+  describe "#perform" do
     subject { command.deploy }
     let(:deployment_manifest) {
       instance_double("Bosh::Manifests::DeploymentManifest")
