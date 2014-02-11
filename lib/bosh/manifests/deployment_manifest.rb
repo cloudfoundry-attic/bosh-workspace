@@ -3,6 +3,7 @@ module Bosh::Manifests
     include Bosh::Cli::Validation
     attr_reader :name, :director_uuid, :templates, :releases, :meta
     attr_writer :director_uuid
+    attr_accessor :merged_file
 
     def initialize(file, deployments_enabled = true)
       @file = file

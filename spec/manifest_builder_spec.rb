@@ -1,5 +1,6 @@
 describe Bosh::Manifests::ManifestBuilder do
   let(:manifest) { instance_double("Bosh::Manifests::Manifest") }
+  let(:deployments) { [ manifest ] }
   let(:work_dir) { asset_dir("manifests-repo") }
   let(:target_name) { "bar" }
   let(:target_file) {
@@ -11,11 +12,12 @@ describe Bosh::Manifests::ManifestBuilder do
       instance_double("Bosh::Manifests::ManifestBuilder") }
 
     it "creates builder and merges templates" do
-      Bosh::Manifests::ManifestBuilder.should_receive(:new)
+      manifest.should_receive(:name).twice.and_return("foo")
+      manifest.should_receive(:deployments).and_return(deployments)
+      Bosh::Manifests::ManifestBuilder.should_receive(:new).twice
         .with(manifest, work_dir).and_return(manifest_builder)
-      manifest_builder.should_receive(:merge_templates)
-      manifest_builder.should_receive(:target_file).and_return(target_file)
-      expect(subject).to eq target_file
+      manifest_builder.should_receive(:merge_templates).twice
+      subject
     end
   end
 
@@ -42,20 +44,23 @@ describe Bosh::Manifests::ManifestBuilder do
       let(:dir_exists) { true }
       let(:target_dir) { File.join(work_dir, ".manifests" ) }
       let(:uuid) { "foo-bar-uuid" }
-      let(:meta_file_path) do
+      let(:stub_file_path) do
         File.join(work_dir, ".stubs", "#{target_name}.yml")
       end
-      let(:meta_file) { instance_double("File") }
+      let(:stub_file) { instance_double("File") }
       let(:meta) { { "foo" => "bar" } }
       let(:release) { { "name" => "foo", "version" => "latest" } }
       let(:releases) { [release] }
       let(:raw_releases) { [release.merge("git" => "release_repo.git")] }
-      let(:meta_file_content) do
+      let(:stub_file_content) do
         {
           "director_uuid" => uuid,
           "releases" => releases,
           "meta" => meta
         }
+      end
+      let(:spiff_template_paths) do
+        [template_path, stub_file_path, target_file, stub_file_path]
       end
 
       before do
@@ -63,10 +68,13 @@ describe Bosh::Manifests::ManifestBuilder do
         manifest.should_receive(:meta).and_return(meta)
         manifest.should_receive(:director_uuid).and_return(uuid)
         manifest.should_receive(:releases).and_return(raw_releases)
+        manifest.should_receive(:deployments).and_return(deployments)
+        manifest.should_receive(:merged_file).and_return(target_file)
+        manifest.should_receive(:merged_file=).with(target_file)
         File.should_receive(:exists?).twice.and_return(dir_exists)
-        File.should_receive(:open).with(meta_file_path, "w")
-          .and_yield(meta_file)
-        meta_file.should_receive(:write).with(meta_file_content.to_yaml)
+        File.should_receive(:open).with(stub_file_path, "w")
+          .and_yield(stub_file)
+        stub_file.should_receive(:write).with(stub_file_content.to_yaml)
       end
 
       context "no hidden dirs" do
@@ -81,8 +89,8 @@ describe Bosh::Manifests::ManifestBuilder do
 
       it "generates manifest with spiff" do
         subject.should_receive(:spiff_merge)
-          .with([template_path, meta_file_path], target_file)
-        expect(subject.merge_templates)
+          .with(spiff_template_paths, target_file)
+        subject.merge_templates
       end
     end
   end

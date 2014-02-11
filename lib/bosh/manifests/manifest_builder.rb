@@ -3,9 +3,12 @@ module Bosh::Manifests
     include Bosh::Manifests::SpiffHelper
 
     def self.build(manifest, work_dir)
-      manifest_builder = ManifestBuilder.new(manifest, work_dir)
-      manifest_builder.merge_templates
-      manifest_builder.target_file
+      manifest.deployments.each do |dep_manifest|
+        say "Merging templates for depended deployment: #{dep_manifest.name}"
+        ManifestBuilder.new(dep_manifest, work_dir).merge_templates
+      end
+      say "Merging templates for deployment: #{manifest.name}"
+      ManifestBuilder.new(manifest, work_dir).merge_templates
     end
 
     def initialize(manifest, work_dir)
@@ -15,27 +18,36 @@ module Bosh::Manifests
 
     def merge_templates
       spiff_merge spiff_template_paths, target_file
-    end
-
-    def target_file
-      hidden_file_path(:manifests)
+      @manifest.merged_file = target_file
     end
 
     private
 
+    def target_file
+      @target_file ||= hidden_file_path(:manifests)
+    end
+
     def spiff_template_paths
       spiff_templates = template_paths
-      spiff_templates << stub_file_path
+      spiff_templates << stub_file_path # make sure releases are resolved
+      spiff_templates.concat dependend_deployment_paths
+      spiff_templates << stub_file_path # use uuid from stub
     end
 
     def template_paths
       @manifest.templates.map { |t| template_path(t) }
     end
 
+    def dependend_deployment_paths
+      @manifest.deployments.map { |d| d.merged_file }
+    end
+
     def stub_file_path
-      path = hidden_file_path(:stubs)
-      File.open(path, 'w') { |file| file.write(stub_file_content) }
-      path
+      @stub_file_path ||= begin
+        path = hidden_file_path(:stubs)
+        File.open(path, 'w') { |file| file.write(stub_file_content) }
+        path
+      end
     end
 
     def stub_file_content

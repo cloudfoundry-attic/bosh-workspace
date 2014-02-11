@@ -101,6 +101,8 @@ describe Bosh::Cli::Command::Manifests do
         .and_return(deployment_cmd)
       deployment_manifest.stub(:director_uuid)
         .and_return(director_uuid)
+      deployment_manifest.stub(:merged_file)
+        .and_return(target_file)
       deployment_cmd.stub(:add_option)
     end
 
