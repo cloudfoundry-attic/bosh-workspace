@@ -43,7 +43,7 @@ module Bosh::Manifests
     end
 
     def deployments
-      @deployments = begin
+      @deployments ||= begin
         (@manifest["deployments"] || []).map do |file|
           self.class.new(find_deployment(file), false)
         end

@@ -56,10 +56,9 @@ module Bosh::Cli::Command
         end
       end
 
-      step("Generating deployment manifest",
-           "Failed to generate deployment manifest") do
-        ManifestBuilder.build(deployment_manifest, work_dir)
-      end
+      say("Generating deployment manifest")
+      ManifestBuilder.build(deployment_manifest, work_dir)
+
       options.merge!(deployment: deployment_manifest.merged_file)
       deployment_cmd(options).perform
     end

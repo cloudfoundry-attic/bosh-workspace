@@ -123,6 +123,7 @@ describe Bosh::Manifests::DeploymentManifest do
       Bosh::Manifests::DeploymentManifest.should_receive(:new)
         .with(/\/#{deployment}/, false).and_return(dep_deployment)
       expect(subject.deployments).to include dep_deployment
+      expect(subject.deployments).to include dep_deployment
     end
   end
 end
