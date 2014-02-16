@@ -35,7 +35,11 @@ module Bosh::Manifests
       end
     end
 
-    %w[name director_uuid templates releases meta].each do |var|
+    def director_uuid
+      @director_uuid || @manifest["director_uuid"]
+    end
+
+    %w[name templates releases meta].each do |var|
       define_method var do
         @manifest[var]
       end
