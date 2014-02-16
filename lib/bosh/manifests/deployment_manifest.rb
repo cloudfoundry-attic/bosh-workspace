@@ -1,8 +1,8 @@
 module Bosh::Manifests
   class DeploymentManifest
     include Bosh::Cli::Validation
-    attr_reader :name, :director_uuid, :templates, :releases, :meta
     attr_writer :director_uuid
+    attr_accessor :merged_file
 
     def initialize(file)
       err("Deployment file does not exist: #{file}") unless File.exist? file

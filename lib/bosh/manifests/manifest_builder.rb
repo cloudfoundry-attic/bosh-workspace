@@ -5,7 +5,6 @@ module Bosh::Manifests
     def self.build(manifest, work_dir)
       manifest_builder = ManifestBuilder.new(manifest, work_dir)
       manifest_builder.merge_templates
-      manifest_builder.target_file
     end
 
     def initialize(manifest, work_dir)
@@ -15,13 +14,14 @@ module Bosh::Manifests
 
     def merge_templates
       spiff_merge spiff_template_paths, target_file
-    end
-
-    def target_file
-      hidden_file_path(:manifests)
+      @manifest.merged_file = target_file
     end
 
     private
+
+    def target_file
+      @target_file ||= hidden_file_path(:manifests)
+    end
 
     def spiff_template_paths
       spiff_templates = template_paths

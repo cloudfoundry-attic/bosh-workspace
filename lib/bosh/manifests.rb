@@ -4,6 +4,7 @@ require "cli/core_ext"
 require "cli/validation"
 
 require "bosh/manifests/helpers/spiff_helper"
+require "bosh/manifests/helpers/project_deployment_helper"
 
 require "bosh/manifests/manifest_builder"
 require "bosh/manifests/release_manager"
