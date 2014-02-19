@@ -23,7 +23,14 @@ module Bosh::Manifests
         err("Deployment is not a project deployment: #{deployment}")
       end
       validate_project_deployment
-      build_project_deployment
+    end
+
+    def create_placeholder_deployment
+      resolve_director_uuid
+
+      File.open(project_deployment.merged_file, "w") do |file|
+        file.write(placeholder_deployment_content)
+      end
     end
 
     def validate_project_deployment
@@ -35,10 +42,14 @@ module Bosh::Manifests
     end
 
     def build_project_deployment
-      use_targeted_director_uuid if director_uuid_current?
+      resolve_director_uuid
 
       say("Generating deployment manifest")
       ManifestBuilder.build(project_deployment, work_dir)
+    end
+
+    def resolve_director_uuid
+      use_targeted_director_uuid if director_uuid_current?
     end
 
     private
@@ -74,6 +85,11 @@ module Bosh::Manifests
 
     def deployment_basename
       File.basename(deployment)
+    end
+
+    def placeholder_deployment_content
+      { "director_uuid" => project_deployment.director_uuid }.to_yaml +
+        "# Don't edit; placeholder deployment for: #{project_deployment_file}"
     end
 
     def bosh_status

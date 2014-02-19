@@ -79,4 +79,15 @@ describe Bosh::Manifests::DeploymentManifest do
       expect(subject.meta).to eq meta
     end
   end
+
+  describe "#merged_file" do
+    it "creates parent directory" do
+      dir = File.dirname(subject.merged_file)
+      expect(File.directory?(dir)).to be_true
+    end
+
+    it "retruns merged file" do
+      expect(subject.merged_file).to match /\.deployments\//
+    end
+  end
 end

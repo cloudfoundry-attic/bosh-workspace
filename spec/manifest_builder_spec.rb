@@ -58,12 +58,12 @@ describe Bosh::Manifests::ManifestBuilder do
       end
 
       before do
-        manifest.should_receive(:name).twice.and_return(target_name)
+        manifest.should_receive(:name).and_return(target_name)
         manifest.should_receive(:meta).and_return(meta)
         manifest.should_receive(:director_uuid).and_return(uuid)
         manifest.should_receive(:releases).and_return(raw_releases)
-        manifest.should_receive(:merged_file=).with(target_file)
-        File.should_receive(:exists?).twice.and_return(dir_exists)
+        manifest.should_receive(:merged_file).and_return(target_file)
+        File.should_receive(:exists?).and_return(dir_exists)
         File.should_receive(:open).with(meta_file_path, "w")
           .and_yield(meta_file)
         meta_file.should_receive(:write).with(meta_file_content.to_yaml)
@@ -74,7 +74,6 @@ describe Bosh::Manifests::ManifestBuilder do
         it "creates hidden dirs" do
           subject.stub(:spiff_merge)
           Dir.should_receive(:mkdir).with(/.stubs/)
-          Dir.should_receive(:mkdir).with(/.manifests/)
           subject.merge_templates
         end
       end

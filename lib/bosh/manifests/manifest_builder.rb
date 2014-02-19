@@ -13,15 +13,10 @@ module Bosh::Manifests
     end
 
     def merge_templates
-      spiff_merge spiff_template_paths, target_file
-      @manifest.merged_file = target_file
+      spiff_merge spiff_template_paths, @manifest.merged_file
     end
 
     private
-
-    def target_file
-      @target_file ||= hidden_file_path(:manifests)
-    end
 
     def spiff_template_paths
       spiff_templates = template_paths

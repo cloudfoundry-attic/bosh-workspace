@@ -18,6 +18,7 @@ module Bosh::Cli::Command
         if project_deployment_file?(deployment)
           self.project_deployment = deployment
           require_project_deployment
+          create_placeholder_deployment
           filename = project_deployment.merged_file
         end
       end
@@ -28,7 +29,7 @@ module Bosh::Cli::Command
     usage "prepare deployment"
     desc "Resolve deployment requirements"
     def prepare
-      project_deployment_required
+      require_project_deployment
       auth_required
 
       release_manager.update_release_repos
@@ -48,6 +49,7 @@ module Bosh::Cli::Command
     def deploy
       if project_deployment?
         require_project_deployment
+        build_project_deployment
       end
 
       deployment_cmd(options).perform

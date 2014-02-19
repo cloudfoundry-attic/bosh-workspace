@@ -36,6 +36,7 @@ describe Bosh::Cli::Command::Manifests do
           .and_return(true)
         command.should_receive(:project_deployment=).with(deployment)
         command.should_receive(:require_project_deployment)
+        command.should_receive(:create_placeholder_deployment)
         command.should_receive(:project_deployment)
           .and_return(project_deployment)
         project_deployment.should_receive(:merged_file).and_return(merged_file)
@@ -61,7 +62,7 @@ describe Bosh::Cli::Command::Manifests do
     let(:work_dir) { asset_dir("manifests-repo") }
 
     it "resolves deployment requirements" do
-      command.should_receive(:project_deployment_required)
+      command.should_receive(:require_project_deployment)
       command.should_receive(:auth_required)
       command.should_receive(:project_deployment).and_return(project_deployment)
       project_deployment.should_receive(:releases).and_return(releases)
@@ -89,6 +90,7 @@ describe Bosh::Cli::Command::Manifests do
 
       it "requires project deployment" do
         command.should_receive(:require_project_deployment)
+        command.should_receive(:build_project_deployment)
         subject
       end
     end

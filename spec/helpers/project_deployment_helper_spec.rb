@@ -85,7 +85,6 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
       let(:is_project_deployment) { true }
       it "validates & builds" do
         subject.should_receive(:validate_project_deployment)
-        subject.should_receive(:build_project_deployment)
         subject.require_project_deployment
       end
     end
@@ -96,6 +95,27 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
       it "raises and error" do
         expect { subject.require_project_deployment }.to raise_error /foo/
       end
+    end
+  end
+
+  describe "#create_placeholder_deployment" do
+    subject { project_deployment_helper.create_placeholder_deployment }
+    let(:project_deployment_helper) do
+      HelperTester.new(director, deployment, project_deployment)
+    end
+    let(:deployment) { "deployments/bar.yml" }
+    let(:file) { instance_double('File') }
+    let(:merged_file) { ".deployments/bar.yml" }
+    let(:uuid) { "8451a282-4073" }
+    let(:content) { "director_uuid #{uuid}" }
+
+    it "creates placeholder deployment" do
+      project_deployment_helper.should_receive(:resolve_director_uuid)
+      project_deployment.should_receive(:merged_file).and_return(merged_file)
+      project_deployment.should_receive(:director_uuid).and_return(uuid)
+      File.should_receive(:open).with(merged_file, "w").and_yield(file)
+      file.should_receive(:write).with(/#{uuid}\s# Don't edit/)
+      subject
     end
   end
 
@@ -117,6 +137,21 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
     let(:project_deployment_helper) do
       HelperTester.new(director, deployment, project_deployment)
     end
+
+    it "builds project deployment manifest" do
+      project_deployment_helper.should_receive(:resolve_director_uuid)
+      project_deployment_helper.should_receive(:work_dir).and_return(work_dir)
+      Bosh::Manifests::ManifestBuilder.should_receive(:build)
+        .with(project_deployment, work_dir)
+      subject
+    end
+  end
+
+  describe "#resolve_director_uuid" do
+    subject { project_deployment_helper.resolve_director_uuid }
+    let(:project_deployment_helper) do
+      HelperTester.new(director, deployment, project_deployment)
+    end
     let(:status) { { "uuid" => current_uuid, "cpi" => cpi } }
     let(:current_uuid) { "current-uuid" }
 
@@ -127,12 +162,6 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
 
     context "using the warden cpi" do
       let(:cpi) { "warden" }
-
-      before do
-        project_deployment_helper.should_receive(:work_dir).and_return(work_dir)
-        Bosh::Manifests::ManifestBuilder.should_receive(:build)
-          .with(project_deployment, work_dir)
-      end
 
       context "with director uuid current" do
         let(:uuid) { "current" }

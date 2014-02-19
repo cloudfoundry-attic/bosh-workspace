@@ -2,11 +2,11 @@ module Bosh::Manifests
   class DeploymentManifest
     include Bosh::Cli::Validation
     attr_writer :director_uuid
-    attr_accessor :merged_file
 
     def initialize(file)
-      err("Deployment file does not exist: #{file}") unless File.exist? file
-      @manifest = Psych.load(File.read(file))
+      @file = file
+      err("Deployment file does not exist: #{file}") unless File.exist? @file
+      @manifest = Psych.load(File.read(@file))
     end
 
     def perform_validation(options = {})
@@ -39,10 +39,28 @@ module Bosh::Manifests
       @director_uuid || @manifest["director_uuid"]
     end
 
+    def merged_file
+      @merged_file ||= begin
+        path = File.join(file_dirname, "../.deployments", file_basename)
+        FileUtils.mkpath File.dirname(path)
+        File.expand_path path
+      end
+    end
+
     %w[name templates releases meta].each do |var|
       define_method var do
         @manifest[var]
       end
+    end
+
+    private
+
+    def file_basename
+      File.basename(@file)
+    end
+
+    def file_dirname
+      File.dirname(@file)
     end
   end
 end
