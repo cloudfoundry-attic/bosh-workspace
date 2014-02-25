@@ -1,4 +1,4 @@
-require "bosh/manifests"
+require "bosh/workspace"
 
 module Bosh::Cli::Command
   class Manifests < Base

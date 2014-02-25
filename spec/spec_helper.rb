@@ -17,7 +17,7 @@ require "archive/zip"
 # bosh_cli
 require "cli"
 
-require "bosh/manifests"
+require "bosh/workspace"
 
 RSpec.configure do |config|
   config.include(RSpec::Fire)
