@@ -89,7 +89,7 @@ module Bosh::Manifests
 
     def placeholder_deployment_content
       { "director_uuid" => project_deployment.director_uuid }.to_yaml +
-        "# Don't edit; placeholder deployment for: #{project_deployment_file}"
+        "# Don't edit; placeholder deployment for: #{project_deployment.file}"
     end
 
     def bosh_status

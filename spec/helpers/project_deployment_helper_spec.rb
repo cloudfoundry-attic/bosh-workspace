@@ -112,6 +112,7 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
     it "creates placeholder deployment" do
       project_deployment_helper.should_receive(:resolve_director_uuid)
       project_deployment.should_receive(:merged_file).and_return(merged_file)
+      project_deployment.should_receive(:file).and_return(deployment)
       project_deployment.should_receive(:director_uuid).and_return(uuid)
       File.should_receive(:open).with(merged_file, "w").and_yield(file)
       file.should_receive(:write).with(/#{uuid}\s# Don't edit/)

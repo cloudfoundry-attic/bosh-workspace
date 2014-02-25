@@ -17,7 +17,7 @@ module Bosh::Cli::Command
 
         if project_deployment_file?(deployment)
           self.project_deployment = deployment
-          require_project_deployment
+          validate_project_deployment
           create_placeholder_deployment
           filename = project_deployment.merged_file
         end

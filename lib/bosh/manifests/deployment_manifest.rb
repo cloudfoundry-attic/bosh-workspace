@@ -2,6 +2,7 @@ module Bosh::Manifests
   class DeploymentManifest
     include Bosh::Cli::Validation
     attr_writer :director_uuid
+    attr_reader :file
 
     def initialize(file)
       @file = file

@@ -35,7 +35,7 @@ describe Bosh::Cli::Command::Manifests do
         command.should_receive(:project_deployment_file?).with(deployment)
           .and_return(true)
         command.should_receive(:project_deployment=).with(deployment)
-        command.should_receive(:require_project_deployment)
+        command.should_receive(:validate_project_deployment)
         command.should_receive(:create_placeholder_deployment)
         command.should_receive(:project_deployment)
           .and_return(project_deployment)
