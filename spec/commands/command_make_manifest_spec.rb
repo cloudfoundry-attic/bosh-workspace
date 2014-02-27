@@ -36,6 +36,7 @@ describe Bosh::Cli::Command::Manifests do
           .and_return(true)
         command.should_receive(:project_deployment=).with(deployment)
         command.should_receive(:validate_project_deployment)
+        File.should_receive(:exists?).with(merged_file).and_return(false)
         command.should_receive(:create_placeholder_deployment)
         command.should_receive(:project_deployment)
           .and_return(project_deployment)

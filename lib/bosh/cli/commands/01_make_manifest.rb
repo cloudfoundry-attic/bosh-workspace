@@ -18,8 +18,8 @@ module Bosh::Cli::Command
         if project_deployment_file?(deployment)
           self.project_deployment = deployment
           validate_project_deployment
-          create_placeholder_deployment
           filename = project_deployment.merged_file
+          create_placeholder_deployment unless File.exists?(filename)
         end
       end
 
