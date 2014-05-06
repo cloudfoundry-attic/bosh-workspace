@@ -1,0 +1,22 @@
+name: foo
+
+networks:
+  - name: default
+    type: manual
+
+jobs:
+- name: job1
+  networks:
+  - name: default
+    static_ips:
+    - 10.0.0.50
+
+- name: job2
+  networks:
+  - name: default
+    static_ips:
+    - 10.0.0.51
+  properties:
+    job1:
+      foo: bar
+      address: 10.0.0.50

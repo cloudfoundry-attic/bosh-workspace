@@ -1,5 +1,3 @@
-require "core-ext/hash/to_dotted_hash"
-
 module Bosh::Manifests
   class DnsHelper
     def self.transform(generated_manifest, domain_name)
@@ -11,6 +9,7 @@ module Bosh::Manifests
       transform_networks
       transform_jobs
       transform_properties
+      transform_job_properties
 
       IO.write(generated_manifest, @manifest.to_yaml)
     end
@@ -18,7 +17,7 @@ module Bosh::Manifests
     private
 
     def self.transform_networks
-      @manifest["networks"].map! do |network| 
+      @manifest["networks"].map! do |network|
         if network["type"] == "manual"
           @manual_networks << network["name"]
           { "name" => network["name"], "type" => "dynamic", "cloud_properties" => {} }
@@ -27,7 +26,7 @@ module Bosh::Manifests
         end
       end
     end
-    
+   
     def self.transform_jobs
       @manifest["jobs"].map! do |job|
         job["networks"].map! do |network|
@@ -44,15 +43,24 @@ module Bosh::Manifests
     end
     
     def self.transform_properties
-      properties_yaml = @manifest["properties"].to_yaml
-      @dns.each do |ip, domain|
-        properties_yaml.gsub!(ip, domain)
+      @manifest["properties"] = replace_ips(@manifest["properties"])
+    end
+
+    def self.transform_job_properties
+      @manifest["jobs"].map! do |job|
+        job["properties"] = replace_ips(job["properties"]) if job["properties"]
+        job
       end
-      @manifest["properties"] = YAML.load properties_yaml
     end
 
     def self.job_to_dns(job, index, network_name)
       [index, job["name"], network_name, @manifest["name"], @domain_name].join(".")
+    end
+
+    def self.replace_ips(properties)
+      properties_yaml = properties.to_yaml
+      @dns.each { |ip, domain| properties_yaml.gsub!(ip, domain) }
+      YAML.load properties_yaml
     end
   end
 end

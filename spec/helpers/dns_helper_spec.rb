@@ -36,5 +36,15 @@ describe Bosh::Manifests::DnsHelper do
           .to eq ["0.job2.default.foo.microbosh", "1.job2.default.foo.microbosh"]
       end
     end
+
+    context "job properties" do
+      let(:content) { asset_file("dns/job-properties.yml") }
+
+      it "replaces ips with domains while keeping properties structure" do
+        expect(subject["jobs"][1]["properties"]["job1"]["address"])
+          .to eq "0.job1.default.foo.microbosh"
+        expect(subject["jobs"][1]["properties"]["job1"]["foo"]).to eq "bar"
+      end
+    end
   end
 end
