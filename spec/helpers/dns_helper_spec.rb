@@ -19,9 +19,21 @@ describe Bosh::Manifests::DnsHelper do
     context "jobs" do
       let(:content) { asset_file("dns/jobs.yml") }
 
-      it "removes static_ips of jobs with manual network" do
+      it "removes static_ips of jobs with manual networks" do
         expect(subject["jobs"][0]["networks"][0]).to_not include "static_ips"
         expect(subject["jobs"][1]["networks"][0]).to_not include "static_ips"
+      end
+    end
+
+    context "properties" do
+      let(:content) { asset_file("dns/properties.yml") }
+
+      it "replaces ips with domains while keeping properties structure" do
+        expect(subject["properties"]["job1"]["address"])
+          .to eq "0.job1.default.foo.microbosh"
+        expect(subject["properties"]["job1"]["foo"]).to eq "bar"
+        expect(subject["properties"]["job2"]["machines"])
+          .to eq ["0.job2.default.foo.microbosh", "1.job2.default.foo.microbosh"]
       end
     end
   end
