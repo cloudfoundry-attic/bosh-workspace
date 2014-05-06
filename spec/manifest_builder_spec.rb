@@ -3,7 +3,7 @@ describe Bosh::Manifests::ManifestBuilder do
   let(:work_dir) { asset_dir("manifests-repo") }
   let(:target_name) { "bar" }
   let(:target_file) {
-    File.join(work_dir, ".manifests", "#{target_name}.yml") }
+    File.join(work_dir, ".deployments", "#{target_name}.yml") }
 
   describe ".build" do
     subject { Bosh::Manifests::ManifestBuilder.build manifest, work_dir }
