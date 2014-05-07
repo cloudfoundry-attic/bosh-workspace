@@ -7,6 +7,11 @@ module Bosh::Manifests
       @dns = {}
 
       transform_networks
+
+      if @manual_networks.empty?
+        err "Missing manual network: Only type manual can be transformed to dynamic"
+      end
+      
       transform_jobs
       transform_properties
       transform_job_properties

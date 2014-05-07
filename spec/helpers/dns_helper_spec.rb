@@ -1,18 +1,26 @@
 describe Bosh::Manifests::DnsHelper do
   describe ".transform" do
-    subject { YAML.load(IO.read(generated_manifest)) }
+    subject do
+      Bosh::Manifests::DnsHelper.transform(generated_manifest, domain_name)
+      YAML.load(IO.read(generated_manifest))
+    end
+
     let(:generated_manifest) { get_tmp_file_path(content) }
     let(:domain_name) { "microbosh" }
 
-    before do
-      Bosh::Manifests::DnsHelper.transform(generated_manifest, domain_name)
-    end
-
     context "networks" do
-      let(:content) { asset_file("dns/networks-openstack.yml") }
-      
+      let(:content) { asset_file("dns/networks-manual.yml") }
+
       it "replaces manual networks" do
         expect(subject["networks"][1]["type"]).to eq "dynamic"
+      end
+    end
+
+    context "no manual networks" do
+      let(:content) { asset_file("dns/networks-no-manual.yml") }
+
+      it "raises an error" do
+        expect { subject }.to raise_error /Missing manual network/
       end
     end
 
