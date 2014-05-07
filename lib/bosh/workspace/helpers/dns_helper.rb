@@ -30,7 +30,7 @@ module Bosh::Manifests
     def self.transform_jobs
       @manifest["jobs"].map! do |job|
         job["networks"].map! do |network|
-          if @manual_networks.include? network["name"]
+          if @manual_networks.include?(network["name"]) && network["static_ips"]
             network["static_ips"].each_with_index do |ip, index|
               @dns[ip] = job_to_dns(job, index, network["name"])
             end
