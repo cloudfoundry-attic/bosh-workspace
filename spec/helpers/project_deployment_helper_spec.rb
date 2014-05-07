@@ -138,12 +138,20 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
     let(:project_deployment_helper) do
       HelperTester.new(director, deployment, project_deployment)
     end
+    let(:domain_name) { "bosh" }
+    let(:merged_file) { "foo/bar" }
 
     it "builds project deployment manifest" do
       project_deployment_helper.should_receive(:resolve_director_uuid)
       project_deployment_helper.should_receive(:work_dir).and_return(work_dir)
+      project_deployment.should_receive(:domain_name).and_return(domain_name)
+      project_deployment.should_receive(:merged_file).and_return(merged_file)
+
       Bosh::Manifests::ManifestBuilder.should_receive(:build)
         .with(project_deployment, work_dir)
+      Bosh::Manifests::DnsHelper.should_receive(:transform)
+        .with(merged_file, domain_name)
+
       subject
     end
   end

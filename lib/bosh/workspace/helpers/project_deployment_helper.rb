@@ -46,6 +46,11 @@ module Bosh::Manifests
 
       say("Generating deployment manifest")
       ManifestBuilder.build(project_deployment, work_dir)
+      
+      if domain_name = project_deployment.domain_name
+        say("Transforming to dynamic networking (dns)")
+        DnsHelper.transform(project_deployment.merged_file, domain_name)
+      end
     end
 
     def resolve_director_uuid

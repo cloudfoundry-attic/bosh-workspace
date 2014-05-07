@@ -48,7 +48,7 @@ module Bosh::Manifests
       end
     end
 
-    %w[name templates releases meta].each do |var|
+    %w[name templates releases meta domain_name].each do |var|
       define_method var do
         @manifest[var]
       end
