@@ -59,7 +59,8 @@ module Bosh::Manifests
     end
 
     def self.job_to_dns(job, index, network_name)
-      [index, job["name"], network_name, @manifest["name"], @domain_name].join(".")
+      job_name = job["name"].gsub('_', '-')
+      [index, job_name, network_name, @manifest["name"], @domain_name].join(".")
     end
 
     def self.replace_ips(properties)

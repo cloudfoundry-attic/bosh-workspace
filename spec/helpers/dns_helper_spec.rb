@@ -38,10 +38,11 @@ describe Bosh::Manifests::DnsHelper do
 
       it "replaces ips with domains while keeping properties structure" do
         expect(subject["properties"]["job1"]["address"])
-          .to eq "0.job1.default.foo.microbosh"
+          .to eq "0.first-job-az1.default.foo.microbosh"
         expect(subject["properties"]["job1"]["foo"]).to eq "bar"
         expect(subject["properties"]["job2"]["machines"])
-          .to eq ["0.job2.default.foo.microbosh", "1.job2.default.foo.microbosh"]
+          .to eq ["0.second-job-az1.default.foo.microbosh",
+                  "1.second-job-az1.default.foo.microbosh"]
       end
     end
 
@@ -50,7 +51,7 @@ describe Bosh::Manifests::DnsHelper do
 
       it "replaces ips with domains while keeping properties structure" do
         expect(subject["jobs"][1]["properties"]["job1"]["address"])
-          .to eq "0.job1.default.foo.microbosh"
+          .to eq "0.first-job-az1.default.foo.microbosh"
         expect(subject["jobs"][1]["properties"]["job1"]["foo"]).to eq "bar"
       end
     end

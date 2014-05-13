@@ -5,13 +5,13 @@ networks:
     type: manual
 
 jobs:
-- name: job1
+- name: first_job_az1
   networks:
   - name: default
     static_ips:
     - 10.0.0.50
 
-- name: job2
+- name: second_job_az1
   networks:
   - name: default
     static_ips:
