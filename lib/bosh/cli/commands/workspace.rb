@@ -1,9 +1,9 @@
 require "bosh/workspace"
 
 module Bosh::Cli::Command
-  class Manifests < Base
+  class Workspace < Base
     include Bosh::Cli::Validation
-    include Bosh::Manifests
+    include Bosh::Workspace
     include ProjectDeploymentHelper
 
     # Hack to unregister original deployment command

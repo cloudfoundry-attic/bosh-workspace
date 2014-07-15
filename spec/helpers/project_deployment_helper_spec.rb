@@ -1,6 +1,6 @@
-describe Bosh::Manifests::ProjectDeploymentHelper do
+describe Bosh::Workspace::ProjectDeploymentHelper do
   class HelperTester
-    include Bosh::Manifests::ProjectDeploymentHelper
+    include Bosh::Workspace::ProjectDeploymentHelper
 
     attr_reader :director, :deployment
 
@@ -44,7 +44,7 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
     let(:deployment_path) { "deployments/foo.yml" }
 
     before do
-      Bosh::Manifests::DeploymentManifest.should_receive(:new)
+      Bosh::Workspace::DeploymentManifest.should_receive(:new)
         .with(deployment).and_return(project_deployment)
     end
 
@@ -147,9 +147,9 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
       project_deployment.should_receive(:domain_name).and_return(domain_name)
       project_deployment.should_receive(:merged_file).and_return(merged_file)
 
-      Bosh::Manifests::ManifestBuilder.should_receive(:build)
+      Bosh::Workspace::ManifestBuilder.should_receive(:build)
         .with(project_deployment, work_dir)
-      Bosh::Manifests::DnsHelper.should_receive(:transform)
+      Bosh::Workspace::DnsHelper.should_receive(:transform)
         .with(merged_file, domain_name)
 
       subject

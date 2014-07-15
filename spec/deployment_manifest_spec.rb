@@ -1,5 +1,5 @@
-describe Bosh::Manifests::DeploymentManifest do
-  subject { Bosh::Manifests::DeploymentManifest.new manifest_file }
+describe Bosh::Workspace::DeploymentManifest do
+  subject { Bosh::Workspace::DeploymentManifest.new manifest_file }
   let(:manifest_file) { get_tmp_file_path(manifest.to_yaml) }
   let(:name) { "foo" }
   let(:uuid) { "foo-bar-uuid" }

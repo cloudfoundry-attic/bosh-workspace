@@ -1,6 +1,6 @@
-require "bosh/cli/commands/01_make_manifest"
+require "bosh/cli/commands/workspace"
 
-describe Bosh::Cli::Command::Manifests do
+describe Bosh::Cli::Command::Workspace do
   let(:command) { Bosh::Cli::Command::Manifests.new }
   let(:project_deployment) do
     instance_double("Bosh::Manifests::DeploymentManifest")

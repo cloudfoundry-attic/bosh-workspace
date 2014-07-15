@@ -1,4 +1,4 @@
-module Bosh::Manifests
+module Bosh::Workspace
   class DeploymentManifest
     include Bosh::Cli::Validation
     attr_writer :director_uuid

@@ -1,7 +1,7 @@
-describe Bosh::Manifests::SpiffHelper do
+describe Bosh::Workspace::SpiffHelper do
   describe ".spiff" do
     class SpiffHelperTester
-      include Bosh::Manifests::SpiffHelper
+      include Bosh::Workspace::SpiffHelper
     end
     subject { SpiffHelperTester.new }
     let(:path) { asset_dir("bin") }

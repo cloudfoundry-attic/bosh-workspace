@@ -1,4 +1,4 @@
-module Bosh::Manifests
+module Bosh::Workspace
   class ReleaseManager
     def initialize(releases, work_dir)
       releases_dir = File.join(work_dir, ".releases")

@@ -1,10 +1,10 @@
-describe Bosh::Manifests::Release do
+describe Bosh::Workspace::Release do
   let(:name) { "foo"}
   let(:version) { 3 }
   let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
   let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
-  let(:release) { Bosh::Manifests::Release.new release_data, releases_dir }
+  let(:release) { Bosh::Workspace::Release.new release_data, releases_dir }
   subject { Dir[File.join(releases_dir, name, "releases", "foo*.yml")].to_s }
 
   describe "#checkout_current_version" do
@@ -38,7 +38,7 @@ describe Bosh::Manifests::Release do
     context "already cloned repo" do
       before do
         data = { "name" => name, "version" => 1, "git" => repo }
-        cloned_release = Bosh::Manifests::Release.new(data, releases_dir)
+        cloned_release = Bosh::Workspace::Release.new(data, releases_dir)
         cloned_release.checkout_current_version
       end
 
@@ -53,7 +53,7 @@ describe Bosh::Manifests::Release do
 
       before do
         data = { "name" => "bar", "version" => 2, "git" => repo }
-        other_release = Bosh::Manifests::Release.new(data, releases_dir)
+        other_release = Bosh::Workspace::Release.new(data, releases_dir)
         other_release.checkout_current_version
       end
 

@@ -1,5 +1,5 @@
 require "git"
-module Bosh::Manifests
+module Bosh::Workspace
   class Release
     def initialize(release, releases_dir)
       @name = release["name"]
