@@ -3,6 +3,7 @@ describe Bosh::Manifests::DeploymentManifest do
   let(:manifest_file) { get_tmp_file_path(manifest.to_yaml) }
   let(:name) { "foo" }
   let(:uuid) { "foo-bar-uuid" }
+  let(:domain_name) { "bosh" }
   let(:templates) { ["path_to_bar", "path_to_baz"] }
   let(:releases) { [
     { "name" => "foo", "version" => "latest", "git" => "example.com/foo.git" }
@@ -11,13 +12,16 @@ describe Bosh::Manifests::DeploymentManifest do
   let(:manifest) { {
     "name" => name,
     "director_uuid" => uuid,
+    "domain_name" => domain_name,
     "templates" => templates,
     "releases" => releases,
     "meta" => meta,
   } }
 
   context "invalid manifest" do
-    let(:invalid_manifest) { manifest.tap { |m| m.delete(missing) } }
+    let(:invalid_manifest) do
+      manifest.delete_if { |key| Array(missing).include?(key) }
+    end
     let(:manifest_file) { get_tmp_file_path(invalid_manifest.to_yaml) }
 
     before do
@@ -42,6 +46,13 @@ describe Bosh::Manifests::DeploymentManifest do
     context "missing director_uuid" do
       let(:missing) { "director_uuid" }
       it "raises an error" do
+        expect(subject.errors).to eq ["Manifest should contain a director_uuid"]
+      end
+    end
+
+    context "missing domain_name" do
+      let(:missing) { ["domain_name", "director_uuid"] }
+      it "is optional" do
         expect(subject.errors).to eq ["Manifest should contain a director_uuid"]
       end
     end
@@ -74,6 +85,7 @@ describe Bosh::Manifests::DeploymentManifest do
       expect(subject).to be_valid
       expect(subject.name).to eq name
       expect(subject.director_uuid).to eq uuid
+      expect(subject.domain_name).to eq domain_name
       expect(subject.templates).to eq templates
       expect(subject.releases).to eq releases
       expect(subject.meta).to eq meta

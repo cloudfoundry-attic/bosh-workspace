@@ -61,6 +61,12 @@ Array of releases used for resolving upstream templates
 The meta hash is the last file merged into the final deployment file.
 It can be used to define properties deployment specific properties.
 
+### Experimental dns support
+Dns support can be enabled by adding a `domain_name` property to your deployment.
+For example: `domain_name: microbosh` or if you are using a normal bosh just use `bosh`.
+When enabled, a transformation step will be executed after the spiff merge.
+Which will transform all the static ip references into domain names.
+
 ## Contributing
 
 1. Fork it

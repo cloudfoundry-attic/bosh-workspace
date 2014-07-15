@@ -73,6 +73,11 @@ def asset_dir(*path)
   File.join(assets_dir, *path)
 end
 
+def asset_file(*path)
+  assets_file = File.expand_path("../assets", __FILE__)
+  IO.read(File.join(assets_file, *path))
+end
+
 def extracted_asset_dir(name, *path)
   zipped_file = asset_dir(*path)
   target_dir = File.expand_path("../../tmp/#{name}", __FILE__)

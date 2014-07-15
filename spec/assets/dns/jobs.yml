@@ -1,0 +1,18 @@
+networks:
+  - name: default
+    type: manual
+
+jobs:
+- name: job1
+  networks:
+  - name: default
+    static_ips:
+    - 10.0.0.50
+- name: job2
+  networks:
+  - name: default
+    static_ips:
+    - 10.0.0.51
+- name: job3
+  networks:
+  - name: default
