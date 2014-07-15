@@ -5,9 +5,10 @@ describe Bosh::Workspace::Release do
   let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
   let(:release) { Bosh::Workspace::Release.new release_data, releases_dir }
-  subject { Dir[File.join(releases_dir, name, "releases", "foo*.yml")].to_s }
 
   describe "#checkout_current_version" do
+    subject { Dir[File.join(releases_dir, name, "releases", "foo*.yml")].to_s }
+
     context "latest version" do
       let(:version) { "latest" }
 
@@ -62,10 +63,18 @@ describe Bosh::Workspace::Release do
         expect(subject).to match /foo-3.yml/
       end
     end
+
+    after do
+      FileUtils.rm_r releases_dir
+    end
   end
 
-  after do
-    FileUtils.rm_r releases_dir
+  describe "attributes" do
+    subject { release }
+    its(:name){ should eq name }
+    its(:version){ should eq version }
+    its(:git_uri){ should eq repo }
+    its(:release_dir){ should match /\/#{name}$/ }
   end
 
   after(:all) do

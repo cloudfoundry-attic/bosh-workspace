@@ -57,6 +57,13 @@ module Bosh::Workspace
       use_targeted_director_uuid if director_uuid_current?
     end
 
+    def project_deployment_releases
+      releases_dir = File.join(work_dir, ".releases")
+      @releases ||= begin
+        project_deployment.releases.map { |r| Release.new(r, releases_dir) }
+      end
+    end
+
     private
 
     def use_targeted_director_uuid

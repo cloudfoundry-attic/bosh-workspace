@@ -1,11 +1,13 @@
 require "git"
 module Bosh::Workspace
   class Release
+    attr_reader :name, :version, :git_uri, :release_dir
+
     def initialize(release, releases_dir)
       @name = release["name"]
       @version = release["version"]
       @git_uri = release["git"]
-      @work_dir = File.join(releases_dir)
+      @release_dir = File.join(releases_dir, @name)
     end
 
     def checkout_current_version
@@ -16,11 +18,12 @@ module Bosh::Workspace
     private
 
     def repo
-      if File.directory?(repo_dir)
-        @repo ||= Git.open(repo_dir)
+      if File.directory?(release_dir)
+        @repo ||= Git.open(release_dir)
       else
-        FileUtils.mkdir_p(@work_dir)
-        @repo = Git.clone(@git_uri, @name, path: @work_dir)
+        releases_dir = File.dirname(release_dir)
+        FileUtils.mkdir_p(releases_dir)
+        @repo = Git.clone(@git_uri, @name, path: releases_dir)
       end
     end
 
@@ -44,15 +47,11 @@ module Bosh::Workspace
     # { "1" => foo-1.yml, "2" => bar-2.yml }
     def available_versions
       @available_versions ||= begin
-        Hash[Dir[File.join(repo_dir, "releases", "*.yml")].
+        Hash[Dir[File.join(release_dir, "releases", "*.yml")].
         reject { |f| f[/index.yml/] }.
         map { |dir| File.basename(dir) }.
         map { |version| [ version[/(\d+)/].to_i, version ] }]
       end
-    end
-
-    def repo_dir
-      File.join(@work_dir, @name)
     end
   end
 end

@@ -32,7 +32,13 @@ module Bosh::Cli::Command
       require_project_deployment
       auth_required
 
-      release_manager.update_release_repos
+      nl
+      say "Preparing releases:"
+      project_deployment_releases.each do |release|
+        release.checkout_current_version
+        say "- #{release.name}/#{release.version}"
+      end
+      nl
 
       # TODO: Implement
       # current_deployment.stemcells.each do |stemcell|
@@ -63,12 +69,6 @@ module Bosh::Cli::Command
         cmd.add_option key.to_sym, value
       end
       cmd
-    end
-
-    def release_manager
-      @release_manager ||= begin
-        ReleaseManager.new(project_deployment.releases, work_dir)
-      end
     end
   end
 end

@@ -58,19 +58,19 @@ describe Bosh::Cli::Command::Workspace do
 
   describe "#prepare" do
     subject { command.prepare }
-    let(:releases) { ["foo", "bar"] }
-    let(:release_manager) { instance_double("Bosh::Workspace::ReleaseManager") }
+    let(:release) { instance_double("Bosh::Workspace::Release") }
+    let(:releases) { [release, release] }
+    let(:name) { "foo" }
+    let(:version) { "1" }
     let(:work_dir) { asset_dir("manifests-repo") }
 
     it "resolves deployment requirements" do
       command.should_receive(:require_project_deployment)
       command.should_receive(:auth_required)
-      command.should_receive(:project_deployment).and_return(project_deployment)
-      project_deployment.should_receive(:releases).and_return(releases)
-      command.should_receive(:work_dir).and_return(work_dir)
-      Bosh::Workspace::ReleaseManager.should_receive(:new)
-        .with(releases, work_dir).and_return(release_manager)
-      release_manager.should_receive(:update_release_repos)
+      command.should_receive(:project_deployment_releases).and_return(releases)
+      release.should_receive(:checkout_current_version).twice
+      release.should_receive(:name).twice.and_return(name)
+      release.should_receive(:version).twice.and_return(version)
       subject
     end
   end

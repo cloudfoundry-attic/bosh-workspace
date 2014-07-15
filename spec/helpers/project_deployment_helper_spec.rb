@@ -196,4 +196,24 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
       end
     end
   end
+
+  describe "#project_deployment_releases" do
+    subject { project_deployment_helper.project_deployment_releases }
+    let(:release) { instance_double("Bosh::Workspace::Release") }
+    let(:release_data) { { name: "foo" } }
+    let(:releases_dir) { File.join(work_dir, ".releases") }
+    let(:releases) { [release_data, release_data] }
+    let(:project_deployment_helper) do
+      HelperTester.new(director, deployment, project_deployment)
+    end
+
+    before do
+      project_deployment_helper.should_receive(:work_dir).and_return(work_dir)
+      project_deployment.should_receive(:releases).and_return(releases)
+      Bosh::Workspace::Release.should_receive(:new).twice
+        .with(release_data, releases_dir).and_return(release)
+    end
+
+    it { should eq [release, release] }
+  end
 end
