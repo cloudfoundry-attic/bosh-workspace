@@ -1,6 +1,6 @@
-module Bosh::Manifests
+module Bosh::Workspace
   class ManifestBuilder
-    include Bosh::Manifests::SpiffHelper
+    include Bosh::Workspace::SpiffHelper
 
     def self.build(manifest, work_dir)
       manifest_builder = ManifestBuilder.new(manifest, work_dir)

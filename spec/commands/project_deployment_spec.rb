@@ -1,9 +1,9 @@
-require "bosh/cli/commands/01_make_manifest"
+require "bosh/cli/commands/project_deployment"
 
-describe Bosh::Cli::Command::Manifests do
-  let(:command) { Bosh::Cli::Command::Manifests.new }
+describe Bosh::Cli::Command::ProjectDeployment do
+  let(:command) { Bosh::Cli::Command::ProjectDeployment.new }
   let(:project_deployment) do
-    instance_double("Bosh::Manifests::DeploymentManifest")
+    instance_double("Bosh::Workspace::DeploymentManifest")
   end
 
   let(:deployment_cmd) { instance_double("Bosh::Cli::Command::Deployment") }
@@ -53,25 +53,6 @@ describe Bosh::Cli::Command::Manifests do
         deployment_cmd.should_receive(:set_current).with(filename)
         subject
       end
-    end
-  end
-
-  describe "#prepare" do
-    subject { command.prepare }
-    let(:releases) { ["foo", "bar"] }
-    let(:release_manager) { instance_double("Bosh::Manifests::ReleaseManager") }
-    let(:work_dir) { asset_dir("manifests-repo") }
-
-    it "resolves deployment requirements" do
-      command.should_receive(:require_project_deployment)
-      command.should_receive(:auth_required)
-      command.should_receive(:project_deployment).and_return(project_deployment)
-      project_deployment.should_receive(:releases).and_return(releases)
-      command.should_receive(:work_dir).and_return(work_dir)
-      Bosh::Manifests::ReleaseManager.should_receive(:new)
-        .with(releases, work_dir).and_return(release_manager)
-      release_manager.should_receive(:update_release_repos)
-      subject
     end
   end
 

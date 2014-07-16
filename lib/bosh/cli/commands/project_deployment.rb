@@ -1,9 +1,9 @@
 require "bosh/workspace"
 
 module Bosh::Cli::Command
-  class Manifests < Base
+  class ProjectDeployment < Base
     include Bosh::Cli::Validation
-    include Bosh::Manifests
+    include Bosh::Workspace
     include ProjectDeploymentHelper
 
     # Hack to unregister original deployment command
@@ -26,20 +26,6 @@ module Bosh::Cli::Command
       deployment_cmd(options).set_current(filename)
     end
 
-    usage "prepare deployment"
-    desc "Resolve deployment requirements"
-    def prepare
-      require_project_deployment
-      auth_required
-
-      release_manager.update_release_repos
-
-      # TODO: Implement
-      # current_deployment.stemcells.each do |stemcell|
-      #   stemcell.upload unless stemcell.exists?
-      # end
-    end
-
     # Hack to unregister original deploy command
     Bosh::Cli::Config.instance_eval("@commands.delete('deploy')")
 
@@ -58,16 +44,8 @@ module Bosh::Cli::Command
     private
 
     def deployment_cmd(options = {})
-      cmd ||= Bosh::Cli::Command::Deployment.new
-      options.each do |key, value|
-        cmd.add_option key.to_sym, value
-      end
-      cmd
-    end
-
-    def release_manager
-      @release_manager ||= begin
-        ReleaseManager.new(project_deployment.releases, work_dir)
+      Bosh::Cli::Command::Deployment.new.tap do |cmd|
+        options.each { |k, v| cmd.add_option k.to_sym, v }
       end
     end
   end

@@ -1,4 +1,4 @@
-module Bosh::Manifests
+module Bosh::Workspace
   module SpiffHelper
     include Bosh::Exec
 

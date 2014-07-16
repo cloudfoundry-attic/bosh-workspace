@@ -1,6 +1,6 @@
-describe Bosh::Manifests::ProjectDeploymentHelper do
+describe Bosh::Workspace::ProjectDeploymentHelper do
   class HelperTester
-    include Bosh::Manifests::ProjectDeploymentHelper
+    include Bosh::Workspace::ProjectDeploymentHelper
 
     attr_reader :director, :deployment
 
@@ -44,7 +44,7 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
     let(:deployment_path) { "deployments/foo.yml" }
 
     before do
-      Bosh::Manifests::DeploymentManifest.should_receive(:new)
+      Bosh::Workspace::DeploymentManifest.should_receive(:new)
         .with(deployment).and_return(project_deployment)
     end
 
@@ -147,9 +147,9 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
       project_deployment.should_receive(:domain_name).and_return(domain_name)
       project_deployment.should_receive(:merged_file).and_return(merged_file)
 
-      Bosh::Manifests::ManifestBuilder.should_receive(:build)
+      Bosh::Workspace::ManifestBuilder.should_receive(:build)
         .with(project_deployment, work_dir)
-      Bosh::Manifests::DnsHelper.should_receive(:transform)
+      Bosh::Workspace::DnsHelper.should_receive(:transform)
         .with(merged_file, domain_name)
 
       subject
@@ -195,5 +195,25 @@ describe Bosh::Manifests::ProjectDeploymentHelper do
         expect { subject }.to  raise_error /may not be used in production/
       end
     end
+  end
+
+  describe "#project_deployment_releases" do
+    subject { project_deployment_helper.project_deployment_releases }
+    let(:release) { instance_double("Bosh::Workspace::Release") }
+    let(:release_data) { { name: "foo" } }
+    let(:releases_dir) { File.join(work_dir, ".releases") }
+    let(:releases) { [release_data, release_data] }
+    let(:project_deployment_helper) do
+      HelperTester.new(director, deployment, project_deployment)
+    end
+
+    before do
+      project_deployment_helper.should_receive(:work_dir).and_return(work_dir)
+      project_deployment.should_receive(:releases).and_return(releases)
+      Bosh::Workspace::Release.should_receive(:new).twice
+        .with(release_data, releases_dir).and_return(release)
+    end
+
+    it { should eq [release, release] }
   end
 end

@@ -1,17 +1,17 @@
-describe Bosh::Manifests::ManifestBuilder do
-  let(:manifest) { instance_double("Bosh::Manifests::Manifest") }
+describe Bosh::Workspace::ManifestBuilder do
+  let(:manifest) { instance_double("Bosh::Workspace::Manifest") }
   let(:work_dir) { asset_dir("manifests-repo") }
   let(:target_name) { "bar" }
   let(:target_file) {
     File.join(work_dir, ".deployments", "#{target_name}.yml") }
 
   describe ".build" do
-    subject { Bosh::Manifests::ManifestBuilder.build manifest, work_dir }
+    subject { Bosh::Workspace::ManifestBuilder.build manifest, work_dir }
     let(:manifest_builder) {
-      instance_double("Bosh::Manifests::ManifestBuilder") }
+      instance_double("Bosh::Workspace::ManifestBuilder") }
 
     it "creates builder and merges templates" do
-      Bosh::Manifests::ManifestBuilder.should_receive(:new)
+      Bosh::Workspace::ManifestBuilder.should_receive(:new)
         .with(manifest, work_dir).and_return(manifest_builder)
       manifest_builder.should_receive(:merge_templates)
       subject
@@ -19,7 +19,7 @@ describe Bosh::Manifests::ManifestBuilder do
   end
 
   describe "#merge_templates" do
-    subject { Bosh::Manifests::ManifestBuilder.new manifest, work_dir }
+    subject { Bosh::Workspace::ManifestBuilder.new manifest, work_dir }
     let(:templates) { ["foo.yml"] }
     let(:template_path) { File.join(work_dir, "templates/foo.yml") }
     let(:template_exists) { true }

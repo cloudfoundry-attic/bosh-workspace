@@ -1,4 +1,4 @@
-module Bosh::Manifests
+module Bosh::Workspace
   class DnsHelper
     def self.transform(generated_manifest, domain_name)
       @manifest = YAML.load(IO.read(generated_manifest))

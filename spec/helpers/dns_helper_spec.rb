@@ -1,7 +1,7 @@
-describe Bosh::Manifests::DnsHelper do
+describe Bosh::Workspace::DnsHelper do
   describe ".transform" do
     subject do
-      Bosh::Manifests::DnsHelper.transform(generated_manifest, domain_name)
+      Bosh::Workspace::DnsHelper.transform(generated_manifest, domain_name)
       YAML.load(IO.read(generated_manifest))
     end
 
