@@ -63,10 +63,6 @@ describe Bosh::Workspace::Release do
         expect(subject).to match /foo-3.yml/
       end
     end
-
-    after do
-      FileUtils.rm_r releases_dir
-    end
   end
 
   describe "attributes" do
@@ -74,6 +70,14 @@ describe Bosh::Workspace::Release do
     its(:name){ should eq name }
     its(:git_uri){ should eq repo }
     its(:repo_dir){ should match /\/#{name}$/ }
+    its(:manifest_file){ should match /\/#{name}-#{version}.yml$/ }
+    its(:manifest){ should match "releases/#{name}-#{version}.yml$" }
+    its(:name_version){ should eq "#{name}/#{version}" }
+    its(:version){ should eq version }
+  end
+
+  after do
+    FileUtils.rm_r releases_dir
   end
 
   after(:all) do

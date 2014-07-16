@@ -8,11 +8,12 @@ module Bosh::Workspace
       @version_ref = release["version"]
       @git_uri = release["git"]
       @repo_dir = File.join(releases_dir, @name)
+      init_repo
     end
 
     def update_repo
-      repo.pull
-      repo.checkout(ref)
+      @repo.pull
+      @repo.checkout(ref)
     end
 
     def manifest_file
@@ -21,10 +22,6 @@ module Bosh::Workspace
 
     def manifest
       final_releases[version]
-    end
-
-    def ref
-      repo.log().object manifest
     end
 
     def name_version
@@ -39,20 +36,24 @@ module Bosh::Workspace
       @version_ref.to_i
     end
 
+    private
+
     # transforms releases/foo-1.yml, releases/bar-2.yml to:
     # { "1" => foo-1.yml, "2" => bar-2.yml }
     def final_releases
       @final_releases ||= begin
-        Hash[Dir[File.join(repo_dir, "releases", "*.yml")].
-        reject { |f| f[/index.yml/] }.
-        map { |dir| File.join("releases", File.basename(dir)) }.
-        map { |version| [version[/(\d+)/].to_i, version] }]
+        Hash[Dir[File.join(repo_dir, "releases", "*.yml")]
+          .reject { |f| f[/index.yml/] }
+          .map { |dir| File.join("releases", File.basename(dir)) }
+          .map { |version| [version[/(\d+)/].to_i, version] }]
       end
     end
 
-    private
+    def ref
+      @repo.log.object manifest
+    end
 
-    def repo
+    def init_repo
       if File.directory?(repo_dir)
         @repo ||= Git.open(repo_dir)
       else
