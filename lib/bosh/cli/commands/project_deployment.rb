@@ -1,7 +1,7 @@
 require "bosh/workspace"
 
 module Bosh::Cli::Command
-  class Workspace < Base
+  class ProjectDeployment < Base
     include Bosh::Cli::Validation
     include Bosh::Workspace
     include ProjectDeploymentHelper
@@ -26,26 +26,6 @@ module Bosh::Cli::Command
       deployment_cmd(options).set_current(filename)
     end
 
-    usage "prepare deployment"
-    desc "Resolve deployment requirements"
-    def prepare
-      require_project_deployment
-      auth_required
-
-      nl
-      say "Preparing releases:"
-      project_deployment_releases.each do |release|
-        release.checkout_current_version
-        say "- #{release.name}/#{release.version}"
-      end
-      nl
-
-      # TODO: Implement
-      # current_deployment.stemcells.each do |stemcell|
-      #   stemcell.upload unless stemcell.exists?
-      # end
-    end
-
     # Hack to unregister original deploy command
     Bosh::Cli::Config.instance_eval("@commands.delete('deploy')")
 
@@ -64,11 +44,9 @@ module Bosh::Cli::Command
     private
 
     def deployment_cmd(options = {})
-      cmd ||= Bosh::Cli::Command::Deployment.new
-      options.each do |key, value|
-        cmd.add_option key.to_sym, value
+      Bosh::Cli::Command::Deployment.new.tap do |cmd|
+        options.each { |k, v| cmd.add_option k.to_sym, v }
       end
-      cmd
     end
   end
 end

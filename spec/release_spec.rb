@@ -6,14 +6,14 @@ describe Bosh::Workspace::Release do
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
   let(:release) { Bosh::Workspace::Release.new release_data, releases_dir }
 
-  describe "#checkout_current_version" do
+  describe "#update_repo" do
     subject { Dir[File.join(releases_dir, name, "releases", "foo*.yml")].to_s }
 
     context "latest version" do
       let(:version) { "latest" }
 
       it "checks out repo" do
-        release.checkout_current_version
+        release.update_repo
         expect(subject).to match /foo-11.yml/
       end
     end
@@ -22,7 +22,7 @@ describe Bosh::Workspace::Release do
       let(:version) { "2" }
 
       it "checks out repo" do
-        release.checkout_current_version
+        release.update_repo
         expect(subject).to match /foo-2.yml/
       end
     end
@@ -31,7 +31,7 @@ describe Bosh::Workspace::Release do
       let(:version) { "12" }
 
       it "raises an error" do
-        expect { release.checkout_current_version }.
+        expect { release.update_repo }.
           to raise_error /Could not find version/
       end
     end
@@ -40,11 +40,11 @@ describe Bosh::Workspace::Release do
       before do
         data = { "name" => name, "version" => 1, "git" => repo }
         cloned_release = Bosh::Workspace::Release.new(data, releases_dir)
-        cloned_release.checkout_current_version
+        cloned_release.update_repo
       end
 
       it "version 3" do
-        release.checkout_current_version
+        release.update_repo
         expect(subject).to match /foo-3.yml/
       end
     end
@@ -55,11 +55,11 @@ describe Bosh::Workspace::Release do
       before do
         data = { "name" => "bar", "version" => 2, "git" => repo }
         other_release = Bosh::Workspace::Release.new(data, releases_dir)
-        other_release.checkout_current_version
+        other_release.update_repo
       end
 
       it "version 3" do
-        release.checkout_current_version
+        release.update_repo
         expect(subject).to match /foo-3.yml/
       end
     end
@@ -72,9 +72,8 @@ describe Bosh::Workspace::Release do
   describe "attributes" do
     subject { release }
     its(:name){ should eq name }
-    its(:version){ should eq version }
     its(:git_uri){ should eq repo }
-    its(:release_dir){ should match /\/#{name}$/ }
+    its(:repo_dir){ should match /\/#{name}$/ }
   end
 
   after(:all) do
