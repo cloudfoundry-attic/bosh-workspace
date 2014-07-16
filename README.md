@@ -1,4 +1,4 @@
-# Bosh workspace
+# Bosh workspace [![Build Status](https://travis-ci.org/rkoster/bosh-workspace.svg?branch=master)](https://travis-ci.org/rkoster/bosh-workspace)
 
 ## Design Goals
 Enabling BOSH operators to share common configuration between different deployments.
