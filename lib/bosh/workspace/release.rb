@@ -27,6 +27,10 @@ module Bosh::Workspace
       repo.log().object manifest
     end
 
+    def name_version
+      "#{name}/#{version}"
+    end
+
     def version
       return final_releases.keys.sort.last if @version_ref == "latest"
       unless final_releases[@version_ref.to_i]

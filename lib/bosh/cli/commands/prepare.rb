@@ -13,16 +13,21 @@ module Bosh::Cli::Command
       auth_required
 
       project_deployment_releases.each do |release|
-        say "Cloning release: #{release.name} into #{release.repo_dir}"
+        say "Resolving release version for '#{release.name}'"
         release.update_repo
-        say "Uploading: #{release.name}/#{release.version}"
-        release_cmd(skip_if_exists: true).upload(release.manifest_file)
+
+        remote_release = director.get_release(release.name)
+        if remote_release["versions"].include?(release.version.to_s)
+          say "Release '#{release.name_version}' already exists. Skipping upload."
+        else
+          say "Uploading '#{release.name_version}'"
+          release_cmd.upload(release.manifest_file)
+        end
       end
 
-      # TODO: Implement
-      # current_deployment.stemcells.each do |stemcell|
-      #   stemcell.upload unless stemcell.exists?
-      # end
+#      project_deployment_stemcells.each do |stemcell|
+#        stemcell_cmd().upload unless stemcell.exists?
+#      end
     end
 
     private
