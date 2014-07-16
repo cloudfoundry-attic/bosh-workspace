@@ -1,4 +1,4 @@
-# Bosh workspace [![Build Status](https://travis-ci.org/rkoster/bosh-workspace.svg?branch=master)](https://travis-ci.org/rkoster/bosh-workspace)
+# Bosh workspace [![Build Status](https://travis-ci.org/rkoster/bosh-workspace.svg?branch=master)](https://travis-ci.org/rkoster/bosh-workspace) [![Test Coverage](https://codeclimate.com/github/rkoster/bosh-workspace/coverage.png)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Code Climate](https://codeclimate.com/github/rkoster/bosh-workspace.png)](https://codeclimate.com/github/rkoster/bosh-workspace)
 
 ## Design Goals
 Enabling BOSH operators to share common configuration between different deployments.
