@@ -1,4 +1,5 @@
-# Copyright (c) 2012-2013 Stark & Wayne, LLC
+require "codeclimate-test-reporter"
+CodeClimate::TestReporter.start
 
 ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../../Gemfile", __FILE__)
 

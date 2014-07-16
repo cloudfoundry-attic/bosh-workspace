@@ -6,3 +6,7 @@ gemspec
 group :development do
   gem "guard-rspec"
 end
+
+group :test do
+  gem "codeclimate-test-reporter", require: nil
+end
