@@ -10,6 +10,10 @@ describe Bosh::Workspace::ProjectDeployment do
     { "name" => "foo", "version" => release_version, "git" => "example.com/foo.git" }
   ] }
   let(:release_version) { 1 }
+  let(:stemcells) { [
+    { "name" => "bar", "version" => stemcell_version }
+  ] }
+  let(:stemcell_version) { 1 }
   let(:meta) { { "foo" => "bar" } }
   let(:manifest) { {
     "name" => name,
@@ -17,6 +21,7 @@ describe Bosh::Workspace::ProjectDeployment do
     "domain_name" => domain_name,
     "templates" => templates,
     "releases" => releases,
+    "stemcells" => stemcells,
     "meta" => meta,
   } }
 
@@ -43,10 +48,10 @@ describe Bosh::Workspace::ProjectDeployment do
       it { should match(/Expected instance of Hash/) }
     end
 
-    %w(name director_uuid releases templates meta).each do |field_name|
-      context "missing #{field_name}" do
-        let(:missing) { field_name }
-        it { should match(/#{field_name}.*missing/i) }
+    %w(name director_uuid releases templates meta stemcells).each do |field|
+      context "missing #{field}" do
+        let(:missing) { field }
+        it { should match(/#{field}.*missing/i) }
       end
     end
 
@@ -89,6 +94,41 @@ describe Bosh::Workspace::ProjectDeployment do
         it { should match(/git.*missing/i) }
         it { should_not match(/version/i) }
       end
+
+      context "invalid version" do
+        let(:missing) { "git" }
+        let(:release_version) { "foo" }
+        it { should match(/git.*missing/i) }
+        it { should match(/version.*doesn't validate/i) }
+      end
+    end
+
+    context "stemcells" do
+      let(:invalid_manifest) do
+        manifest["stemcells"].map! { |r| r.delete_if { |key| Array(missing).include?(key) } }
+        manifest
+      end
+
+      %w(name version).each do |field_name|
+        context "missing #{field_name}" do
+          let(:missing) { field_name }
+          it { should match(/#{field_name}.*missing/i) }
+        end
+      end
+
+      context "latest version" do
+        let(:missing) { "name" }
+        let(:stemcell_version) { "latest" }
+        it { should match(/name.*missing/i) }
+        it { should_not match(/version/i) }
+      end
+
+      context "invalid version" do
+        let(:missing) { "name" }
+        let(:stemcell_version) { "foo" }
+        it { should match(/name.*missing/i) }
+        it { should match(/version.*doesn't validate/i) }
+      end
     end
   end
 
@@ -104,6 +144,7 @@ describe Bosh::Workspace::ProjectDeployment do
       expect(subject.domain_name).to eq domain_name
       expect(subject.templates).to eq templates
       expect(subject.releases).to eq releases
+      expect(subject.stemcells).to eq stemcells
       expect(subject.meta).to eq meta
     end
   end

@@ -13,6 +13,13 @@ module Bosh::Workspace
       }
     end
 
+    STEMCELL_SCHEMA = Membrane::SchemaParser.parse do
+      {
+        "name"    => String,
+        "version" => enum(Integer, "latest"),
+      }
+    end
+
     UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
 
     PROJECT_DEPLOYMENT_SCHEMA = Membrane::SchemaParser.parse do
@@ -21,6 +28,7 @@ module Bosh::Workspace
         "director_uuid"         => enum(UUID_REGEX, "current"),
         optional("domain_name") => String,
         "releases"              => [RELEASE_SCHEMA],
+        "stemcells"             => [STEMCELL_SCHEMA],
         "templates"             => [String],
         "meta"                  => Hash
       }
@@ -50,7 +58,7 @@ module Bosh::Workspace
       end
     end
 
-    %w[name templates releases meta domain_name].each do |var|
+    %w[name templates releases stemcells meta domain_name].each do |var|
       define_method var do
         @manifest[var]
       end
