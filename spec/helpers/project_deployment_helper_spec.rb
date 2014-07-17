@@ -1,5 +1,5 @@
 describe Bosh::Workspace::ProjectDeploymentHelper do
-  class HelperTester
+  class ProjectDeploymentHelperTester
     include Bosh::Workspace::ProjectDeploymentHelper
 
     attr_reader :director, :deployment
@@ -12,7 +12,9 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
   end
 
   subject { project_deployment_helper }
-  let(:project_deployment_helper) { HelperTester.new(director, deployment) }
+  let(:project_deployment_helper) do
+    ProjectDeploymentHelperTester.new(director, deployment, project_deployment)
+  end
   let(:deployment) { nil }
   let(:director) { instance_double('Bosh::Cli::Client::Director') }
   let(:work_dir) { asset_dir("manifests-repo") }
@@ -20,6 +22,7 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
 
   describe "project_deployment?" do
     subject { project_deployment_helper.project_deployment? }
+    let(:project_deployment_helper) { ProjectDeploymentHelperTester.new(director, deployment) }
     let(:deployment) { File.join work_dir, deployment_path }
 
     context "deployment" do
@@ -40,6 +43,7 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
   end
 
   describe "#project_deployment(=)" do
+    let(:project_deployment_helper) { ProjectDeploymentHelperTester.new(director, deployment) }
     let(:deployment) { File.join work_dir, deployment_path }
     let(:deployment_path) { "deployments/foo.yml" }
 
@@ -76,6 +80,8 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
   end
 
   describe "#require_project_deployment" do
+    let(:project_deployment_helper) { ProjectDeploymentHelperTester.new(director, deployment) }
+
     before do
       subject.should_receive(:project_deployment?)
         .and_return(:is_project_deployment)
@@ -93,16 +99,13 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
       let(:deployment) { "foo" }
       let(:is_project_deployment) { false }
       it "raises and error" do
-        expect { subject.require_project_deployment }.to raise_error /foo/
+        expect { subject.require_project_deployment }.to raise_error(/foo/)
       end
     end
   end
 
   describe "#create_placeholder_deployment" do
     subject { project_deployment_helper.create_placeholder_deployment }
-    let(:project_deployment_helper) do
-      HelperTester.new(director, deployment, project_deployment)
-    end
     let(:deployment) { "deployments/bar.yml" }
     let(:file) { instance_double('File') }
     let(:merged_file) { ".deployments/bar.yml" }
@@ -121,23 +124,16 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
   end
 
   describe "#validate_project_deployment" do
-    let(:project_deployment_helper) do
-      HelperTester.new(director, deployment, project_deployment)
-    end
-
     it "raises an error" do
       project_deployment.should_receive(:valid?).and_return(false)
       project_deployment.should_receive(:errors).and_return(["foo"])
       project_deployment.should_receive(:file).and_return(["foo.yml"])
-      expect { subject.validate_project_deployment }.to raise_error /foo/
+      expect { subject.validate_project_deployment }.to raise_error(/foo/)
     end
   end
 
   describe "#build_project_deployment" do
     subject { project_deployment_helper.build_project_deployment }
-    let(:project_deployment_helper) do
-      HelperTester.new(director, deployment, project_deployment)
-    end
     let(:domain_name) { "bosh" }
     let(:merged_file) { "foo/bar" }
 
@@ -158,9 +154,6 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
 
   describe "#resolve_director_uuid" do
     subject { project_deployment_helper.resolve_director_uuid }
-    let(:project_deployment_helper) do
-      HelperTester.new(director, deployment, project_deployment)
-    end
     let(:status) { { "uuid" => current_uuid, "cpi" => cpi } }
     let(:current_uuid) { "current-uuid" }
 
@@ -203,9 +196,6 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
     let(:release_data) { { name: "foo" } }
     let(:releases_dir) { File.join(work_dir, ".releases") }
     let(:releases) { [release_data, release_data] }
-    let(:project_deployment_helper) do
-      HelperTester.new(director, deployment, project_deployment)
-    end
 
     before do
       project_deployment_helper.should_receive(:work_dir).and_return(work_dir)
