@@ -16,7 +16,7 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
   let(:deployment) { nil }
   let(:director) { instance_double('Bosh::Cli::Client::Director') }
   let(:work_dir) { asset_dir("manifests-repo") }
-  let(:project_deployment) { instance_double("DeploymentManifest") }
+  let(:project_deployment) { instance_double("ProjectDeployment") }
 
   describe "project_deployment?" do
     subject { project_deployment_helper.project_deployment? }
@@ -44,7 +44,7 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
     let(:deployment_path) { "deployments/foo.yml" }
 
     before do
-      Bosh::Workspace::DeploymentManifest.should_receive(:new)
+      Bosh::Workspace::ProjectDeployment.should_receive(:new)
         .with(deployment).and_return(project_deployment)
     end
 

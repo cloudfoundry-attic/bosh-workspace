@@ -1,6 +1,6 @@
 require "membrane"
 module Bosh::Workspace
-  class DeploymentManifest
+  class ProjectDeployment
     include Bosh::Cli::Validation
     attr_writer :director_uuid
     attr_reader :file

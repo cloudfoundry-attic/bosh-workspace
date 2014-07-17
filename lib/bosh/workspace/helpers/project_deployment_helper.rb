@@ -7,11 +7,11 @@ module Bosh::Workspace
     end
 
     def project_deployment
-      @project_deployment ||= DeploymentManifest.new(project_deployment_file)
+      @project_deployment ||= ProjectDeployment.new(project_deployment_file)
     end
 
     def project_deployment=(deployment)
-      @project_deployment = DeploymentManifest.new(deployment)
+      @project_deployment = ProjectDeployment.new(deployment)
     end
 
     def project_deployment_file?(deployment)

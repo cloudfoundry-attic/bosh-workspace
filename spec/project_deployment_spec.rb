@@ -1,5 +1,5 @@
-describe Bosh::Workspace::DeploymentManifest do
-  let(:project_deployment) { Bosh::Workspace::DeploymentManifest.new manifest_file }
+describe Bosh::Workspace::ProjectDeployment do
+  let(:project_deployment) { Bosh::Workspace::ProjectDeployment.new manifest_file }
   let(:manifest_file) { get_tmp_file_path(manifest.to_yaml, file_name) }
   let(:file_name) { "foo.yml" }
   let(:name) { "foo" }
