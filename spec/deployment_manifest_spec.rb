@@ -1,13 +1,15 @@
 describe Bosh::Workspace::DeploymentManifest do
-  subject { Bosh::Workspace::DeploymentManifest.new manifest_file }
-  let(:manifest_file) { get_tmp_file_path(manifest.to_yaml) }
+  let(:project_deployment) { Bosh::Workspace::DeploymentManifest.new manifest_file }
+  let(:manifest_file) { get_tmp_file_path(manifest.to_yaml, file_name) }
+  let(:file_name) { "foo.yml" }
   let(:name) { "foo" }
-  let(:uuid) { "foo-bar-uuid" }
+  let(:uuid) { "e55134c3-0a63-47be-8409-c9e53e965d5c" }
   let(:domain_name) { "bosh" }
   let(:templates) { ["path_to_bar", "path_to_baz"] }
   let(:releases) { [
-    { "name" => "foo", "version" => "latest", "git" => "example.com/foo.git" }
+    { "name" => "foo", "version" => release_version, "git" => "example.com/foo.git" }
   ] }
+  let(:release_version) { 1 }
   let(:meta) { { "foo" => "bar" } }
   let(:manifest) { {
     "name" => name,
@@ -18,71 +20,85 @@ describe Bosh::Workspace::DeploymentManifest do
     "meta" => meta,
   } }
 
-  context "invalid manifest" do
+  subject { project_deployment }
+
+  describe "#perform_validation" do
+    subject { project_deployment.errors.first }
     let(:invalid_manifest) do
-      manifest.delete_if { |key| Array(missing).include?(key) }
+      if defined?(missing)
+        manifest.delete_if { |key| Array(missing).include?(key) }
+      else
+        manifest
+      end
     end
     let(:manifest_file) { get_tmp_file_path(invalid_manifest.to_yaml) }
 
     before do
-      subject.validate
-      expect(subject).to_not be_valid
+      project_deployment.validate
+      expect(project_deployment).to_not be_valid
     end
 
     context "not a hash" do
       let(:invalid_manifest) { "foo" }
-      it "raises an error" do
-        expect(subject.errors).to eq ["Manifest should be a hash"]
+      it { should match(/Expected instance of Hash/) }
+    end
+
+    %w(name director_uuid releases templates meta).each do |field_name|
+      context "missing #{field_name}" do
+        let(:missing) { field_name }
+        it { should match(/#{field_name}.*missing/i) }
       end
     end
 
-    context "missing name" do
-      let(:missing) { "name" }
-      it "raises an error" do
-        expect(subject.errors).to eq ["Manifest should contain a name"]
-      end
-    end
-
-    context "missing director_uuid" do
-      let(:missing) { "director_uuid" }
-      it "raises an error" do
-        expect(subject.errors).to eq ["Manifest should contain a director_uuid"]
-      end
-    end
-
-    context "missing domain_name" do
+    context "optional domain_name" do
       let(:missing) { ["domain_name", "director_uuid"] }
-      it "is optional" do
-        expect(subject.errors).to eq ["Manifest should contain a director_uuid"]
+      it { should match(/director_uuid/) }
+      it { should_not match(/domain_name/) }
+    end
+
+    context "director_uuid" do
+      context "invalid" do
+        let(:uuid) { "invalid_uuid" }
+        it { should match(/director_uuid.*doesn't validate/) }
+      end
+
+      context "current" do
+        let(:uuid) { "current" }
+        let(:missing) { "name" }
+        it { should_not match(/director_uuid/) }
+        it { should match(/name/) }
       end
     end
 
-    context "missing templates" do
-      let(:missing) { "templates" }
-      it "raises an error" do
-        expect(subject.errors).to eq ["Manifest should contain templates"]
+    context "releases" do
+      let(:invalid_manifest) do
+        manifest["releases"].map! { |r| r.delete_if { |key| Array(missing).include?(key) } }
+        manifest
       end
-    end
 
-    context "missing releases" do
-      let(:missing) { "releases" }
-      it "raises an error" do
-        expect(subject.errors).to eq ["Manifest should contain releases"]
+      %w(name version git).each do |field_name|
+        context "missing #{field_name}" do
+          let(:missing) { field_name }
+          it { should match(/#{field_name}.*missing/i) }
+        end
       end
-    end
 
-    context "missing meta" do
-      let(:missing) { "meta" }
-      it "raises an error" do
-        expect(subject.errors).to eq ["Manifest should contain meta hash"]
+      context "latest version" do
+        let(:missing) { "git" }
+        let(:release_version) { "latest" }
+        it { should match(/git.*missing/i) }
+        it { should_not match(/version/i) }
       end
     end
   end
 
-  context "valid manifest" do
+  describe "#director_uuid=" do
+    before { subject.director_uuid = "foo-bar" }
+    its(:director_uuid) { should eq "foo-bar" }
+  end
+
+  describe "property readers" do
     it "has properties" do
-      subject.validate
-      expect(subject).to be_valid
       expect(subject.name).to eq name
       expect(subject.director_uuid).to eq uuid
       expect(subject.domain_name).to eq domain_name
@@ -99,7 +115,7 @@ describe Bosh::Workspace::DeploymentManifest do
     end
 
     it "retruns merged file" do
-      expect(subject.merged_file).to match /\.deployments\//
+      expect(subject.merged_file).to match(/\.deployments\/#{file_name}/)
     end
   end
 end

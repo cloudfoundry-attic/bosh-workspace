@@ -1,8 +1,30 @@
+require "membrane"
 module Bosh::Workspace
   class DeploymentManifest
     include Bosh::Cli::Validation
     attr_writer :director_uuid
     attr_reader :file
+
+    RELEASE_SCHEMA = Membrane::SchemaParser.parse do
+      {
+        "name"    => String,
+        "version" => enum(Integer, "latest"),
+        "git"     => String,
+      }
+    end
+
+    UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+
+    PROJECT_DEPLOYMENT_SCHEMA = Membrane::SchemaParser.parse do
+      {
+        "name"                  => String,
+        "director_uuid"         => enum(UUID_REGEX, "current"),
+        optional("domain_name") => String,
+        "releases"              => [RELEASE_SCHEMA],
+        "templates"             => [String],
+        "meta"                  => Hash
+      }
+    end
 
     def initialize(file)
       @file = file
@@ -11,29 +33,9 @@ module Bosh::Workspace
     end
 
     def perform_validation(options = {})
-      if @manifest.is_a?(Hash)
-        unless @manifest.has_key?("name") && @manifest["name"].is_a?(String)
-          errors << "Manifest should contain a name"
-        end
-
-        unless @manifest.has_key?("director_uuid") && @manifest["director_uuid"].is_a?(String)
-          errors << "Manifest should contain a director_uuid"
-        end
-
-        unless @manifest.has_key?("templates") && @manifest["templates"].is_a?(Array)
-          errors << "Manifest should contain templates"
-        end
-
-        unless @manifest.has_key?("releases") && @manifest["releases"].is_a?(Array)
-          errors << "Manifest should contain releases"
-        end
-
-        unless @manifest.has_key?("meta") && @manifest["meta"].is_a?(Hash)
-          errors << "Manifest should contain meta hash"
-        end
-      else
-        errors << "Manifest should be a hash"
-      end
+      PROJECT_DEPLOYMENT_SCHEMA.validate @manifest
+    rescue Membrane::SchemaValidationError => e
+      errors << e.message
     end
 
     def director_uuid
