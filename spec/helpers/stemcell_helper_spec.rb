@@ -43,7 +43,7 @@ describe Bosh::Workspace::StemcellHelper do
 
   describe "#stemcell_uploaded?" do
     let(:stemcells) { [{ "name" => "foo", "version" => "1" }] }
-    subject { stemcell_helper.stemcell_uploaded?(name, "1") }
+    subject { stemcell_helper.stemcell_uploaded?(name, 1) }
     before { director.should_receive(:list_stemcells).and_return(stemcells) }
 
     context "stemcell exists" do

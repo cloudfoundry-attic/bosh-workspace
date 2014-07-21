@@ -16,7 +16,7 @@ module Bosh::Workspace
 
     def stemcell_uploaded?(name, version)
       existing = director.list_stemcells.select do |sc|
-        sc['name'] == name && sc['version'] == version
+        sc['name'] == name && sc['version'] == version.to_s
       end
 
       !existing.empty? 
