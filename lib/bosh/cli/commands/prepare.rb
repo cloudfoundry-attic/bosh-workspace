@@ -5,6 +5,7 @@ module Bosh::Cli::Command
     include Bosh::Cli::Validation
     include Bosh::Workspace
     include ProjectDeploymentHelper
+    include ReleaseHelper
     include StemcellHelper
 
     usage "prepare deployment"
@@ -22,12 +23,6 @@ module Bosh::Cli::Command
 
     private
 
-    def release_cmd(options = {})
-      Bosh::Cli::Command::Release.new.tap do |cmd|
-        options.each { |k, v| cmd.add_option k.to_sym, v }
-      end
-    end
-
     def prepare_release_repos
       project_deployment_releases.each do |release|
         say "Cloning release '#{release.name.make_green}' to satisfy template references"
@@ -38,14 +33,17 @@ module Bosh::Cli::Command
 
     def prepare_releases
       project_deployment_releases.each do |release|
-        remote_release = director.get_release(release.name) rescue nil
-        if remote_release && remote_release["versions"].include?(release.version.to_s)
-          say "Release '#{release.name_version.make_green}' exists"
-          say "Skipping upload"
-        else
-          say "Uploading '#{release.name_version.make_green}'"
-          release_cmd.upload(release.manifest_file)
-        end
+        prepare_release(release)
+      end
+    end
+
+    def prepare_release(release)
+      if release_uploaded?(release.name, release.version)
+        say "Release '#{release.name_version.make_green}' exists"
+        say "Skipping upload"
+      else
+        say "Uploading '#{release.name_version.make_green}'"
+        upload_release(release.manifest_file)
       end
     end
 

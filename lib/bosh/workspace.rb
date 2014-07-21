@@ -5,6 +5,7 @@ require "cli/validation"
 
 require "bosh/workspace/helpers/spiff_helper"
 require "bosh/workspace/helpers/project_deployment_helper"
+require "bosh/workspace/helpers/release_helper"
 require "bosh/workspace/helpers/stemcell_helper"
 require "bosh/workspace/helpers/dns_helper"
 
