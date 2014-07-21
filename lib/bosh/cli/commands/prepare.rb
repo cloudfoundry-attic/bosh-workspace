@@ -51,18 +51,26 @@ module Bosh::Cli::Command
 
     def prepare_stemcells
       project_deployment_stemcells.each do |stemcell|
-        if stemcell_uploaded?(stemcell.name, stemcell.version)
-          say "Stemcell '#{stemcell.name_version.make_green}' exists"
-          say "Skipping upload"
-        else
-          unless stemcell.downloaded?
-            say "Downloading '#{stemcell.name_version.make_green}'"
-            stemcell_download(stemcell.file_name) 
-          end
-          say "Uploading '#{stemcell.name_version.make_green}'"
-          stemcell_upload(stemcell.file)
-        end
+        prepare_stemcell(stemcell)
       end
+    end
+
+    def prepare_stemcell(stemcell)
+      if stemcell_uploaded?(stemcell.name, stemcell.version)
+        say "Stemcell '#{stemcell.name_version.make_green}' exists"
+        say "Skipping upload"
+      else
+        cached_stemcell_upload(stemcell)
+      end
+    end
+    
+    def cached_stemcell_upload(stemcell) 
+      unless stemcell.downloaded?
+        say "Downloading '#{stemcell.name_version.make_green}'"
+        stemcell_download(stemcell.file_name) 
+      end
+      say "Uploading '#{stemcell.name_version.make_green}'"
+      stemcell_upload(stemcell.file)
     end
   end
 end
