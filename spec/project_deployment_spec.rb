@@ -137,15 +137,10 @@ describe Bosh::Workspace::ProjectDeployment do
     its(:director_uuid) { should eq "foo-bar" }
   end
 
-  describe "property readers" do
-    it "has properties" do
-      expect(subject.name).to eq name
-      expect(subject.director_uuid).to eq uuid
-      expect(subject.domain_name).to eq domain_name
-      expect(subject.templates).to eq templates
-      expect(subject.releases).to eq releases
-      expect(subject.stemcells).to eq stemcells
-      expect(subject.meta).to eq meta
+  describe "attr readers" do
+    let(:director_uuid) { uuid }
+    %w(name director_uuid templates releases stemcells meta).each do |attr| 
+      its(attr.to_sym) { should eq eval(attr) }
     end
   end
 
