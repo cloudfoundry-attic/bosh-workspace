@@ -70,4 +70,20 @@ describe Bosh::Workspace::StemcellHelper do
       expect(subject).to eq stemcells_dir
     end
   end
+
+  describe "#project_deployment_stemcells" do
+    subject { stemcell_helper.project_deployment_stemcells }
+    let(:stemcell) { instance_double("Bosh::Workspace::Stemcell") }
+    let(:stemcell_data) { { name: "foo" } }
+    let(:stemcells) { [stemcell_data, stemcell_data] }
+
+    before { stemcell_helper.stub_chain("project_deployment.stemcells").and_return(stemcells) }
+
+    it "inits stemcells once" do
+      Bosh::Workspace::Stemcell.should_receive(:new).twice
+        .with(stemcell_data, /\/.stemcells/).and_return(stemcell)
+      subject
+      expect(subject).to eq [stemcell, stemcell]
+    end
+  end
 end

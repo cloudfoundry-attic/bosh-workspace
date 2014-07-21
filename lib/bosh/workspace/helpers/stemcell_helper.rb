@@ -1,5 +1,7 @@
 module Bosh::Workspace
   module StemcellHelper
+    include ProjectDeploymentHelper
+
     def stemcell_download(stemcell_name)
       Dir.chdir(stemcells_dir) do
         say "Downloading stemcell '#{stemcell_name}'"
@@ -25,6 +27,12 @@ module Bosh::Workspace
     def stemcells_dir
       @stemcells_dir ||= begin
         FileUtils.mkdir_p(File.join(work_dir, ".stemcells")).first
+      end
+    end
+
+    def project_deployment_stemcells
+      @stemcells ||= begin
+        project_deployment.stemcells.map { |s| Stemcell.new(s, stemcells_dir) }
       end
     end
 

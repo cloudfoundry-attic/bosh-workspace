@@ -57,4 +57,20 @@ describe Bosh::Workspace::ReleaseHelper do
       expect(subject).to eq releases_dir
     end
   end
+
+  describe "#project_deployment_releases" do
+    subject { release_helper.project_deployment_releases }
+    let(:release) { instance_double("Bosh::Workspace::Release") }
+    let(:release_data) { { name: "foo" } }
+    let(:releases) { [release_data, release_data] }
+
+    before { release_helper.stub_chain("project_deployment.releases").and_return(releases) }
+
+    it "inits releases once" do
+      Bosh::Workspace::Release.should_receive(:new).twice
+        .with(release_data, /\/.releases/).and_return(release)
+      subject
+      expect(subject).to eq [release, release]
+    end
+  end
 end
