@@ -43,7 +43,7 @@ module Bosh::Cli::Command
         say "Skipping upload"
       else
         say "Uploading '#{release.name_version.make_green}'"
-        upload_release(release.manifest_file)
+        release_upload(release.manifest_file)
       end
     end
 

@@ -34,7 +34,7 @@ describe Bosh::Workspace::StemcellHelper do
       let(:file) { "foo.tgz" }
       subject { stemcell_helper.stemcell_upload(file) }
       
-      it "downloads stemcell" do
+      it "uploads stemcell" do
         stemcell_cmd.should_receive(:upload).with(file)
         subject
       end
