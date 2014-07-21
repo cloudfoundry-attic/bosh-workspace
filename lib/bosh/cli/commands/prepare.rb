@@ -16,8 +16,8 @@ module Bosh::Cli::Command
         say "Resolving release version for '#{release.name}'"
         release.update_repo
 
-        remote_release = director.get_release(release.name)
-        if remote_release["versions"].include?(release.version.to_s)
+        remote_release = director.get_release(release.name) rescue nil
+        if remote_release && remote_release["versions"].include?(release.version.to_s)
           say "Release '#{release.name_version}' already exists. Skipping upload."
         else
           say "Uploading '#{release.name_version}'"
