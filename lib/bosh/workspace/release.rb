@@ -50,7 +50,7 @@ module Bosh::Workspace
     end
 
     def ref
-      @repo.log.object manifest
+      @repo.log.object(manifest).first
     end
 
     def init_repo

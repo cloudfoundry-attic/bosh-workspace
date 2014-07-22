@@ -62,8 +62,8 @@ def in_home_dir(&block)
   FileUtils.chdir(home_file, &block)
 end
 
-def get_tmp_file_path(content)
-  tmp_file = File.open(File.join(Dir.mktmpdir, "tmp"), "w")
+def get_tmp_file_path(content, file_name="tmp")
+  tmp_file = File.open(File.join(Dir.mktmpdir, file_name), "w")
   tmp_file.write(content)
   tmp_file.close
   tmp_file.path

@@ -7,11 +7,11 @@ module Bosh::Workspace
     end
 
     def project_deployment
-      @project_deployment ||= DeploymentManifest.new(project_deployment_file)
+      @project_deployment ||= ProjectDeployment.new(project_deployment_file)
     end
 
     def project_deployment=(deployment)
-      @project_deployment = DeploymentManifest.new(deployment)
+      @project_deployment = ProjectDeployment.new(deployment)
     end
 
     def project_deployment_file?(deployment)
@@ -55,13 +55,6 @@ module Bosh::Workspace
 
     def resolve_director_uuid
       use_targeted_director_uuid if director_uuid_current?
-    end
-
-    def project_deployment_releases
-      releases_dir = File.join(work_dir, ".releases")
-      @releases ||= begin
-        project_deployment.releases.map { |r| Release.new(r, releases_dir) }
-      end
     end
 
     private
