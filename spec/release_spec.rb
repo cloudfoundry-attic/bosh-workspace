@@ -14,7 +14,7 @@ describe Bosh::Workspace::Release do
 
       it "checks out repo" do
         release.update_repo
-        expect(subject).to match /foo-11.yml/
+        expect(subject).to match(/foo-11.yml/)
       end
     end
 
@@ -23,7 +23,16 @@ describe Bosh::Workspace::Release do
 
       it "checks out repo" do
         release.update_repo
-        expect(subject).to match /foo-2.yml/
+        expect(subject).to match(/foo-2.yml/)
+      end
+    end
+
+    context "updated version " do
+      let(:version) { "11" }
+
+      it "checks out file with multiple commits" do
+        release.update_repo
+        expect(subject).to match(/foo-11.yml/)
       end
     end
 
@@ -32,7 +41,7 @@ describe Bosh::Workspace::Release do
 
       it "raises an error" do
         expect { release.update_repo }.
-          to raise_error /Could not find version/
+          to raise_error(/Could not find version/)
       end
     end
 
@@ -45,7 +54,7 @@ describe Bosh::Workspace::Release do
 
       it "version 3" do
         release.update_repo
-        expect(subject).to match /foo-3.yml/
+        expect(subject).to match(/foo-3.yml/)
       end
     end
 
@@ -60,7 +69,7 @@ describe Bosh::Workspace::Release do
 
       it "version 3" do
         release.update_repo
-        expect(subject).to match /foo-3.yml/
+        expect(subject).to match(/foo-3.yml/)
       end
     end
   end
@@ -69,8 +78,8 @@ describe Bosh::Workspace::Release do
     subject { release }
     its(:name){ should eq name }
     its(:git_uri){ should eq repo }
-    its(:repo_dir){ should match /\/#{name}$/ }
-    its(:manifest_file){ should match /\/#{name}-#{version}.yml$/ }
+    its(:repo_dir){ should match(/\/#{name}$/) }
+    its(:manifest_file){ should match(/\/#{name}-#{version}.yml$/) }
     its(:manifest){ should match "releases/#{name}-#{version}.yml$" }
     its(:name_version){ should eq "#{name}/#{version}" }
     its(:version){ should eq version }
