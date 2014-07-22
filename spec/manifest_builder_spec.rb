@@ -1,9 +1,14 @@
 describe Bosh::Workspace::ManifestBuilder do
-  let(:manifest) { instance_double("Bosh::Workspace::Manifest") }
+  let(:manifest) { instance_double("Bosh::Workspace::Manifest",
+    name: "bar",
+    director_uuid: "foo-bar-uuid",
+    stemcells: [ { "name" => "foo", "version" => "2"} ],
+    releases: [ { "name" => "foo", "version" => "latest", "git" => "release_repo.git" } ],
+    templates: ["foo.yml"],
+    meta: { "foo" => "bar" },
+    merged_file: ".deployments/foo.yml")
+  }
   let(:work_dir) { asset_dir("manifests-repo") }
-  let(:target_name) { "bar" }
-  let(:target_file) {
-    File.join(work_dir, ".deployments", "#{target_name}.yml") }
 
   describe ".build" do
     subject { Bosh::Workspace::ManifestBuilder.build manifest, work_dir }
@@ -20,53 +25,36 @@ describe Bosh::Workspace::ManifestBuilder do
 
   describe "#merge_templates" do
     subject { Bosh::Workspace::ManifestBuilder.new manifest, work_dir }
-    let(:templates) { ["foo.yml"] }
-    let(:template_path) { File.join(work_dir, "templates/foo.yml") }
-    let(:template_exists) { true }
 
     before do
-      manifest.should_receive(:templates).and_return(templates)
-      File.should_receive(:exists?).with(template_path)
-        .and_return(template_exists)
+      File.stub(:exists?).with(/templates\//).and_return(template_exists)
     end
 
     context "missing template" do
       let(:template_exists) { false }
       it "raises error" do
-        expect{ subject.merge_templates }.to raise_error /does not exist/
+        expect{ subject.merge_templates }.to raise_error(/does not exist/)
       end
     end
 
     context "template exists" do
+      let(:template_exists) { true }
       let(:dir_exists) { true }
-      let(:target_dir) { File.join(work_dir, ".manifests" ) }
-      let(:uuid) { "foo-bar-uuid" }
-      let(:meta_file_path) do
-        File.join(work_dir, ".stubs", "#{target_name}.yml")
-      end
-      let(:meta_file) { instance_double("File") }
-      let(:meta) { { "foo" => "bar" } }
-      let(:release) { { "name" => "foo", "version" => "latest" } }
-      let(:releases) { [release] }
-      let(:raw_releases) { [release.merge("git" => "release_repo.git")] }
+
+      let(:filterd_releases) { manifest.releases.tap { |rs| rs.map { |r| r.delete("git") } } }
       let(:meta_file_content) do
         {
-          "director_uuid" => uuid,
-          "releases" => releases,
-          "meta" => meta
+          "name" => manifest.name,
+          "director_uuid" => manifest.director_uuid,
+          "stemcells" => manifest.stemcells,
+          "releases" => filterd_releases,
+          "meta" => manifest.meta
         }
       end
 
       before do
-        manifest.should_receive(:name).and_return(target_name)
-        manifest.should_receive(:meta).and_return(meta)
-        manifest.should_receive(:director_uuid).and_return(uuid)
-        manifest.should_receive(:releases).and_return(raw_releases)
-        manifest.should_receive(:merged_file).and_return(target_file)
-        File.should_receive(:exists?).and_return(dir_exists)
-        File.should_receive(:open).with(meta_file_path, "w")
-          .and_yield(meta_file)
-        meta_file.should_receive(:write).with(meta_file_content.to_yaml)
+        File.stub(:exists?).with(/\.stubs/).and_return(dir_exists)
+        IO.should_receive(:write).with(/\.stubs\/.+yml/, meta_file_content.to_yaml)
       end
 
       context "no hidden dirs" do
@@ -79,8 +67,14 @@ describe Bosh::Workspace::ManifestBuilder do
       end
 
       it "generates manifest with spiff" do
-        subject.should_receive(:spiff_merge)
-          .with([template_path, meta_file_path], target_file)
+        subject.should_receive(:spiff_merge) do |args|
+          if args.is_a?(Array)
+            expect(args.first).to match(/\/templates\/.+yml/)
+            expect(args.last).to match(/\.stubs\/.+yml/)
+          else
+            expect(args).to match(/\.deployments\/.+yml/)
+          end
+        end
         subject.merge_templates
       end
     end

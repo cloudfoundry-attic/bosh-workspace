@@ -29,13 +29,15 @@ module Bosh::Workspace
 
     def stub_file_path
       path = hidden_file_path(:stubs)
-      File.open(path, 'w') { |file| file.write(stub_file_content) }
+      IO.write(path, stub_file_content)
       path
     end
 
     def stub_file_content
       {
+        "name" => @manifest.name,
         "director_uuid" => @manifest.director_uuid,
+        "stemcells" => @manifest.stemcells,
         "releases" => filterd_releases,
         "meta" => @manifest.meta
       }.to_yaml
