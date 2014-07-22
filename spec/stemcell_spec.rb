@@ -6,6 +6,10 @@ describe Bosh::Workspace::Stemcell do
   let(:file_name) { "bosh-stemcell-3-warden-boshlite-ubuntu-trusty-go_agent.tgz" }
   let(:version) { 3 }
 
+  describe "#name_version" do
+    its(:name_version) { should eq "#{name}/#{version}" }
+  end
+
   describe "#file_name" do
     its(:file_name) { should eq file_name }
   end

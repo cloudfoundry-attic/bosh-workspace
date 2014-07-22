@@ -8,6 +8,10 @@ module Bosh::Workspace
       @file = File.join(stemcells_dir, file_name)
     end
 
+    def name_version
+      "#{name}/#{version}"
+    end
+
     def file_name
       name.gsub(/^bosh-/, "bosh-stemcell-#{version}-") + ".tgz"
     end
