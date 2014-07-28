@@ -2,18 +2,18 @@ module Bosh::Workspace
   class ManifestBuilder
     include Bosh::Workspace::SpiffHelper
 
-    def self.build(manifest, work_dir)
-      manifest_builder = ManifestBuilder.new(manifest, work_dir)
+    def self.build(project_deployment, work_dir)
+      manifest_builder = ManifestBuilder.new(project_deployment, work_dir)
       manifest_builder.merge_templates
     end
 
-    def initialize(manifest, work_dir)
-      @manifest = manifest
+    def initialize(project_deployment, work_dir)
+      @project_deployment = project_deployment
       @work_dir = work_dir
     end
 
     def merge_templates
-      spiff_merge spiff_template_paths, @manifest.merged_file
+      spiff_merge spiff_template_paths, @project_deployment.merged_file
     end
 
     private
@@ -24,34 +24,17 @@ module Bosh::Workspace
     end
 
     def template_paths
-      @manifest.templates.map { |t| template_path(t) }
+      @project_deployment.templates.map { |t| template_path(t) }
     end
 
     def stub_file_path
       path = hidden_file_path(:stubs)
-      IO.write(path, stub_file_content)
+      StubFile.create(path, @project_deployment)
       path
     end
 
-    def stub_file_content
-      {
-        "name" => @manifest.name,
-        "director_uuid" => @manifest.director_uuid,
-        "stemcells" => @manifest.stemcells,
-        "releases" => filterd_releases,
-        "meta" => @manifest.meta
-      }.to_yaml
-    end
-
-    def filterd_releases
-      allowed_keys = %w[name version]
-      @manifest.releases.map do |release|
-        release.select { |key| allowed_keys.include?(key) }
-      end
-    end
-
     def hidden_file_path(type)
-      File.join(hidden_dir_path(type), "#{@manifest.name}.yml")
+      File.join(hidden_dir_path(type), "#{@project_deployment.name}.yml")
     end
 
     def hidden_dir_path(name)
