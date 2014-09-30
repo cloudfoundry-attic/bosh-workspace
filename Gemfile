@@ -5,6 +5,7 @@ gemspec
 
 group :development do
   gem "guard-rspec"
+  gem "rubocop"
 end
 
 group :test do
