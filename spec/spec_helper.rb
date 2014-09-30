@@ -10,7 +10,7 @@ Bundler.setup(:default, :test)
 $:.unshift(File.expand_path("../../lib", __FILE__))
 
 require "rspec/core"
-require 'rspec/fire'
+require "rspec/its"
 
 require "tmpdir"
 require "archive/zip"
@@ -21,8 +21,7 @@ require "cli"
 require "bosh/workspace"
 
 RSpec.configure do |config|
-  config.include(RSpec::Fire)
-
+  config.raise_errors_for_deprecations!
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end

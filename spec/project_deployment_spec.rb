@@ -139,7 +139,7 @@ describe Bosh::Workspace::ProjectDeployment do
 
   describe "attr readers" do
     let(:director_uuid) { uuid }
-    %w(name director_uuid templates releases stemcells meta).each do |attr| 
+    %w(name director_uuid templates releases stemcells meta).each do |attr|
       its(attr.to_sym) { should eq eval(attr) }
     end
   end
@@ -147,7 +147,7 @@ describe Bosh::Workspace::ProjectDeployment do
   describe "#merged_file" do
     it "creates parent directory" do
       dir = File.dirname(subject.merged_file)
-      expect(File.directory?(dir)).to be_true
+      expect(File.directory?(dir)).to be true
     end
 
     it "retruns merged file" do

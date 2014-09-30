@@ -88,8 +88,4 @@ describe Bosh::Workspace::Release do
   after do
     FileUtils.rm_r releases_dir
   end
-
-  after(:all) do
-    FileUtils.rm_r repo
-  end
 end

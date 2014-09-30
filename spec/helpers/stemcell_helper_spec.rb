@@ -17,15 +17,18 @@ describe Bosh::Workspace::StemcellHelper do
 
   context "with stemcell command" do
     let(:stemcell_cmd) { instance_double("Bosh::Cli::Command::Stemcell") }
-    before { Bosh::Cli::Command::Stemcell.stub(:new).and_return(stemcell_cmd) }
+    before do
+      allow(Bosh::Cli::Command::Stemcell)
+        .to receive(:new).and_return(stemcell_cmd)
+    end
 
     describe "#stemcell_download" do
       let(:name) { "foo" }
       subject { stemcell_helper.stemcell_download(name) }
-      
+
       it "downloads stemcell" do
-        Dir.should_receive(:chdir).and_yield
-        stemcell_cmd.should_receive(:download_public).with(name)
+        expect(Dir).to receive(:chdir).and_yield
+        expect(stemcell_cmd).to receive(:download_public).with(name)
         subject
       end
     end
@@ -33,9 +36,9 @@ describe Bosh::Workspace::StemcellHelper do
     describe "#stemcell_upload" do
       let(:file) { "foo.tgz" }
       subject { stemcell_helper.stemcell_upload(file) }
-      
+
       it "uploads stemcell" do
-        stemcell_cmd.should_receive(:upload).with(file)
+        expect(stemcell_cmd).to receive(:upload).with(file)
         subject
       end
     end
@@ -44,24 +47,29 @@ describe Bosh::Workspace::StemcellHelper do
   describe "#stemcell_uploaded?" do
     let(:stemcells) { [{ "name" => "foo", "version" => "1" }] }
     subject { stemcell_helper.stemcell_uploaded?(name, 1) }
-    before { director.should_receive(:list_stemcells).and_return(stemcells) }
+    before do
+      expect(director).to receive(:list_stemcells).and_return(stemcells)
+    end
 
     context "stemcell exists" do
       let(:name) { "foo" }
-      it { should be_true }
+      it { should be true }
     end
 
     context "stemcell not found" do
       let(:name) { "bar" }
-      it { should be_false }
+      it { should be false }
     end
   end
-  
+
   describe "#stemcell_dir" do
     let(:stemcells_dir) { File.join(work_dir, ".stemcells") }
     subject { stemcell_helper.stemcells_dir }
-    
-    before { FileUtils.should_receive(:mkdir_p).once.with(stemcells_dir).and_return([stemcells_dir]) }
+
+    before do
+      expect(FileUtils).to receive(:mkdir_p).once.with(stemcells_dir)
+        .and_return([stemcells_dir])
+    end
 
     it { should eq stemcells_dir }
 
@@ -77,10 +85,14 @@ describe Bosh::Workspace::StemcellHelper do
     let(:stemcell_data) { { name: "foo" } }
     let(:stemcells) { [stemcell_data, stemcell_data] }
 
-    before { stemcell_helper.stub_chain("project_deployment.stemcells").and_return(stemcells) }
+    before do
+      allow(stemcell_helper)
+        .to receive_message_chain("project_deployment.stemcells")
+        .and_return(stemcells)
+    end
 
     it "inits stemcells once" do
-      Bosh::Workspace::Stemcell.should_receive(:new).twice
+      expect(Bosh::Workspace::Stemcell).to receive(:new).twice
         .with(stemcell_data, /\/.stemcells/).and_return(stemcell)
       subject
       expect(subject).to eq [stemcell, stemcell]

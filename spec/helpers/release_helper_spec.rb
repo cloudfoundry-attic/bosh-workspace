@@ -16,14 +16,20 @@ describe Bosh::Workspace::ReleaseHelper do
   let(:work_dir) { asset_dir("manifests-repo") }
 
   describe "#release_upload" do
-    let(:release_cmd) { instance_double("Bosh::Cli::Command::Release") }
-    before { Bosh::Cli::Command::Release.stub(:new).and_return(release_cmd) }
-    
+    let(:release_cmd) do
+      instance_double "Bosh::Cli::Command::Release::UploadRelease"
+    end
+
+    before do
+      allow(Bosh::Cli::Command::Release::UploadRelease).to receive(:new)
+        .and_return(release_cmd)
+    end
+
     let(:manifest_file) { "foo-1.yml." }
     subject { release_helper.release_upload(manifest_file) }
-      
+
     it "uploads release" do
-      release_cmd.should_receive(:upload).with(manifest_file)
+      expect(release_cmd).to receive(:upload).with(manifest_file)
       subject
     end
   end
@@ -31,24 +37,30 @@ describe Bosh::Workspace::ReleaseHelper do
   describe "#release_uploaded?" do
     let(:releases) { { "versions" => %w(1 2 3) } }
     subject { release_helper.release_uploaded?("foo", version) }
-    before { director.should_receive(:get_release).with("foo").and_return(releases) }
+    before do 
+      expect(director).to receive(:get_release)
+        .with("foo").and_return(releases)
+    end
 
     context "release exists" do
       let(:version) { 2 }
-      it { should be_true }
+      it { should be true }
     end
 
     context "release not found" do
       let(:version) { "8" }
-      it { should be_false }
+      it { should be false }
     end
   end
-  
+
   describe "#release_dir" do
     let(:releases_dir) { File.join(work_dir, ".releases") }
     subject { release_helper.releases_dir }
-    
-    before { FileUtils.should_receive(:mkdir_p).once.with(releases_dir).and_return([releases_dir]) }
+
+    before do
+      expect(FileUtils).to receive(:mkdir_p).once
+        .with(releases_dir).and_return([releases_dir])
+    end
 
     it { should eq releases_dir }
 
@@ -64,10 +76,14 @@ describe Bosh::Workspace::ReleaseHelper do
     let(:release_data) { { name: "foo" } }
     let(:releases) { [release_data, release_data] }
 
-    before { release_helper.stub_chain("project_deployment.releases").and_return(releases) }
+    before do
+      expect(release_helper)
+        .to receive_message_chain("project_deployment.releases")
+        .and_return(releases)
+    end
 
     it "inits releases once" do
-      Bosh::Workspace::Release.should_receive(:new).twice
+      expect(Bosh::Workspace::Release).to receive(:new).twice
         .with(release_data, /\/.releases/).and_return(release)
       subject
       expect(subject).to eq [release, release]

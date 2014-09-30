@@ -12,9 +12,9 @@ describe Bosh::Workspace::ManifestBuilder do
       instance_double("Bosh::Workspace::ManifestBuilder") }
 
     it "creates builder and merges templates" do
-      Bosh::Workspace::ManifestBuilder.should_receive(:new)
+      expect(Bosh::Workspace::ManifestBuilder).to receive(:new)
         .with(project_deployment, work_dir).and_return(manifest_builder)
-      manifest_builder.should_receive(:merge_templates)
+      expect(manifest_builder).to receive(:merge_templates)
       subject
     end
   end
@@ -23,7 +23,8 @@ describe Bosh::Workspace::ManifestBuilder do
     subject { Bosh::Workspace::ManifestBuilder.new project_deployment, work_dir }
 
     before do
-      File.stub(:exists?).with(/templates\//).and_return(template_exists)
+      allow(File).to receive(:exists?).with(/templates\//)
+        .and_return(template_exists)
     end
 
     context "missing template" do
@@ -38,21 +39,22 @@ describe Bosh::Workspace::ManifestBuilder do
       let(:dir_exists) { true }
 
       before do
-        File.stub(:exists?).with(/\.stubs/).and_return(dir_exists)
-        Bosh::Workspace::StubFile.should_receive(:create).with(/\.stubs\/.+yml/, project_deployment)
+        allow(File).to receive(:exists?).with(/\.stubs/).and_return(dir_exists)
+        expect(Bosh::Workspace::StubFile).to receive(:create)
+          .with(/\.stubs\/.+yml/, project_deployment)
       end
 
       context "no hidden dirs" do
         let(:dir_exists) { false }
         it "creates hidden dirs" do
-          subject.stub(:spiff_merge)
-          Dir.should_receive(:mkdir).with(/.stubs/)
+          expect(subject).to receive(:spiff_merge)
+          expect(Dir).to receive(:mkdir).with(/.stubs/)
           subject.merge_templates
         end
       end
 
       it "generates manifest with spiff" do
-        subject.should_receive(:spiff_merge) do |args|
+        expect(subject).to receive(:spiff_merge) do |args|
           if args.is_a?(Array)
             expect(args.first).to match(/\/templates\/.+yml/)
             expect(args.last).to match(/\.stubs\/.+yml/)

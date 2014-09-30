@@ -1,4 +1,4 @@
-guard 'rspec', spec_paths: ["spec"] do
+guard :rspec, cmd: 'rspec' do
   notification :off
   watch(%r{^spec/(.+_spec)\.rb$})
   watch(%r{^lib/bosh/cli/commands/(.+)\.rb$})    { |m| "spec/commands/#{m[1]}_spec.rb" }

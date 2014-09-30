@@ -7,22 +7,24 @@ describe Bosh::Workspace::Stemcell do
   let(:version) { 3 }
 
   describe "#name_version" do
-    its(:name_version) { should eq "#{name}/#{version}" }
+    its(:name_version) { is_expected.to eq "#{name}/#{version}" }
   end
 
   describe "#file_name" do
-    its(:file_name) { should eq file_name }
+    its(:file_name) { is_expected.to eq file_name }
   end
 
   describe "#downloaded?" do
-    before { File.should_receive(:exists?).with(/\/#{file_name}/).and_return(true) }
-    its(:downloaded?) { should eq true }
+    before do 
+      expect(File).to receive(:exists?).with(/\/#{file_name}/).and_return(true)
+    end
+    its(:downloaded?) { is_expected.to eq true }
   end
 
   describe "attr readers" do
     let(:file) { "#{stemcells_dir}/#{file_name}" }
     %w(name version file).each do |attr| 
-      its(attr.to_sym) { should eq eval(attr) }
+      its(attr.to_sym) { is_expected.to eq eval(attr) }
     end
   end
 end

@@ -20,16 +20,16 @@ describe Bosh::Workspace::StubFile do
     subject { Bosh::Workspace::StubFile.create(path, project_deployment) }
 
     it "calls write" do
-      Bosh::Workspace::StubFile.should_receive(:new)
+      expect(Bosh::Workspace::StubFile).to receive(:new)
         .with(project_deployment).and_return(stub_file)
-      stub_file.should_receive(:write).with(path)
+      expect(stub_file).to receive(:write).with(path)
       subject
     end
   end
 
   describe "#write" do
     it "writes yaml content" do
-      IO.should_receive(:write).with(path, /---\n/)
+      expect(IO).to receive(:write).with(path, /---\n/)
       subject.write(path)
     end
   end

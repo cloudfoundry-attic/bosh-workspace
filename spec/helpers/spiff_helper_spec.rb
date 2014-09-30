@@ -16,7 +16,7 @@ describe Bosh::Workspace::SpiffHelper do
     end
 
     before do
-      subject.should_receive(:sh).and_yield(result)
+      expect(subject).to receive(:sh).and_yield(result)
     end
 
     context "spiff not in path" do
@@ -34,7 +34,7 @@ describe Bosh::Workspace::SpiffHelper do
       let(:result) { Bosh::Exec::Result.new("spiff", "spiff error", 1, false) }
 
       it "raises an error" do
-        subject.should_receive(:say).with(/Command failed/)
+        expect(subject).to receive(:say).with(/Command failed/)
         expect{ subject.spiff_merge templates, target_file }
           .to raise_error /spiff error/
       end
@@ -46,8 +46,8 @@ describe Bosh::Workspace::SpiffHelper do
       let(:result) { Bosh::Exec::Result.new("spiff", output, 0, false) }
 
       it "merges manifests" do
-        File.should_receive(:open).with(target_file, 'w').and_yield(file)
-        file.should_receive(:write).with(output)
+        expect(File).to receive(:open).with(target_file, 'w').and_yield(file)
+        expect(file).to receive(:write).with(output)
         subject.spiff_merge templates, target_file
       end
     end

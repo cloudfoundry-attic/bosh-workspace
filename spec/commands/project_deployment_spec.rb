@@ -12,7 +12,7 @@ describe Bosh::Cli::Command::ProjectDeployment do
     setup_home_dir
     command.add_option(:config, home_file(".bosh_config"))
     command.add_option(:non_interactive, true)
-    deployment_cmd.stub(:add_option)
+    allow(deployment_cmd).to receive(:add_option)
   end
 
   describe "#deployment" do
@@ -21,7 +21,7 @@ describe Bosh::Cli::Command::ProjectDeployment do
     let(:filename) { "foo" }
 
     before do
-      Bosh::Cli::Command::Deployment.should_receive(:new)
+      expect(Bosh::Cli::Command::Deployment).to receive(:new)
         .and_return(deployment_cmd)
     end
 
@@ -30,18 +30,19 @@ describe Bosh::Cli::Command::ProjectDeployment do
       let(:merged_file) { ".manifests/foo.yml" }
 
       it "sets filename to merged file" do
-        command.should_receive(:find_deployment).with(filename)
+        expect(command).to receive(:find_deployment).with(filename)
           .and_return(deployment)
-        command.should_receive(:project_deployment_file?).with(deployment)
+        expect(command).to receive(:project_deployment_file?).with(deployment)
           .and_return(true)
-        command.should_receive(:project_deployment=).with(deployment)
-        command.should_receive(:validate_project_deployment)
-        File.should_receive(:exists?).with(merged_file).and_return(false)
-        command.should_receive(:create_placeholder_deployment)
-        command.should_receive(:project_deployment)
+        expect(command).to receive(:project_deployment=).with(deployment)
+        expect(command).to receive(:validate_project_deployment)
+        expect(File).to receive(:exists?).with(merged_file).and_return(false)
+        expect(command).to receive(:create_placeholder_deployment)
+        expect(command).to receive(:project_deployment)
           .and_return(project_deployment)
-        project_deployment.should_receive(:merged_file).and_return(merged_file)
-        deployment_cmd.should_receive(:set_current).with(merged_file)
+        expect(project_deployment).to receive(:merged_file)
+          .and_return(merged_file)
+        expect(deployment_cmd).to receive(:set_current).with(merged_file)
         subject
       end
     end
@@ -50,7 +51,7 @@ describe Bosh::Cli::Command::ProjectDeployment do
       let(:filename) { nil }
 
       it "returns current deployment" do
-        deployment_cmd.should_receive(:set_current).with(filename)
+        expect(deployment_cmd).to receive(:set_current).with(filename)
         subject
       end
     end
@@ -60,19 +61,19 @@ describe Bosh::Cli::Command::ProjectDeployment do
     subject { command.deploy }
 
     before do
-      Bosh::Cli::Command::Deployment.should_receive(:new)
+      expect(Bosh::Cli::Command::Deployment).to receive(:new)
         .and_return(deployment_cmd)
-      command.should_receive(:project_deployment?)
+      expect(command).to receive(:project_deployment?)
         .and_return(is_project_deployment)
-      deployment_cmd.should_receive(:perform)
+      expect(deployment_cmd).to receive(:perform)
     end
 
     context "with project deployment" do
       let(:is_project_deployment) { true }
 
       it "requires project deployment" do
-        command.should_receive(:require_project_deployment)
-        command.should_receive(:build_project_deployment)
+        expect(command).to receive(:require_project_deployment)
+        expect(command).to receive(:build_project_deployment)
         subject
       end
     end
