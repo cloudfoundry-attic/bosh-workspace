@@ -13,10 +13,12 @@ module Bosh::Workspace
       }
     end
 
+    STEMCELL_VERSION = /^\d+\.\d+$/
+
     STEMCELL_SCHEMA = Membrane::SchemaParser.parse do
       {
         "name"    => String,
-        "version" => enum(Integer, "latest"),
+        "version" => enum(Integer, STEMCELL_VERSION, "latest"),
       }
     end
 

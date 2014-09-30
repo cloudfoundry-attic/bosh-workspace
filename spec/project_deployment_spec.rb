@@ -123,6 +123,13 @@ describe Bosh::Workspace::ProjectDeployment do
         it { should_not match(/version/i) }
       end
 
+      context "patch version" do
+        let(:missing) { "name" }
+        let(:stemcell_version) { "2719.1" }
+        it { should match(/name.*missing/i) }
+        it { should_not match(/version/i) }
+      end
+
       context "invalid version" do
         let(:missing) { "name" }
         let(:stemcell_version) { "foo" }
