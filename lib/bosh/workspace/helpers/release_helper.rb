@@ -26,7 +26,7 @@ module Bosh::Workspace
     private
 
     def release_cmd
-      @release_cmd ||= Bosh::Cli::Command::Release.new
+      @release_cmd ||= Bosh::Cli::Command::Release::UploadRelease.new
     end
   end
 end
