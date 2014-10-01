@@ -1,0 +1,90 @@
+require "bosh/cli/commands/deployment_patch"
+
+module Bosh::Cli::Command
+  include Bosh::Workspace
+
+  describe DeploymentPatch do
+    let(:command) { DeploymentPatch.new }
+    let(:patch) { instance_double 'Bosh::Workspace::DeploymentPatch' }
+    let(:current_patch) { instance_double 'Bosh::Workspace::DeploymentPatch' }
+    let(:deployment_file) { 'deployments/foo.yml' }
+    let(:patch_file) { 'patch.yml' }
+    let(:project_dir) { File.realpath Dir.mktmpdir }
+    let(:changes?) { nil }
+    let(:changes) do
+      { stemcells: "foo", releases: "bar", templates_ref: "baz" }
+    end
+
+    before do
+      Dir.chdir project_dir
+      allow(DeploymentPatch).to receive(:create)
+        .with(deployment_file, /templates/).and_return(current_patch)
+      allow(DeploymentPatch).to receive(:from_file).with(patch_file)
+        .and_return(patch)
+      allow(current_patch).to receive(:changes?).with(patch)
+        .and_return(changes?)
+      expect(command).to receive(:require_project_deployment)
+      expect(command).to receive_message_chain("project_deployment.file")
+        .and_return(deployment_file)
+    end
+
+    describe '.create' do
+      it 'writes to file' do
+        expect(current_patch).to receive(:to_file).with(patch_file)
+        expect(command).to receive(:say).with /wrote patch/i
+        command.create(patch_file)
+      end
+    end
+
+    describe '.apply' do
+      context 'with changes' do
+        let(:changes?) { true }
+        let(:repo) { instance_double 'Git::Repo' }
+
+        def expect_patch_changes_table
+          expect(command).to receive(:say) do |s|
+            subject = s.to_s.delete ' '
+            expect(subject).to include "stemcells|foo"
+            expect(subject).to include "releases|bar"
+            expect(subject).to include "templates_ref|baz"
+          end
+        end
+
+        before do
+          expect(current_patch).to receive(:changes).with(patch)
+            .and_return(changes)
+        end
+
+        context 'no dry-run' do
+          it 'applies changes and shows changes' do
+            expect(patch).to receive(:apply).with(deployment_file, /templates/)
+            expect(Git).to receive(:open).with(project_dir).and_return(repo)
+            expect(repo).to receive(:commit_all)
+              .with("Applied stemcells foo, releases bar, templates_ref baz")
+            expect(command).to receive(:say).with /successfully applied/i
+            expect_patch_changes_table
+            command.apply(patch_file)
+          end
+        end
+
+        context 'dry-run' do
+          it 'only shows changes' do
+            expect(command).to receive(:say).with /deployment patch/i
+            expect_patch_changes_table
+            command.add_option(:dry_run, true)
+            command.apply(patch_file)
+          end
+        end
+      end
+
+      context 'without changes' do
+        let(:changes?) { false }
+
+        it 'says no changes' do
+          expect(command).to receive(:say).with /no changes/i
+          command.apply(patch_file)
+        end
+      end
+    end
+  end
+end

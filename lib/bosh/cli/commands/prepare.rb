@@ -61,7 +61,7 @@ module Bosh::Cli::Command
         cached_stemcell_upload(stemcell)
       end
     end
-    
+
     def cached_stemcell_upload(stemcell) 
       unless stemcell.downloaded?
         say "Downloading '#{stemcell.name_version.make_green}'"
