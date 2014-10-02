@@ -123,9 +123,16 @@ describe Bosh::Workspace::ProjectDeployment do
         it { should_not match(/version/i) }
       end
 
-      context "patch version" do
+      context "patch version string" do
         let(:missing) { "name" }
         let(:stemcell_version) { "2719.1" }
+        it { should match(/name.*missing/i) }
+        it { should_not match(/version/i) }
+      end
+
+      context "patch version float" do
+        let(:missing) { "name" }
+        let(:stemcell_version) { 2719.1 }
         it { should match(/name.*missing/i) }
         it { should_not match(/version/i) }
       end
@@ -134,7 +141,7 @@ describe Bosh::Workspace::ProjectDeployment do
         let(:missing) { "name" }
         let(:stemcell_version) { "foo" }
         it { should match(/name.*missing/i) }
-        it { should match(/version.*doesn't validate/i) }
+        it { should match(/version.*should match/i) }
       end
     end
   end

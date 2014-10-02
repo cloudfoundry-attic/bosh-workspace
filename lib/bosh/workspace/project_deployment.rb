@@ -13,12 +13,21 @@ module Bosh::Workspace
       }
     end
 
-    STEMCELL_VERSION = /^\d+\.\d+$/
+    class StemcellVersionValidator < Membrane::Schemas::Base
+      def validate(object)
+        return if object.is_a? Integer
+        return if object.is_a? Float
+        return if object == "latest"
+        return if object.to_s =~ /^\d+\.\d+$/
+        raise Membrane::SchemaValidationError.new(
+          "Should match: latest, version.patch or version. Given: #{object}")
+      end
+    end
 
     STEMCELL_SCHEMA = Membrane::SchemaParser.parse do
       {
         "name"    => String,
-        "version" => enum(Integer, STEMCELL_VERSION, "latest"),
+        "version" => StemcellVersionValidator.new
       }
     end
 
