@@ -107,3 +107,8 @@ Which will transform all the static ip references into domain names.
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## List of Contributors
+
+* [Swisscom](https://www.swisscom.ch)
+* [Stark & Wayne](http://starkandwayne.com)
