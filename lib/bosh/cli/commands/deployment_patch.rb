@@ -2,8 +2,7 @@ require "bosh/workspace"
 
 module Bosh::Cli::Command
   class DeploymentPatch < Base
-    include Bosh::Workspace
-    include ProjectDeploymentHelper
+    include Bosh::Workspace::ProjectDeploymentHelper
 
     usage "create deployment patch"
     desc "Extract patch from the current directory and optionally writes to file"
@@ -16,14 +15,15 @@ module Bosh::Cli::Command
     usage "apply deployment patch"
     desc "Apply a build patch to the current working directory"
     option "--dry-run", "only show the changes without applying them"
+    option "--no-commit", "do not commit applied changes"
     def apply(deployment_patch)
       require_project_deployment
-      @patch = DeploymentPatch.from_file(deployment_patch)
+      @patch = Bosh::Workspace::DeploymentPatch.from_file(deployment_patch)
 
       if current_deployment_patch.changes?(@patch)
         unless options[:dry_run]
           @patch.apply(current_deployment_file, templates_dir)
-          repo.commit_all changes_message
+          repo.commit_all changes_message  unless options[:no_commit]
           say "Successfully applied deployment patch:"
         else
           say "Deployment patch:"
@@ -47,7 +47,8 @@ module Bosh::Cli::Command
 
     def current_deployment_patch
       @current_deployment_patch ||= begin
-        DeploymentPatch.create current_deployment_file, templates_dir
+        Bosh::Workspace::DeploymentPatch
+          .create(current_deployment_file, templates_dir)
       end
     end
 

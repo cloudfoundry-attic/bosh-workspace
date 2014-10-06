@@ -2,17 +2,20 @@ require "git"
 require "hashdiff"
 module Bosh::Workspace
   class DeploymentPatch
+    include Bosh::Cli::Validation
     attr_reader :stemcells, :releases, :templates_ref
 
     def self.create(deployment_file, templates_dir)
-      ref = Git.open(templates_dir).log(1).first.sha
+      if Dir.exist? File.join(templates_dir, '.git')
+        ref = Git.open(templates_dir).log(1).first.sha
+      end
       deployment = YAML.load_file deployment_file
       new(deployment["stemcells"], deployment["releases"], ref)
     end
 
     def self.from_file(patch_file)
       a = YAML.load_file patch_file
-      new(a[:stemcells], a[:releases], a[:templates_ref])
+      new(a["stemcells"], a["releases"], a["templates_ref"])
     end
 
     def initialize(stemcells, releases, templates_ref)
@@ -21,12 +24,19 @@ module Bosh::Workspace
       @templates_ref = templates_ref
     end
 
+    def perform_validation(options = {})
+      Schemas::DeploymentPatch.new.validate to_hash
+    rescue Membrane::SchemaValidationError => e
+      errors << e.message
+    end
+
+    def to_hash
+      { "stemcells" => stemcells, "releases" => releases }
+        .tap { |h| h["templates_ref"] = templates_ref if templates_ref }
+    end
+
     def to_yaml
-      {
-        stemcells: stemcells,
-        releases: releases,
-        templates_ref: templates_ref
-      }.to_yaml
+      to_hash.to_yaml
     end
 
     def to_file(patch_file)
@@ -34,7 +44,7 @@ module Bosh::Workspace
     end
 
     def apply(deployment_file, templates_dir)
-      Git.open(templates_dir).checkout(templates_ref)
+      Git.open(templates_dir).checkout(templates_ref) if templates_ref
       deployment = YAML.load_file deployment_file
       deployment.merge! 'stemcells' => stemcells, 'releases' => releases
       IO.write(deployment_file, deployment.to_yaml)
@@ -55,6 +65,7 @@ module Bosh::Workspace
     private
 
     def item_changes(old, new)
+      return [] unless old
       old, new = presentify_item(old), presentify_item(new)
       changes = HashDiff.diff(old, new).map { |a| a.join(' ').squeeze(' ') }
       presentify_changes(changes).join(', ')

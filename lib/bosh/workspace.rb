@@ -11,6 +11,7 @@ require "bosh/workspace/helpers/stemcell_helper"
 require "bosh/workspace/helpers/dns_helper"
 
 require "bosh/workspace/schemas/project_deployment"
+require "bosh/workspace/schemas/deployment_patch"
 require "bosh/workspace/schemas/releases"
 require "bosh/workspace/schemas/stemcells"
 

@@ -17,10 +17,10 @@ module Bosh::Cli::Command
 
     before do
       Dir.chdir project_dir
-      allow(DeploymentPatch).to receive(:create)
+      allow(Bosh::Workspace::DeploymentPatch).to receive(:create)
         .with(deployment_file, /templates/).and_return(current_patch)
-      allow(DeploymentPatch).to receive(:from_file).with(patch_file)
-        .and_return(patch)
+      allow(Bosh::Workspace::DeploymentPatch).to receive(:from_file)
+        .with(patch_file).and_return(patch)
       allow(current_patch).to receive(:changes?).with(patch)
         .and_return(changes?)
       expect(command).to receive(:require_project_deployment)

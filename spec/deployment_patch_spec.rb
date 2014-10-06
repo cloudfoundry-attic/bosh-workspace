@@ -9,7 +9,7 @@ module Bosh::Workspace
     let(:patch_yaml_data) { patch_data.to_yaml }
     let(:deployment_file) { get_tmp_file_path deployment.to_yaml }
     let(:patch_data) do
-      { stemcells: stemcells, releases: releases, templates_ref: templates_ref }
+      { "stemcells" => stemcells, "releases" => releases, "templates_ref" => templates_ref }
     end
     let(:deployment) do
       {
@@ -23,9 +23,12 @@ module Bosh::Workspace
 
     describe '#create' do
       let(:templates_commit) { instance_double('Git::Object::Commit') }
+      let(:submodule?) { true }
       subject { DeploymentPatch.create deployment_file, templates_dir }
 
       before do
+        allow(Dir).to receive(:exist?).with(/#{templates_dir}\/\.git/)
+          .and_return(submodule?)
         allow(Git).to receive(:open).with(templates_dir)
           .and_return(templates_repo)
         allow(templates_repo).to receive(:log).with(1)
@@ -37,21 +40,61 @@ module Bosh::Workspace
       its(:stemcells) { should eq stemcells }
       its(:releases) { should eq releases }
       its(:templates_ref) { should eq templates_ref }
+
+      context "without templates submodule" do
+        let(:submodule?) { false }
+
+        it "ignores templates directory" do
+          expect(Git).to_not receive(:open)
+          expect(subject.templates_ref).to be_nil
+        end
+      end
     end
 
-    describe '#from_file' do
+    describe '.from_file' do
       subject { DeploymentPatch.from_file get_tmp_file_path(patch_yaml_data) }
       its(:stemcells) { should eq stemcells }
       its(:releases) { should eq releases }
       its(:templates_ref) { should eq templates_ref }
     end
 
-    describe '.to_yaml' do
+    describe '#perform_validation' do
+      context "valid" do
+        it "validates" do
+          allow_any_instance_of(Schemas::DeploymentPatch)
+            .to receive(:validate).with(patch_data)
+          expect(patch).to be_valid
+        end
+      end
+
+      context "invalid" do
+        it "has errors" do
+          allow_any_instance_of(Schemas::DeploymentPatch)
+            .to receive(:validate).with(patch_data)
+            .and_raise(Membrane::SchemaValidationError.new("foo"))
+          expect(patch).to_not be_valid
+          expect(patch.errors).to include "foo"
+        end
+      end
+    end
+
+    describe '#to_hash' do
+      subject { patch.to_hash }
+      it { should eq patch_data }
+
+      context "without templates_ref" do
+        let(:templates_ref) { nil }
+        before { patch_data.delete "templates_ref" }
+        it { should eq patch_data }
+      end
+    end
+
+    describe '#to_yaml' do
       subject { patch.to_yaml }
       it { should eq patch_yaml_data }
     end
 
-    describe '.to_file' do
+    describe '#to_file' do
       let(:patch_file) { 'foo.yml' }
 
       it 'writes to file' do
@@ -60,9 +103,10 @@ module Bosh::Workspace
       end
     end
 
-    describe '.apply' do
+    describe '#apply' do
       let(:deployment) { { "stemcells" => [], "releases" => [] } }
       let(:deployment_new) { { "stemcells" => stemcells, "releases" => releases } }
+      subject { patch.apply(deployment_file, templates_dir) }
 
       before do
         allow(Git).to receive(:open).with(templates_dir)
@@ -71,12 +115,21 @@ module Bosh::Workspace
 
       it 'applies changes' do
         expect(templates_repo).to receive(:checkout).with(templates_ref)
-        expect(IO).to receive(:write).with(deployment_file, deployment_new.to_yaml)
-        patch.apply(deployment_file, templates_dir)
+        expect(IO).to receive(:write)
+          .with(deployment_file, deployment_new.to_yaml)
+        subject
+      end
+
+      context "without templates_ref" do
+        let(:templates_ref) { nil }
+        it 'leaves templates dir as is' do
+          expect(Git).to_not receive(:open)
+          subject
+        end
       end
     end
 
-    describe '.changes' do
+    describe '#changes' do
       context 'with changes' do
         let(:new_patch) do 
           DeploymentPatch.new(
@@ -99,7 +152,7 @@ module Bosh::Workspace
       end
     end
 
-    describe '.changes?' do
+    describe '#changes?' do
       context 'with changes' do
         let(:new_patch) { DeploymentPatch.new(stemcells, releases, 'foo') }
         subject { patch.changes?(new_patch) }
