@@ -19,9 +19,10 @@ module Bosh::Cli::Command
     def apply(deployment_patch)
       require_project_deployment
       @patch = Bosh::Workspace::DeploymentPatch.from_file(deployment_patch)
+      validate_deployment_patch(@patch, deployment_patch)
 
       if current_deployment_patch.changes?(@patch)
-        unless options[:dry_run]
+        if !options[:dry_run]
           @patch.apply(current_deployment_file, templates_dir)
           repo.commit_all changes_message  unless options[:no_commit]
           say "Successfully applied deployment patch:"
@@ -49,6 +50,14 @@ module Bosh::Cli::Command
       @current_deployment_patch ||= begin
         Bosh::Workspace::DeploymentPatch
           .create(current_deployment_file, templates_dir)
+      end
+    end
+
+    def validate_deployment_patch(patch, file)
+      unless patch.valid?
+        say("Validation errors:".make_red)
+        patch.errors.each { |error| say("- #{error}") }
+        err("'#{file}' is not valid".make_red)
       end
     end
 

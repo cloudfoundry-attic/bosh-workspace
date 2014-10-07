@@ -143,6 +143,15 @@ module Bosh::Workspace
         its([:stemcells]) { should eq "changed foo 1 2, added baz 1" }
         its([:releases]) { should eq "removed bar 2, added qux 3" }
         its([:templates_ref]) { should eq "changed 803b666 e598fec" }
+
+        context 'without templates_ref' do
+          subject { patch.changes(new_patch) }
+          let(:templates_ref) { nil }
+
+          its([:stemcells]) { should eq "changed foo 1 2, added baz 1" }
+          its([:releases]) { should eq "removed bar 2, added qux 3" }
+          its([:templates_ref]) { should be_nil }
+        end
       end
 
       context 'without changes' do

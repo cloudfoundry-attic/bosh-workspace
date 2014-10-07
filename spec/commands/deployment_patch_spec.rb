@@ -11,6 +11,7 @@ module Bosh::Cli::Command
     let(:patch_file) { 'patch.yml' }
     let(:project_dir) { File.realpath Dir.mktmpdir }
     let(:changes?) { nil }
+    let(:valid?) { true }
     let(:changes) do
       { stemcells: "foo", releases: "bar", templates_ref: "baz" }
     end
@@ -24,7 +25,7 @@ module Bosh::Cli::Command
       allow(current_patch).to receive(:changes?).with(patch)
         .and_return(changes?)
       expect(command).to receive(:require_project_deployment)
-      expect(command).to receive_message_chain("project_deployment.file")
+      allow(command).to receive_message_chain("project_deployment.file")
         .and_return(deployment_file)
     end
 
@@ -37,6 +38,24 @@ module Bosh::Cli::Command
     end
 
     describe '.apply' do
+      let(:patch_valid?) { true }
+
+      before do
+        expect(patch).to receive(:valid?).and_return(patch_valid?)
+      end
+
+      context 'with non valid patch' do
+        let(:patch_valid?) { false }
+
+        it "raises an error" do
+          expect(patch).to receive(:errors).and_return(['foo', 'bar'])
+          expect(command).to receive(:say).with(/validation errors/i)
+          expect(command).to receive(:say).with(/foo/)
+          expect(command).to receive(:say).with(/bar/)
+          expect { command.apply(patch_file) }.to raise_error(/is not valid/)
+        end
+      end
+
       context 'with changes' do
         let(:changes?) { true }
         let(:repo) { instance_double 'Git::Repo' }
@@ -56,14 +75,26 @@ module Bosh::Cli::Command
         end
 
         context 'no dry-run' do
-          it 'applies changes and shows changes' do
+          before do
             expect(patch).to receive(:apply).with(deployment_file, /templates/)
-            expect(Git).to receive(:open).with(project_dir).and_return(repo)
-            expect(repo).to receive(:commit_all)
-              .with("Applied stemcells foo, releases bar, templates_ref baz")
             expect(command).to receive(:say).with /successfully applied/i
             expect_patch_changes_table
-            command.apply(patch_file)
+          end
+
+          context 'without no-commit' do
+            it 'applies changes, shows changes and commits' do
+              expect(Git).to receive(:open).with(project_dir).and_return(repo)
+              expect(repo).to receive(:commit_all)
+                .with("Applied stemcells foo, releases bar, templates_ref baz")
+              command.apply(patch_file)
+            end
+          end
+
+          context 'no-commit' do
+            it 'applies changes and shows changes' do
+              command.add_option(:no_commit, true)
+              command.apply(patch_file)
+            end
           end
         end
 
