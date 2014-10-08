@@ -27,7 +27,7 @@ module Bosh::Workspace
       subject { DeploymentPatch.create deployment_file, templates_dir }
 
       before do
-        allow(Dir).to receive(:exist?).with(/#{templates_dir}\/\.git/)
+        allow(File).to receive(:exist?).with(/#{templates_dir}\/\.git/)
           .and_return(submodule?)
         allow(Git).to receive(:open).with(templates_dir)
           .and_return(templates_repo)

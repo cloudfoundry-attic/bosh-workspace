@@ -6,7 +6,7 @@ module Bosh::Workspace
     attr_reader :stemcells, :releases, :templates_ref
 
     def self.create(deployment_file, templates_dir)
-      if Dir.exist? File.join(templates_dir, '.git')
+      if File.exist? File.join(templates_dir, '.git')
         ref = Git.open(templates_dir).log(1).first.sha
       end
       deployment = YAML.load_file deployment_file
