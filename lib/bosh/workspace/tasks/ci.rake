@@ -2,7 +2,7 @@ require "git"
 require "yaml"
 require "membrane"
 
-namspace :ci do
+namespace :ci do
   desc "Run deployment and tests errands as defined in .ci.yml"
   task run: [:set_target, :deploy_stable] do
     repo.checkout 'master'
