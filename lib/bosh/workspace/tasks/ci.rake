@@ -1,6 +1,7 @@
 require "git"
 require "yaml"
 require "membrane"
+require "bosh/core"
 require "bosh/core/shell"
 
 namespace :ci do
