@@ -33,6 +33,7 @@ module Bosh
         IO.popen(popen_args) do |io|
           io.each do |line|
             stdout.puts line.chomp
+            stdout.flush
             lines << line.chomp
           end
         end
