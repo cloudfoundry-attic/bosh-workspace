@@ -108,6 +108,8 @@ namespace :ci do
 
   def bosh(command)
     Bosh::Exec.sh "bosh #{command}"
+  rescue Bosh::Exec::Error => e
+    raise [e.message, e.output].join(":\n")
   end
 end
 

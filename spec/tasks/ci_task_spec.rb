@@ -44,6 +44,15 @@ describe 'ci' do
         subject.invoke
       end
     end
+
+    context "with error" do
+      let(:bosh_error) { Bosh::Exec::Error.new(1, "bosh", "foobar") }
+
+      it "shows original error output" do
+        expect(Bosh::Exec).to receive(:sh).and_raise(bosh_error)
+        expect { subject.invoke }.to raise_error(/foobar/)
+      end
+    end
   end
 
   describe ':deploy_stable' do
