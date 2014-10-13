@@ -15,6 +15,7 @@ require "bosh/workspace/schemas/deployment_patch"
 require "bosh/workspace/schemas/releases"
 require "bosh/workspace/schemas/stemcells"
 
+require "bosh/workspace/shell"
 require "bosh/workspace/manifest_builder"
 require "bosh/workspace/release"
 require "bosh/workspace/stemcell"

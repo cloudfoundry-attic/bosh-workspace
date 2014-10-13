@@ -1,8 +1,7 @@
 require "git"
 require "yaml"
 require "membrane"
-require "bosh/core"
-require "bosh/core/shell"
+require "bosh/workspace/shell"
 
 namespace :ci do
   desc "Sets bosh target specified in .ci.yml also accepts ENV['director_password']"
@@ -102,7 +101,7 @@ namespace :ci do
   end
 
   def shell
-    Bosh::Core::Shell.new
+    Bosh::Workspace::Shell.new
   end
 
   def bosh_deploy

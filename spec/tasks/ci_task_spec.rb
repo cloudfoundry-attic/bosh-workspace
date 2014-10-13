@@ -8,12 +8,12 @@ describe 'ci' do
   let(:deployments) { [{ "name" => "foo" }] }
   let(:skip_merge) { true }
   let(:repo) { instance_double("Git::Base") }
-  let(:shell) { instance_double("Bosh::Core::Shell") }
+  let(:shell) { instance_double("Bosh::Workspace::Shell") }
 
   before do
     allow(YAML).to receive(:load_file).with(".ci.yml").and_return(config)
     allow(Git).to receive(:open).and_return(repo)
-    allow(Bosh::Core::Shell).to receive(:new).and_return(shell)
+    allow(Bosh::Workspace::Shell).to receive(:new).and_return(shell)
   end
 
   def expect_bosh_command(cmd)
