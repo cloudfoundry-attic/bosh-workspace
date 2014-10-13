@@ -28,7 +28,7 @@ RSpec.configure do |config|
 end
 
 # load all files in spec/support/* (but not lower down)
-Dir[File.dirname(__FILE__) + '/support/*'].each do |path|
+Dir[File.dirname(__FILE__) + '/support/*/*.rb'].each do |path|
   require path unless File.directory?(path)
 end
 
@@ -86,4 +86,8 @@ def extracted_asset_dir(name, *path)
     Archive::Zip.extract(zipped_file, target_dir)
   end
   target_dir
+end
+
+def project_root
+  File.expand_path('../../', __FILE__)
 end
