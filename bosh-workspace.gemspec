@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "bosh_cli",  ">= 1.2682.0"
   spec.add_runtime_dependency "bosh_common",  ">= 1.2682.0"
+  spec.add_runtime_dependency "bosh-core",  ">= 1.2682.0"
   spec.add_runtime_dependency "semi_semantic", "~> 1.1.0"
   spec.add_runtime_dependency "membrane", "~>0.0.2"
   spec.add_runtime_dependency "hashdiff", "~> 0.2.1"

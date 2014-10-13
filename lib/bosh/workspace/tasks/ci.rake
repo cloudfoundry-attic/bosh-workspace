@@ -1,7 +1,7 @@
 require "git"
 require "yaml"
 require "membrane"
-require "common/exec"
+require "bosh/core/shell"
 
 namespace :ci do
   desc "Sets bosh target specified in .ci.yml also accepts ENV['director_password']"
@@ -14,9 +14,9 @@ namespace :ci do
   task :deploy_stable do
     repo.checkout 'stable'
     deployments.each do |deployment|
-      set_deployment(deployment.name)
-      prepare_deployment
-      stream_deploy
+      bosh_deployment(deployment.name)
+      bosh_prepare_deployment
+      bosh_deploy
     end
   end
 
@@ -24,14 +24,14 @@ namespace :ci do
   task run: [:set_target, :deploy_stable] do
     repo.checkout 'master'
     deployments.each do |deployment|
-      set_deployment(deployment.name)
+      bosh_deployment(deployment.name)
 
       if apply_patch_path = deployment.apply_patch
         bosh "apply deployment patch #{apply_patch_path}"
       end
 
-      prepare_deployment
-      stream_deploy
+      bosh_prepare_deployment
+      bosh_deploy
 
       deployment.errands.each do |errand|
         bosh "run errand #{errand}"
@@ -92,24 +92,26 @@ namespace :ci do
     @repo ||= Git.open(Dir.getwd)
   end
 
-  def set_deployment(name)
+  def bosh_deployment(name)
     bosh "deployment #{name}"
   end
 
-  def prepare_deployment
+  def bosh_prepare_deployment
     bosh "prepare deployment"
   end
 
-  def stream_deploy
-    deploy_task = []
-    IO.popen("echo 'yes' | bosh deploy") { |f| f.each { |l| say l; deploy_task << l } }
-    exit 1 if deploy_task.last =~ /error/
+  def shell
+    Bosh::Core::Shell.new
+  end
+
+  def bosh_deploy
+    deploy_cmd = "echo 'yes' | bosh deploy"
+    out = shell.run(deploy_cmd, output_command: true, last_number: 1)
+    exit 1 if out =~ /error/
   end
 
   def bosh(command)
-    Bosh::Exec.sh "bosh #{command}"
-  rescue Bosh::Exec::Error => e
-    raise [e.message, e.output].join(":\n")
+    shell.run "bosh #{command}", output_command: true
   end
 end
 

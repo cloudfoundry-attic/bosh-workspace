@@ -8,10 +8,16 @@ describe 'ci' do
   let(:deployments) { [{ "name" => "foo" }] }
   let(:skip_merge) { true }
   let(:repo) { instance_double("Git::Base") }
+  let(:shell) { instance_double("Bosh::Core::Shell") }
 
   before do
     allow(YAML).to receive(:load_file).with(".ci.yml").and_return(config)
     allow(Git).to receive(:open).and_return(repo)
+    allow(Bosh::Core::Shell).to receive(:new).and_return(shell)
+  end
+
+  def expect_bosh_command(cmd)
+    expect(shell).to receive(:run).with(cmd, output_command: true)
   end
 
   describe ':set_target' do
@@ -20,8 +26,8 @@ describe 'ci' do
     context "with username, password, hostname and port" do
       let(:target) { "foo:bar@example.com:25555" }
       it "sets target" do
-        expect(Bosh::Exec).to receive(:sh).with(/target example.com:25555/)
-        expect(Bosh::Exec).to receive(:sh).with(/login foo bar/)
+        expect_bosh_command(/target example.com:25555/)
+        expect_bosh_command(/login foo bar/)
         subject.invoke
       end
     end
@@ -29,8 +35,8 @@ describe 'ci' do
     context "with default password" do
       let(:target) { "foo@example.com:25555" }
       it "sets target" do
-        expect(Bosh::Exec).to receive(:sh).with(/target example.com:25555/)
-        expect(Bosh::Exec).to receive(:sh).with(/login foo admin/)
+        expect_bosh_command(/target example.com:25555/)
+        expect_bosh_command(/login foo admin/)
         subject.invoke
       end
     end
@@ -39,18 +45,9 @@ describe 'ci' do
       let(:target) { "foo@example.com:25555" }
       it "sets target" do
         ENV['director_password'] = "env_pw"
-        expect(Bosh::Exec).to receive(:sh).with(/target example.com:25555/)
-        expect(Bosh::Exec).to receive(:sh).with(/login foo env_pw/)
+        expect_bosh_command(/target example.com:25555/)
+        expect_bosh_command(/login foo env_pw/)
         subject.invoke
-      end
-    end
-
-    context "with error" do
-      let(:bosh_error) { Bosh::Exec::Error.new(1, "bosh", "foobar") }
-
-      it "shows original error output" do
-        expect(Bosh::Exec).to receive(:sh).and_raise(bosh_error)
-        expect { subject.invoke }.to raise_error(/foobar/)
       end
     end
   end
@@ -60,9 +57,10 @@ describe 'ci' do
 
     it 'runs' do
       expect(repo).to receive(:checkout).with("stable")
-      expect(Bosh::Exec).to receive(:sh).with(/deployment foo/)
-      expect(Bosh::Exec).to receive(:sh).with(/prepare deployment/)
-      expect(IO).to receive(:popen).with(/bosh deploy/).and_yield(["foo"])
+      expect_bosh_command(/deployment foo/)
+      expect_bosh_command(/prepare deployment/)
+      expect(shell).to receive(:run)
+        .with(/bosh deploy/, {output_command: true, last_number: 1})
       subject.invoke
     end
   end
@@ -70,13 +68,15 @@ describe 'ci' do
   describe ':run' do
     subject { rake["ci:run"] }
     let(:already_invoked_tasks) { %w(ci:set_target ci:deploy_stable) }
-    let(:deploy_stdout) { ["task 100", "bar"] }
+    let(:deploy_stdout) { "task 100" }
 
     before do
       expect(repo).to receive(:checkout).with("master")
-      expect(Bosh::Exec).to receive(:sh).with(/deployment foo/)
-      expect(Bosh::Exec).to receive(:sh).with(/prepare deployment/)
-      expect(IO).to receive(:popen).with(/bosh deploy/).and_yield(deploy_stdout)
+      expect_bosh_command(/deployment foo/)
+      expect_bosh_command(/prepare deployment/)
+      expect(shell).to receive(:run)
+        .with(/bosh deploy/, {output_command: true, last_number: 1})
+        .and_return(deploy_stdout)
     end
 
     it "runs" do
@@ -84,7 +84,7 @@ describe 'ci' do
     end
 
     context "with failing deploy" do
-      let(:deploy_stdout) { ["task 101", "Task 101 error"] }
+      let(:deploy_stdout) { "Task 101 error" }
       it "fails" do
         expect { subject.invoke }.to raise_error SystemExit
       end
@@ -93,8 +93,8 @@ describe 'ci' do
     context "with errands" do
       let(:deployments) { [{ "name" => "foo", "errands" => ["foo", "bar"] }] }
       it "runs and executes errands" do
-        expect(Bosh::Exec).to receive(:sh).with(/run errand foo/)
-        expect(Bosh::Exec).to receive(:sh).with(/run errand bar/)
+        expect_bosh_command(/run errand foo/)
+        expect_bosh_command(/run errand bar/)
         subject.invoke
       end
     end
@@ -104,8 +104,7 @@ describe 'ci' do
       let(:deployments) { [{ "name" => "foo", "create_patch" => patch_path }] }
 
       it "runs and creates patch" do
-        expect(Bosh::Exec).to receive(:sh)
-          .with(/create deployment patch #{patch_path}/)
+        expect_bosh_command(/create deployment patch #{patch_path}/)
         subject.invoke
       end
     end
@@ -115,8 +114,7 @@ describe 'ci' do
       let(:deployments) { [{ "name" => "foo", "apply_patch" => patch_path }] }
 
       it "applies patch and runs" do
-        expect(Bosh::Exec).to receive(:sh)
-          .with(/apply deployment patch #{patch_path}/)
+        expect_bosh_command(/apply deployment patch #{patch_path}/)
         subject.invoke
       end
     end
