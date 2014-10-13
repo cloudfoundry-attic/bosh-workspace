@@ -30,10 +30,12 @@ module Bosh
           popen_args = command
         end
 
-        IO.popen(popen_args).each do |line|
-          stdout.puts line.chomp
-          lines << line.chomp
-        end.close
+        IO.popen(popen_args) do |io|
+          io.each do |line|
+            stdout.puts line.chomp
+            lines << line.chomp
+          end
+        end
 
         lines
       end
