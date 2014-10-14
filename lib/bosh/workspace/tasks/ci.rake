@@ -105,13 +105,12 @@ namespace :ci do
   end
 
   def bosh_deploy
-    deploy_cmd = "echo 'yes' | bosh deploy"
-    out = shell.run(deploy_cmd, output_command: true, last_number: 1)
+    out = shell.run("bosh -n deploy", output_command: true, last_number: 1)
     exit 1 if out =~ /error/
   end
 
   def bosh(command)
-    shell.run "bosh #{command}", output_command: true
+    shell.run "bosh -n #{command}", output_command: true
   end
 end
 

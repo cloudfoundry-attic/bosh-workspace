@@ -60,7 +60,7 @@ describe 'ci' do
       expect_bosh_command(/deployment foo/)
       expect_bosh_command(/prepare deployment/)
       expect(shell).to receive(:run)
-        .with(/bosh deploy/, {output_command: true, last_number: 1})
+        .with(/bosh -n deploy/, {output_command: true, last_number: 1})
       subject.invoke
     end
   end
@@ -75,7 +75,7 @@ describe 'ci' do
       expect_bosh_command(/deployment foo/)
       expect_bosh_command(/prepare deployment/)
       expect(shell).to receive(:run)
-        .with(/bosh deploy/, {output_command: true, last_number: 1})
+        .with(/bosh -n deploy/, {output_command: true, last_number: 1})
         .and_return(deploy_stdout)
     end
 
