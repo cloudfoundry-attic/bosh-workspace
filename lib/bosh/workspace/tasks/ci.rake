@@ -4,10 +4,12 @@ require "membrane"
 require "bosh/workspace/shell"
 
 namespace :ci do
-  desc "Sets bosh target specified in .ci.yml also accepts ENV['director_password']"
+  desc "Sets bosh target specified in .ci.yml " +
+       "also accepts BOSH_USERNAME and BOSH_PASSWORD " +
+       "environment variables"
   task :set_target do
-    bosh "-n target #{target}"
-    bosh "-n login #{username} #{password}"
+    bosh "target #{target}"
+    bosh_login(username, password)
   end
 
   desc "Deploys from stable branch"
@@ -50,12 +52,13 @@ namespace :ci do
   end
 
   def username
-    config.target.match(/^([^@:]+)/)[1] || "admin"
+    ENV['BOSH_USERNAME'] ||
+      config.target.match(/^([^@:]+)/)[1] || "admin"
   end
 
   def password
     match = config.target.match(/^[^:@]+:([^@]+)/)
-    ENV['director_password'] || match && match[1] || "admin"
+    ENV['BOSH_PASSWORD'] || match && match[1] || "admin"
   end
 
   def target
@@ -107,6 +110,11 @@ namespace :ci do
   def bosh_deploy
     out = shell.run("bosh -n deploy", output_command: true, last_number: 1)
     exit 1 if out =~ /error/
+  end
+
+  def bosh_login(username, password)
+    env = { BOSH_USERNAME: username, BOSH_PASSWORD: password }
+      shell.run("bosh -n login", output_command: true, env: env)
   end
 
   def bosh(command)
