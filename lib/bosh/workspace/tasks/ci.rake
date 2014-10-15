@@ -113,8 +113,8 @@ namespace :ci do
   end
 
   def bosh_login(username, password)
-    env = { BOSH_USERNAME: username, BOSH_PASSWORD: password }
-      shell.run("bosh -n login", output_command: true, env: env)
+    env = { "BOSH_USERNAME" => username, "BOSH_PASSWORD" => password }
+    shell.run("bosh -n login", output_command: true, env: env)
   end
 
   def bosh(command)

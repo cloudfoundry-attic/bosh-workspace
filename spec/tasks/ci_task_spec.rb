@@ -22,7 +22,7 @@ describe 'ci' do
 
   describe ':set_target' do
     def expect_bosh_login(username, password)
-      env = { BOSH_USERNAME: username, BOSH_PASSWORD: password }
+      env = { "BOSH_USERNAME" => username, "BOSH_PASSWORD" => password }
       expect(shell).to receive(:run)
         .with("bosh -n login", output_command: true, env: env)
     end
