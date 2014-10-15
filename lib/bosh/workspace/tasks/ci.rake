@@ -5,7 +5,7 @@ require "bosh/workspace/shell"
 
 namespace :ci do
   desc "Sets bosh target specified in .ci.yml " +
-       "also accepts BOSH_USERNAME and BOSH_PASSWORD " +
+       "also accepts BOSH_USER and BOSH_PASSWORD " +
        "environment variables"
   task :set_target do
     bosh "target #{target}"
@@ -52,7 +52,7 @@ namespace :ci do
   end
 
   def username
-    ENV['BOSH_USERNAME'] ||
+    ENV['BOSH_USER'] ||
       config.target.match(/^([^@:]+)/)[1] || "admin"
   end
 
@@ -113,8 +113,7 @@ namespace :ci do
   end
 
   def bosh_login(username, password)
-    env = { "BOSH_USERNAME" => username, "BOSH_PASSWORD" => password }
-    shell.run("bosh -n login", output_command: true, env: env)
+    shell.run("bosh -n login #{username} #{password}")
   end
 
   def bosh(command)

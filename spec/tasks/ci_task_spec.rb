@@ -22,9 +22,7 @@ describe 'ci' do
 
   describe ':set_target' do
     def expect_bosh_login(username, password)
-      env = { "BOSH_USERNAME" => username, "BOSH_PASSWORD" => password }
-      expect(shell).to receive(:run)
-        .with("bosh -n login", output_command: true, env: env)
+      expect(shell).to receive(:run).with(/#{username} #{password}/)
     end
 
     subject { rake["ci:set_target"] }
@@ -50,7 +48,7 @@ describe 'ci' do
     context "environment variables" do
       let(:target) { "foo@example.com:25555" }
       it "sets target" do
-        ENV['BOSH_USERNAME'] = "env_user"
+        ENV['BOSH_USER'] = "env_user"
         ENV['BOSH_PASSWORD'] = "env_pw"
         expect_bosh_command(/target example.com:25555/)
         expect_bosh_login("env_user", "env_pw")
