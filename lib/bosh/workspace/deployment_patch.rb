@@ -44,7 +44,7 @@ module Bosh::Workspace
     end
 
     def apply(deployment_file, templates_dir)
-      Git.open(templates_dir).checkout(templates_ref) if templates_ref
+      checkout_submodule(templates_dir, templates_ref) if templates_ref
       deployment = YAML.load_file deployment_file
       deployment.merge! 'stemcells' => stemcells, 'releases' => releases
       IO.write(deployment_file, deployment.to_yaml)
@@ -82,6 +82,16 @@ module Bosh::Workspace
 
     def versions_hash(array)
       Hash[array.map { |v| [v["name"], v["version"]]}]
+    end
+
+    def checkout_submodule(dir, ref)
+      Dir.chdir(dir) do
+        shell.run("unset GIT_INDEX_FILE && git checkout #{ref}")
+      end
+    end
+
+    def shell
+      @shell ||= Shell.new(StringIO.new)
     end
   end
 end

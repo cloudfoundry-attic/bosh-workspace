@@ -108,13 +108,10 @@ module Bosh::Workspace
       let(:deployment_new) { { "stemcells" => stemcells, "releases" => releases } }
       subject { patch.apply(deployment_file, templates_dir) }
 
-      before do
-        allow(Git).to receive(:open).with(templates_dir)
-          .and_return(templates_repo)
-      end
-
       it 'applies changes' do
-        expect(templates_repo).to receive(:checkout).with(templates_ref)
+        expect(Dir).to receive(:chdir).with(templates_dir).and_yield
+        expect_any_instance_of(Shell).to receive(:run)
+          .with(/checkout #{templates_ref}/)
         expect(IO).to receive(:write)
           .with(deployment_file, deployment_new.to_yaml)
         subject
