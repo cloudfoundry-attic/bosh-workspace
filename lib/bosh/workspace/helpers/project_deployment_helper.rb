@@ -74,7 +74,7 @@ module Bosh::Workspace
     end
 
     def warden_cpi?
-      bosh_status["cpi"] == "warden"
+      bosh_status["cpi"] == "warden" || bosh_status["name"] =~ /Bosh Lite/i
     end
 
     def project_deployment_file

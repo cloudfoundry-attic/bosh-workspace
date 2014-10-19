@@ -157,8 +157,9 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
 
   describe "#resolve_director_uuid" do
     subject { project_deployment_helper.resolve_director_uuid }
-    let(:status) { { "uuid" => current_uuid, "cpi" => cpi } }
+    let(:status) { { "uuid" => current_uuid, "cpi" => cpi, "name" => director_name } }
     let(:current_uuid) { "current-uuid" }
+    let(:director_name) { "foobar" }
 
     before do
       expect(project_deployment).to receive(:director_uuid).and_return(uuid)
@@ -179,6 +180,19 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
       context "with director uuid" do
         let(:uuid) { "8451a282-4073" }
         it "builds manifest" do
+          subject
+        end
+      end
+    end
+
+    context "using the warden cpi which is now called vsphere" do
+      let(:cpi) { "vsphere" }
+      let(:director_name) { "Bosh Lite Director" }
+
+      context "with director uuid current" do
+        let(:uuid) { "current" }
+        it "builds manifest" do
+          expect(project_deployment).to receive(:director_uuid=).with(current_uuid)
           subject
         end
       end
