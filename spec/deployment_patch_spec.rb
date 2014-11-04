@@ -111,6 +111,8 @@ module Bosh::Workspace
       it 'applies changes' do
         expect(Dir).to receive(:chdir).with(templates_dir).and_yield
         expect_any_instance_of(Shell).to receive(:run)
+          .with(/git fetch/)
+        expect_any_instance_of(Shell).to receive(:run)
           .with(/checkout #{templates_ref}/)
         expect(IO).to receive(:write)
           .with(deployment_file, deployment_new.to_yaml)
