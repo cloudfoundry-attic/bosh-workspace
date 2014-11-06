@@ -86,9 +86,13 @@ module Bosh::Workspace
 
     def checkout_submodule(dir, ref)
       Dir.chdir(dir) do
-        shell.run("git fetch")
-        shell.run("unset GIT_INDEX_FILE && git checkout #{ref}")
+        git "fetch"
+        git "checkout #{ref}"
       end
+    end
+
+    def git(args)
+      shell.run("unset GIT_INDEX_FILE && git #{args}")
     end
 
     def shell
