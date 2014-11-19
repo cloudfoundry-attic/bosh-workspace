@@ -1,12 +1,12 @@
 require "git"
 module Bosh::Workspace
   class Release
-    attr_reader :name, :git_uri, :repo_dir, :git_ref
+    attr_reader :name, :git_uri, :repo_dir, :ref
 
     def initialize(release, releases_dir)
       @name = release["name"]
-      @git_ref = release["ref"]
-      @version_ref = release["version"]
+      @ref = release["ref"]
+      @spec_version = release["version"]
       @git_uri = release["git"]
       @repo_dir = File.join(releases_dir, @name)
       init_repo
@@ -15,7 +15,7 @@ module Bosh::Workspace
     def update_repo
       @repo.fetch "origin", tags: true
       @repo.checkout last_commit
-      @repo.checkout git_ref || ref
+      @repo.checkout ref || version_ref
     end
 
     def manifest_file
@@ -31,11 +31,11 @@ module Bosh::Workspace
     end
 
     def version
-      return final_releases.keys.sort.last if @version_ref == "latest"
-      unless final_releases[@version_ref.to_i]
-        err("Could not find version: #{@version_ref} for release: #{@name}")
+      return final_releases.keys.sort.last if @spec_version == "latest"
+      unless final_releases[@spec_version.to_i]
+        err("Could not find version: #{@spec_version} for release: #{@name}")
       end
-      @version_ref.to_i
+      @spec_version.to_i
     end
 
     private
@@ -55,7 +55,7 @@ module Bosh::Workspace
       @repo.log.object("origin").first
     end
 
-    def ref
+    def version_ref
       @repo.log.object(manifest).first
     end
 
