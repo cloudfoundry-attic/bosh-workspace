@@ -29,7 +29,8 @@ module Bosh::Cli::Command
         release.update_repo
         msg = "Version '#{release.version.to_s.make_green}'"
         msg = "Ref '#{release.ref.make_green}'" if release.ref
-        say "#{msg} has been checkout into: #{release.repo_dir}"
+        say "#{msg} has been checkout into:"
+        say "- #{release.repo_dir}"
       end
     end
 
