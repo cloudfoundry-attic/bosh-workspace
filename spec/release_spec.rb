@@ -27,6 +27,18 @@ describe Bosh::Workspace::Release do
       end
     end
 
+    context "specific ref with latest release" do
+      let(:release_data) do 
+        { "name" => name, "version" => "latest", "ref" => "66658", "git" => repo }
+      end
+
+      it "checks out repo" do
+        release.update_repo
+        expect(subject).to match(/foo-2.yml/)
+        expect(subject).to_not match(/foo-3.yml/)
+      end
+    end
+
     context "updated version " do
       let(:version) { "11" }
 

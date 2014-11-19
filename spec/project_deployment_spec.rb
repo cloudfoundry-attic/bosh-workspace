@@ -6,10 +6,16 @@ describe Bosh::Workspace::ProjectDeployment do
   let(:uuid) { "e55134c3-0a63-47be-8409-c9e53e965d5c" }
   let(:domain_name) { "bosh" }
   let(:templates) { ["path_to_bar", "path_to_baz"] }
-  let(:releases) { [
-    { "name" => "foo", "version" => release_version, "git" => "example.com/foo.git" }
-  ] }
+  let(:releases) do 
+    [{
+       "name" => "foo",
+       "version" => release_version,
+       "ref" => release_ref,
+       "git" => "example.com/foo.git"
+    }]
+  end
   let(:release_version) { 1 }
+  let(:release_ref) { "eb8ccf" }
   let(:stemcells) { [
     { "name" => "bar", "version" => stemcell_version }
   ] }
@@ -100,6 +106,11 @@ describe Bosh::Workspace::ProjectDeployment do
         let(:release_version) { "foo" }
         it { should match(/git.*missing/i) }
         it { should match(/version.*doesn't validate/i) }
+      end
+
+      context "optional ref" do
+        let(:missing) { ["git", "ref"] }
+        it { should match(/git.*missing/i) }
       end
     end
 

@@ -9,6 +9,7 @@ module Bosh::Workspace
       {
         "name"    => String,
         "version" => enum(Integer, "latest"),
+        optional("ref") => enum(String),
         "git"     => String,
       }
     end

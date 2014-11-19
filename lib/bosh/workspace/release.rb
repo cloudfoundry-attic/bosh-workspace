@@ -1,10 +1,11 @@
 require "git"
 module Bosh::Workspace
   class Release
-    attr_reader :name, :git_uri, :repo_dir
+    attr_reader :name, :git_uri, :repo_dir, :git_ref
 
     def initialize(release, releases_dir)
       @name = release["name"]
+      @git_ref = release["ref"]
       @version_ref = release["version"]
       @git_uri = release["git"]
       @repo_dir = File.join(releases_dir, @name)
@@ -12,8 +13,9 @@ module Bosh::Workspace
     end
 
     def update_repo
-      @repo.pull
-      @repo.checkout(ref)
+      @repo.fetch "origin", tags: true
+      @repo.checkout last_commit
+      @repo.checkout git_ref || ref
     end
 
     def manifest_file
@@ -47,6 +49,10 @@ module Bosh::Workspace
           .map { |dir| File.join("releases", File.basename(dir)) }
           .map { |version| [version[/(\d+)/].to_i, version] }]
       end
+    end
+
+    def last_commit
+      @repo.log.object("origin").first
     end
 
     def ref
