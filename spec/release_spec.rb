@@ -5,16 +5,35 @@ describe Bosh::Workspace::Release do
   let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
   let(:release) { Bosh::Workspace::Release.new release_data, releases_dir }
+  let(:templates) { Dir[File.join(releases_dir, name, "templates/*.yml")].to_s }
 
   describe "#update_repo" do
-    subject { Dir[File.join(releases_dir, name, "releases", "foo*.yml")].to_s }
+    subject { Dir[File.join(releases_dir, name, "releases/foo*.yml")].to_s }
 
     context "latest version" do
+      before {  release.update_repo }
+
       let(:version) { "latest" }
 
       it "checks out repo" do
-        release.update_repo
         expect(subject).to match(/foo-11.yml/)
+      end
+
+      it "does not include templates from master" do
+        expect(templates).to_not match(/deployment.yml/)
+      end
+    end
+
+    context "specific version" do
+      let(:version) { "11" }
+      before {  release.update_repo }
+
+      it "checks out repo" do
+        expect(subject).to match(/foo-11.yml/)
+      end
+
+      it "does not include templates from master" do
+        expect(templates).to_not match(/deployment.yml/)
       end
     end
 
@@ -71,7 +90,7 @@ describe Bosh::Workspace::Release do
     end
 
     context "multiple releases" do
-      let(:version) { "3" }
+      let(:version) { "11" }
 
       before do
         data = { "name" => "bar", "version" => 2, "git" => repo }
@@ -81,7 +100,8 @@ describe Bosh::Workspace::Release do
 
       it "version 3" do
         release.update_repo
-        expect(subject).to match(/foo-3.yml/)
+        expect(subject).to match(/foo-11.yml/)
+        expect(templates).to_not match(/deployment.yml/)
       end
     end
   end
