@@ -7,24 +7,13 @@ namespace :ci do
   desc "Sets bosh target specified in .ci.yml " +
        "also accepts BOSH_USER and BOSH_PASSWORD " +
        "environment variables"
-  task :set_target do
+  task :target do
     bosh "target #{target}"
     bosh_login(username, password)
   end
 
-  desc "Deploys from stable branch"
-  task :deploy_stable do
-    repo.checkout 'stable'
-    deployments.each do |deployment|
-      bosh_deployment(deployment.name)
-      bosh_prepare_deployment
-      bosh_deploy
-    end
-  end
-
-  desc "Run deployment and tests errands as defined in .ci.yml"
-  task run: [:set_target, :deploy_stable] do
-    repo.checkout 'master'
+  desc "Apply or create patches as defined in .ci.yml"
+  task :patch do
     deployments.each do |deployment|
       bosh_deployment(deployment.name)
 
@@ -32,23 +21,37 @@ namespace :ci do
         bosh "apply deployment patch #{apply_patch_path}"
       end
 
-      bosh_prepare_deployment
-      bosh_deploy
-
-      deployment.errands.each do |errand|
-        bosh "run errand #{errand}"
-      end if deployment.errands
-
       if create_patch_path = deployment.create_patch
         bosh "create deployment patch #{create_patch_path}"
       end
     end
-
-    repo.branch('stable').merge('master') unless skip_merge?
   end
 
-  def skip_merge?
-    config.skip_merge || ENV['skip_merge'] =~ /^(true|t|yes|y|1)$/i
+  desc "Deploy deployments as defined in .ci.yml"
+  task deploy: :target do
+    deployments.each do |deployment|
+      bosh_deployment(deployment.name)
+      bosh "prepare deployment"
+      bosh_deploy
+    end
+  end
+
+  desc "Verifies deployments by running errands specified in .ci.yml"
+  task verify: :target do
+    deployments.each do |deployment|
+      bosh_deployment(deployment.name)
+
+      deployment.errands.each do |errand|
+        bosh "run errand #{errand}"
+      end if deployment.errands
+    end    
+  end
+
+  desc "Cleans up by deleting all deployments specified in .ci.yml"
+  task clean: :target do
+    deployments.each do |deployment|
+      bosh "delete deployment #{deployment.name} --force"
+    end    
   end
 
   def username
@@ -85,14 +88,9 @@ namespace :ci do
           optional("apply_patch") => String,
           optional("create_patch") => String,
           optional("errands") => [String]
-        }],
-        optional("skip_merge") => bool
+        }]
       }
     end
-  end
-
-  def repo
-    @repo ||= Git.open(Dir.getwd)
   end
 
   def bosh_deployment(name)
@@ -120,5 +118,3 @@ namespace :ci do
     shell.run "bosh -n #{command}", output_command: true
   end
 end
-
-

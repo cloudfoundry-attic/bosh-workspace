@@ -20,12 +20,12 @@ describe 'ci' do
     expect(shell).to receive(:run).with(cmd, output_command: true)
   end
 
-  describe ':set_target' do
+  describe ':target' do
     def expect_bosh_login(username, password)
       expect(shell).to receive(:run).with(/#{username} #{password}/)
     end
 
-    subject { rake["ci:set_target"] }
+    subject { rake["ci:target"] }
 
     context "with username, password, hostname and port" do
       let(:target) { "foo:bar@example.com:25555" }
@@ -57,51 +57,15 @@ describe 'ci' do
     end
   end
 
-  describe ':deploy_stable' do
-    subject { rake["ci:deploy_stable"] }
-
-    it 'runs' do
-      expect(repo).to receive(:checkout).with("stable")
-      expect_bosh_command(/deployment foo/)
-      expect_bosh_command(/prepare deployment/)
-      expect(shell).to receive(:run)
-        .with(/bosh -n deploy/, {output_command: true, last_number: 1})
-      subject.invoke
-    end
-  end
-
-  describe ':run' do
-    subject { rake["ci:run"] }
-    let(:already_invoked_tasks) { %w(ci:set_target ci:deploy_stable) }
-    let(:deploy_stdout) { "task 100" }
+  describe ':patch' do
+    subject { rake["ci:patch"] }
 
     before do
-      expect(repo).to receive(:checkout).with("master")
       expect_bosh_command(/deployment foo/)
-      expect_bosh_command(/prepare deployment/)
-      expect(shell).to receive(:run)
-        .with(/bosh -n deploy/, {output_command: true, last_number: 1})
-        .and_return(deploy_stdout)
     end
 
     it "runs" do
       subject.invoke
-    end
-
-    context "with failing deploy" do
-      let(:deploy_stdout) { "Task 101 error" }
-      it "fails" do
-        expect { subject.invoke }.to raise_error SystemExit
-      end
-    end
-
-    context "with errands" do
-      let(:deployments) { [{ "name" => "foo", "errands" => ["foo", "bar"] }] }
-      it "runs and executes errands" do
-        expect_bosh_command(/run errand foo/)
-        expect_bosh_command(/run errand bar/)
-        subject.invoke
-      end
     end
 
     context "with create_patch" do
@@ -123,27 +87,56 @@ describe 'ci' do
         subject.invoke
       end
     end
+  end
 
-    context "without skip_merge" do
-      let(:config) do
-        { "target" => target, "deployments" => deployments }
+  describe ':deploy' do
+    subject { rake["ci:deploy"] }
+    let(:already_invoked_tasks) { %w(ci:target) }
+    let(:deploy_stdout) { "task 100" }
+
+    before do
+      expect_bosh_command(/deployment foo/)
+      expect_bosh_command(/prepare deployment/)
+      expect(shell).to receive(:run)
+        .with(/bosh -n deploy/, {output_command: true, last_number: 1})
+        .and_return(deploy_stdout)
+    end
+
+    it "runs" do
+      subject.invoke
+    end
+
+    context "with failing deploy" do
+      let(:deploy_stdout) { "Task 101 error" }
+      it "fails" do
+        expect { subject.invoke }.to raise_error SystemExit
       end
-      let(:branch) { instance_double("Git::Branch") }
+    end
+  end
 
-      it "runs and merges" do
-        expect(repo).to receive(:branch).with("stable").and_return(branch)
-        expect(branch).to receive(:merge).with("master")
+  describe ':verify' do
+    subject { rake["ci:verify"] }
+    let(:already_invoked_tasks) { %w(ci:target) }
+    before { expect_bosh_command(/deployment foo/) }
+
+    context "with errands" do
+      let(:deployments) { [{ "name" => "foo", "errands" => ["foo", "bar"] }] }
+
+      it "runs and executes errands" do
+        expect_bosh_command(/run errand foo/)
+        expect_bosh_command(/run errand bar/)
         subject.invoke
       end
+    end
+  end
 
-      context "with ENV['skip_merge']" do
-        %w(true t yes y 1).each do |val|
-          it "runs" do
-            ENV['skip_merge'] = val.to_s
-            subject.invoke
-          end
-        end
-      end
+  describe ':clean' do
+    subject { rake["ci:clean"] }
+    let(:already_invoked_tasks) { %w(ci:target) }
+
+    it "runs and executes errands" do
+      expect_bosh_command(/delete deployment foo --force/)
+      subject.invoke
     end
   end
 end
