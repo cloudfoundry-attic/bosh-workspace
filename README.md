@@ -1,4 +1,4 @@
-# Bosh workspace [![Build Status](https://travis-ci.org/rkoster/bosh-workspace.svg?branch=master)](https://travis-ci.org/rkoster/bosh-workspace) [![Test Coverage](https://codeclimate.com/github/rkoster/bosh-workspace/coverage.png)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Code Climate](https://codeclimate.com/github/rkoster/bosh-workspace.png)](https://codeclimate.com/github/rkoster/bosh-workspace)
+# Bosh workspace [![Build Status](https://travis-ci.org/swisscom/bosh-workspace.svg?branch=master)](https://travis-ci.org/swisscom/bosh-workspace) [![Test Coverage](https://codeclimate.com/github/rkoster/bosh-workspace/coverage.png)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Code Climate](https://codeclimate.com/github/rkoster/bosh-workspace.png)](https://codeclimate.com/github/rkoster/bosh-workspace)
 
 This is a `bosh` cli plugin for creating reproducible and upgradable deployments.
 
@@ -107,3 +107,8 @@ Which will transform all the static ip references into domain names.
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## List of Contributors
+
+* [Swisscom](https://www.swisscom.ch)
+* [Stark & Wayne](http://starkandwayne.com)

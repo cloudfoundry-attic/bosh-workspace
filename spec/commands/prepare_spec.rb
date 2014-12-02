@@ -26,9 +26,11 @@ describe Bosh::Cli::Command::Prepare do
     describe "prepare_release(s/_repos)" do
       let(:releases) { [ release ] }
       let(:stemcells) { [] }
+      let(:ref) { nil }
 
       before do
-        expect(release).to receive(:update_repo) 
+        expect(release).to receive(:update_repo)
+        expect(release).to receive(:ref).and_return(ref)
         expect(command).to receive(:release_uploaded?)
           .with(release.name, release.version).and_return(release_uploaded)
       end
@@ -42,12 +44,16 @@ describe Bosh::Cli::Command::Prepare do
         end
       end
 
-      context "release not uploaded" do
+      context "release not uploaded with ref" do
         let(:release_uploaded) { false }
+        let(:ref) { "0f910f" }
 
-        it "does not upload the release" do
-          expect(command).to receive(:release_upload).with(release.manifest_file)
-          command.prepare
+        context "without release ref" do
+          it "does upload the release" do
+            expect(release).to receive(:ref).and_return(ref)
+            expect(command).to receive(:release_upload).with(release.manifest_file)
+            command.prepare
+          end
         end
       end
     end

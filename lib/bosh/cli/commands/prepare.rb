@@ -27,7 +27,10 @@ module Bosh::Cli::Command
       project_deployment_releases.each do |release|
         say "Cloning release '#{release.name.make_green}' to satisfy template references"
         release.update_repo
-        say "Version '#{release.version.to_s.make_green}' has been checkout into: #{release.repo_dir}"
+        msg = "Version '#{release.version.to_s.make_green}'"
+        msg = "Ref '#{release.ref.make_green}'" if release.ref
+        say "#{msg} has been checkout into:"
+        say "- #{release.repo_dir}"
       end
     end
 
