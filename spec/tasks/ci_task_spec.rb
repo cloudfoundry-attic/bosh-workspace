@@ -134,10 +134,36 @@ describe 'ci' do
   describe ':clean' do
     subject { rake["ci:clean"] }
     let(:already_invoked_tasks) { %w(ci:target) }
+    let(:deployment) { { "name" => "foo-z1" } }
+    let(:deployments_stdout) do
+      <<-EOF
+        +------------+-------------+-------------------------------+
+        | Name       | Release(s)  | Stemcell(s)                   |
+        +------------+-------------+-------------------------------+
+        | foo-z1     | foo/1       | stemcell-trusty-go_agent/1234 |
+        +------------+-------------+-------------------------------+
 
-    it "runs and executes errands" do
-      expect_bosh_command(/delete deployment foo --force/)
+        Deployments total: 1
+      EOF
+    end
+
+    before do
+      expect_bosh_command(/bosh -n deployments/).and_return(deployments_stdout)
+      expect(YAML).to receive(:load_file).with("deployments/foo.yml")
+        .and_return(deployment)
+    end
+
+    it "deletes all deployments" do
+      expect_bosh_command(/delete deployment foo-z1 --force/)
       subject.invoke
+    end
+
+    context "deployment already deleted" do
+      let(:deployment) { { "name" => "foo-z2" } }
+
+      it "skips delete deployment" do
+        subject.invoke
+      end
     end
   end
 end

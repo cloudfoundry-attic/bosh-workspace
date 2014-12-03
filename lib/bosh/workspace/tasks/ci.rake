@@ -50,8 +50,11 @@ namespace :ci do
   desc "Cleans up by deleting all deployments specified in .ci.yml"
   task clean: :target do
     deployments.each do |deployment|
-      bosh "delete deployment #{deployment.name} --force"
-    end    
+      name = real_deployment_name(deployment.name)
+      if current_deployments =~ /#{name}/
+        bosh "delete deployment #{name} --force"
+      end
+    end
   end
 
   def username
@@ -70,6 +73,15 @@ namespace :ci do
 
   def deployments
     @deployments ||= config.deployments.map { |d| OpenStruct.new(d) }
+  end
+
+  def current_deployments
+    @current_deployments ||= bosh("deployments")
+  end
+
+  def real_deployment_name(name)
+    file = File.join('deployments', "#{name}.yml")
+    YAML.load_file(file)["name"]
   end
 
   def config
