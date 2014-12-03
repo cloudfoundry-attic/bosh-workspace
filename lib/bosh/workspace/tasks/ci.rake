@@ -13,7 +13,7 @@ namespace :ci do
   end
 
   desc "Apply or create patches as defined in .ci.yml"
-  task :patch do
+  task patch: :target do
     deployments.each do |deployment|
       bosh_deployment(deployment.name)
 

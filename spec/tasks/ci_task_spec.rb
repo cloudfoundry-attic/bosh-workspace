@@ -59,6 +59,7 @@ describe 'ci' do
 
   describe ':patch' do
     subject { rake["ci:patch"] }
+    let(:already_invoked_tasks) { %w(ci:target) }
 
     before do
       expect_bosh_command(/deployment foo/)
