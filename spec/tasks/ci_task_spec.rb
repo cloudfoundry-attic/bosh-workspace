@@ -16,8 +16,9 @@ describe 'ci' do
     allow(Bosh::Workspace::Shell).to receive(:new).and_return(shell)
   end
 
-  def expect_bosh_command(cmd)
-    expect(shell).to receive(:run).with(cmd, output_command: true)
+  def expect_bosh_command(cmd, options = {})
+    options[:output_command] = true
+    expect(shell).to receive(:run).with(cmd, options)
   end
 
   describe ':target' do
@@ -148,7 +149,8 @@ describe 'ci' do
     end
 
     before do
-      expect_bosh_command(/bosh -n deployments/).and_return(deployments_stdout)
+      expect_bosh_command(/bosh -n deployments/, ignore_failures: true)
+        .and_return(deployments_stdout)
       expect(YAML).to receive(:load_file).with("deployments/foo.yml")
         .and_return(deployment)
     end

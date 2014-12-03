@@ -76,7 +76,7 @@ namespace :ci do
   end
 
   def current_deployments
-    @current_deployments ||= bosh("deployments")
+    @current_deployments ||= bosh "deployments", ignore_failures: true
   end
 
   def real_deployment_name(name)
@@ -126,7 +126,8 @@ namespace :ci do
     shell.run("bosh -n login #{username} #{password}")
   end
 
-  def bosh(command)
-    shell.run "bosh -n #{command}", output_command: true
+  def bosh(command, options = {})
+    options[:output_command] = true
+    shell.run "bosh -n #{command}", options
   end
 end
