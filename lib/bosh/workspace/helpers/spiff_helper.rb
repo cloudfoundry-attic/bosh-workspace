@@ -11,6 +11,7 @@ module Bosh::Workspace
     private
 
     def spiff(verb, params)
+      params.map!(&:shellescape)
       cmd = ["spiff", verb.to_s] + params + ["2>&1"]
       sh(cmd.join(" "), :yield => :on_false) do |result|
         spiff_not_found if result.not_found?

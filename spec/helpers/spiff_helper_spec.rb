@@ -7,6 +7,7 @@ describe Bosh::Workspace::SpiffHelper do
     let(:path) { asset_dir("bin") }
     let(:templates) { ["foo.yml", "bar.yml"] }
     let(:target_file) { "spiffed_manifest.yml" }
+    let(:args) { [/spiff merge/, Hash] }
 
     around do |example|
       original_path = ENV["PATH"]
@@ -16,7 +17,7 @@ describe Bosh::Workspace::SpiffHelper do
     end
 
     before do
-      expect(subject).to receive(:sh).and_yield(result)
+      expect(subject).to receive(:sh).with(*args).and_yield(result)
     end
 
     context "spiff not in path" do
@@ -40,15 +41,27 @@ describe Bosh::Workspace::SpiffHelper do
       end
     end
 
-    describe ".merge" do
+    describe ".spiff_merge" do
       let(:file) { instance_double("File") }
       let(:output) { "---\n{}" }
       let(:result) { Bosh::Exec::Result.new("spiff", output, 0, false) }
 
-      it "merges manifests" do
+      before do
         expect(File).to receive(:open).with(target_file, 'w').and_yield(file)
         expect(file).to receive(:write).with(output)
+      end
+
+      it "merges manifests" do
         subject.spiff_merge templates, target_file
+      end
+
+      context "spaces in template paths" do
+        let(:templates) { ["space test/foo space test.yml"] }
+        let(:args) { [/space\\ test\/foo\\ space\\ test.yml/, Hash] }
+
+        it "merges manifests" do
+          subject.spiff_merge templates, target_file
+        end
       end
     end
   end
