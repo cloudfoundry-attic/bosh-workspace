@@ -49,6 +49,10 @@ namespace :ci do
 
   desc "Cleans up by deleting all deployments specified in .ci.yml"
   task clean: :target do
+    unless ENV["DESTROY_DEPLOYMENTS"]
+      raise "Set DESTROY_DEPLOYMENTS to confirm deployment destruction"
+    end
+
     deployments.each do |deployment|
       name = real_deployment_name(deployment.name)
       if current_deployments =~ /#{name}/

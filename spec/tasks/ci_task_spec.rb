@@ -135,9 +135,11 @@ describe 'ci' do
   describe ':clean' do
     subject { rake["ci:clean"] }
     let(:already_invoked_tasks) { %w(ci:target) }
-    let(:deployment) { { "name" => "foo-z1" } }
-    let(:deployments_stdout) do
-      <<-EOF
+
+    context "DESTROY_DEPLOYMENTS set" do
+      let(:deployment) { { "name" => "foo-z1" } }
+      let(:deployments_stdout) do
+        <<-EOF
         +------------+-------------+-------------------------------+
         | Name       | Release(s)  | Stemcell(s)                   |
         +------------+-------------+-------------------------------+
@@ -145,26 +147,36 @@ describe 'ci' do
         +------------+-------------+-------------------------------+
 
         Deployments total: 1
-      EOF
+        EOF
+      end
+
+      before do
+        expect_bosh_command(/bosh -n deployments/, ignore_failures: true)
+          .and_return(deployments_stdout)
+        expect(YAML).to receive(:load_file).with("deployments/foo.yml")
+          .and_return(deployment)
+        ENV["DESTROY_DEPLOYMENTS"] = "true"
+      end
+
+      it "deletes all deployments" do
+        expect_bosh_command(/delete deployment foo-z1 --force/)
+        subject.invoke
+      end
+
+      context "deployment already deleted" do
+        let(:deployment) { { "name" => "foo-z2" } }
+
+        it "skips delete deployment" do
+          subject.invoke
+        end
+      end
     end
 
-    before do
-      expect_bosh_command(/bosh -n deployments/, ignore_failures: true)
-        .and_return(deployments_stdout)
-      expect(YAML).to receive(:load_file).with("deployments/foo.yml")
-        .and_return(deployment)
-    end
-
-    it "deletes all deployments" do
-      expect_bosh_command(/delete deployment foo-z1 --force/)
-      subject.invoke
-    end
-
-    context "deployment already deleted" do
-      let(:deployment) { { "name" => "foo-z2" } }
+    context "DESTROY_DEPLOYMENTS not set" do
+      before { ENV.delete "DESTROY_DEPLOYMENTS" if ENV["DESTROY_DEPLOYMENTS"] }
 
       it "skips delete deployment" do
-        subject.invoke
+        expect { subject.invoke }.to raise_error /destroy_deployments/i
       end
     end
   end
