@@ -1,6 +1,7 @@
 module Bosh::Workspace::Tasks
   class BoshCommandRunner
-    attr_reader :target, :username, :password, :deployment_file
+    attr_reader :target, :username, :password
+    attr_accessor :deployment_file
 
     def initialize(target, username, password)
       @target = target
@@ -11,7 +12,6 @@ module Bosh::Workspace::Tasks
 
     def run(command, options = {})
       options.merge! default_options
-      deployment_file = options.delete(:deployment_file)
       args = ['-n', '-t', target]
       args.concat ['-d', deployment_file] if deployment_file
       @shell.run "bundle exec bosh #{args.join(' ')} #{command}", options
