@@ -127,12 +127,13 @@ namespace :ci do
   end
 
   def bosh_login(username, password)
-    shell.run("bosh -n login #{username} #{password}")
+    bosh "login", env: { "BOSH_USER" => username, "BOSH_PASSWORD" => password }
   end
 
   def bosh(command, options = {})
     options[:output_command] = true
-    options[:env] = { "BOSH_CONFIG" => bosh_config }
+    options[:env] ||= {}
+    options[:env]["BOSH_CONFIG"] = bosh_config
     shell.run "bosh -n #{command}", options
   end
 

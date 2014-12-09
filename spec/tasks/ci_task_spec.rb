@@ -21,13 +21,15 @@ describe 'ci' do
 
   def expect_bosh_command(cmd, options = {})
     options[:output_command] = true
-    options[:env] = { "BOSH_CONFIG" => bosh_config }
+    options[:env] ||= {}
+    options[:env]["BOSH_CONFIG"] = bosh_config
     expect(shell).to receive(:run).with(cmd, options)
   end
 
   describe ':target' do
     def expect_bosh_login(username, password)
-      expect(shell).to receive(:run).with(/#{username} #{password}/)
+      expect_bosh_command(/login/,
+        env: { "BOSH_USER" => username, "BOSH_PASSWORD" => password })
     end
 
     subject { rake["ci:target"] }
