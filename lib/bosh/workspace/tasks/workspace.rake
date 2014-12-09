@@ -1,4 +1,4 @@
-namespace :ci do
+namespace :workspace do
   include Bosh::Workspace::Tasks
 
   desc "Apply or create patches as defined in .ci.yml"
@@ -45,10 +45,10 @@ namespace :ci do
   def with_deployments(options = {})
     deployments.each do |d|
       @cli = BoshCommandRunner.new(d.target, d.username, d.password)
-      unless options[:set_deployment] && options[:set_deployment] == false
-        @cli.deployment = deployment.merged_file
+      unless options[:set_deployment] == false
+        @cli.deployment_file = d.merged_file
       end
-      yield deployment
+      yield d
     end
   end
 
