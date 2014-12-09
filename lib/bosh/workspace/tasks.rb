@@ -10,4 +10,4 @@ require "bosh/workspace/tasks/bosh_command_runner.rb"
 require "bosh/workspace/tasks/deployment.rb"
 
 rake_paths = File.expand_path('tasks/**/*.rake', File.dirname(__FILE__))
-Dir.glob(rake_paths).each { |r| import r  }
+Dir.glob(rake_paths).each { |r| import r  } if defined? import

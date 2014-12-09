@@ -11,14 +11,17 @@ module Bosh::Workspace::Tasks
     end
 
     def target
+      return @raw.target unless @raw.target =~ /@/
       @raw.target.split('@')[1]
     end
 
     def username
+      return "admin" unless @raw.target =~ /@/
       @raw.target.match(/^([^@:]+)/)[1] || "admin"
     end
 
     def password
+      return "admin" unless @raw.target =~ /@/
       match = @raw.target.match(/^[^:@]+:([^@]+)/)
       match && match[1] || "admin"
     end

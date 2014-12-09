@@ -19,6 +19,7 @@ require "archive/zip"
 require "cli"
 
 require "bosh/workspace"
+require "bosh/workspace/tasks"
 
 RSpec.configure do |config|
   config.raise_errors_for_deprecations!
