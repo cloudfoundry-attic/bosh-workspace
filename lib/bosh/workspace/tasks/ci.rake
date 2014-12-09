@@ -5,8 +5,8 @@ require "bosh/workspace/shell"
 
 namespace :ci do
   desc "Sets bosh target specified in .ci.yml " +
-       "also accepts BOSH_USER and BOSH_PASSWORD " +
-       "environment variables"
+       "also accepts BOSH_USER, BOSH_PASSWORD " +
+       "and BOSH_CONFIG environment variables"
   task :target do
     bosh "target #{target}"
     bosh_login(username, password)
@@ -132,6 +132,13 @@ namespace :ci do
 
   def bosh(command, options = {})
     options[:output_command] = true
+    options[:env] = { "BOSH_CONFIG" => bosh_config }
     shell.run "bosh -n #{command}", options
+  end
+
+  def bosh_config
+    @bosh_config ||= begin
+      ENV['BOSH_CONFIG'] || Tempfile.new(['bosh_config', '.yml']).path
+    end
   end
 end

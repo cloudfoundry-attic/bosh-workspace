@@ -9,15 +9,19 @@ describe 'ci' do
   let(:skip_merge) { true }
   let(:repo) { instance_double("Git::Base") }
   let(:shell) { instance_double("Bosh::Workspace::Shell") }
+  let(:bosh_config) { "/tmp/bosh_config.yml" }
 
   before do
     allow(YAML).to receive(:load_file).with(".ci.yml").and_return(config)
     allow(Git).to receive(:open).and_return(repo)
     allow(Bosh::Workspace::Shell).to receive(:new).and_return(shell)
+    expect(Tempfile).to receive(:new).at_most(:once)
+      .and_return(instance_double("Tempfile", path: bosh_config))
   end
 
   def expect_bosh_command(cmd, options = {})
     options[:output_command] = true
+    options[:env] = { "BOSH_CONFIG" => bosh_config }
     expect(shell).to receive(:run).with(cmd, options)
   end
 
@@ -56,6 +60,19 @@ describe 'ci' do
         subject.invoke
       end
     end
+
+    context "with explicit BOSH_CONFIG" do
+      let(:bosh_config) { "non_standard_path/bosh_config.yml" }
+      it "uses BOSH_CONFIG" do
+        ENV['BOSH_CONFIG'] = bosh_config
+        expect(Tempfile).to_not receive(:new)
+        expect_bosh_command(/target localhost:25555/)
+        expect_bosh_login("foo", "bar")
+        subject.invoke
+      end
+    end
+
+    after { ENV.delete_if { |e| e =~ /BOSH/ } }
   end
 
   describe ':patch' do
