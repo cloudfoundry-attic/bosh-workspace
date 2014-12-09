@@ -134,7 +134,7 @@ namespace :ci do
     options[:output_command] = true
     options[:env] ||= {}
     options[:env]["BOSH_CONFIG"] = bosh_config
-    shell.run "bosh -n #{command}", options
+    shell.run "bundle exec bosh -n #{command}", options
   end
 
   def bosh_config
