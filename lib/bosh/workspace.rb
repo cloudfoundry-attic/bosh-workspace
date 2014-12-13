@@ -1,6 +1,7 @@
 module Bosh; module Workspace; end; end
 
 require "membrane"
+require "shellwords"
 require "cli/core_ext"
 require "cli/validation"
 
