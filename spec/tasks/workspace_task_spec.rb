@@ -69,8 +69,8 @@ module Bosh::Workspace::Tasks
         end
       end
 
-      describe ':verify' do
-        subject { rake["workspace:verify"] }
+      describe ':run_errands' do
+        subject { rake["workspace:run_errands"] }
 
         it "runs and executes errands" do
           expect_bosh_command("run errand foo_errand")

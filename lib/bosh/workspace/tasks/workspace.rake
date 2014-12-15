@@ -1,7 +1,7 @@
 namespace :workspace do
   include Bosh::Workspace::Tasks
 
-  desc "Apply or create patches as defined in .ci.yml"
+  desc "Apply or create patches as defined in deployments.yml"
   task :patch do
     with_deployments do |deployment|
       if apply_patch_path = deployment.apply_patch
@@ -14,7 +14,7 @@ namespace :workspace do
     end
   end
 
-  desc "Deploy deployments as defined in .ci.yml"
+  desc "Deploy deployments as defined in deployments.yml"
   task :deploy do
     with_deployments do
       bosh "prepare deployment"
@@ -22,8 +22,8 @@ namespace :workspace do
     end
   end
 
-  desc "Verifies deployments by running errands specified in .ci.yml"
-  task :verify do
+  desc "Verifies deployments by running errands specified in deployments.yml"
+  task :run_errands do
     with_deployments do |deployment|
       deployment.errands.each do |errand|
         bosh "run errand #{errand}"
@@ -31,7 +31,7 @@ namespace :workspace do
     end    
   end
 
-  desc "Cleans up by deleting all deployments specified in .ci.yml"
+  desc "Cleans up by deleting all deployments specified in deployments.yml"
   task :clean do
     unless ENV["DESTROY_DEPLOYMENTS"]
       raise "Set DESTROY_DEPLOYMENTS to confirm deployment destruction"
