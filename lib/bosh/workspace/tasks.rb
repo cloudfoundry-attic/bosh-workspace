@@ -1,8 +1,10 @@
 require "yaml"
 require "membrane"
 
-module Bosh::Workspace
-  module Tasks; end
+module Bosh
+  module Workspace
+    module Tasks; end
+  end
 end
 
 require "bosh/workspace/shell"
