@@ -47,7 +47,7 @@ describe Bosh::Workspace::Release do
     end
 
     context "specific ref with latest release" do
-      let(:release_data) do 
+      let(:release_data) do
         { "name" => name, "version" => "latest", "ref" => "66658", "git" => repo }
       end
 
@@ -98,10 +98,26 @@ describe Bosh::Workspace::Release do
         other_release.update_repo
       end
 
-      it "version 3" do
+      it "version 11" do
         release.update_repo
         expect(subject).to match(/foo-11.yml/)
         expect(templates).to_not match(/deployment.yml/)
+      end
+    end
+
+    context "new release in already cloned repo" do
+      let(:version) { "12" }
+
+      before do
+        data = { "name" => name, "version" => 1, "git" => repo }
+        cloned_release = Bosh::Workspace::Release.new(data, releases_dir)
+        cloned_release.update_repo
+        extracted_asset_dir("foo", "foo-boshrelease-repo-updated.zip")
+      end
+
+      it "version 12" do
+        release.update_repo
+        expect(subject).to match(/foo-12.yml/)
       end
     end
   end

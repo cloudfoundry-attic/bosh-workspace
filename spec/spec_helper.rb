@@ -82,10 +82,9 @@ end
 def extracted_asset_dir(name, *path)
   zipped_file = asset_dir(*path)
   target_dir = File.expand_path("../../tmp/#{name}", __FILE__)
-  unless File.directory?(target_dir)
-    FileUtils.mkdir_p(target_dir)
-    Archive::Zip.extract(zipped_file, target_dir)
-  end
+  FileUtils.rm_rf(target_dir) if File.exist?(target_dir)
+  FileUtils.mkdir_p(target_dir)
+  Archive::Zip.extract(zipped_file, target_dir)
   target_dir
 end
 
