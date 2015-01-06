@@ -1,5 +1,4 @@
-guard :rspec, cmd: 'rspec' do
-  notification :off
+guard :rspec, cmd: 'rspec', notification: false do
   watch(%r{^spec/(.+_spec)\.rb$})
   watch(%r{^lib/bosh/cli/commands/(.+)\.rb$})    { |m| "spec/commands/#{m[1]}_spec.rb" }
   watch(%r{^lib/bosh/workspace/(.+)\.rb$})    { |m| "spec/#{m[1]}_spec.rb" }
