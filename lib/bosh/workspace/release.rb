@@ -1,7 +1,7 @@
-require "git"
+require "rugged"
 module Bosh::Workspace
   class Release
-    attr_reader :name, :git_uri, :repo_dir, :ref
+    attr_reader :name, :git_uri, :repo_dir
 
     def initialize(release, releases_dir)
       @name = release["name"]
@@ -13,9 +13,9 @@ module Bosh::Workspace
     end
 
     def update_repo
-      @repo.fetch "origin", tags: true
-      @repo.checkout last_commit
-      @repo.checkout ref || version_ref
+      @repo.fetch('origin')
+      @repo.checkout last_commit, strategy: :force
+      @repo.checkout ref || version_ref, strategy: :force
     end
 
     def manifest_file
@@ -38,6 +38,10 @@ module Bosh::Workspace
       @spec_version.to_i
     end
 
+    def ref
+      @ref && @repo.lookup(@ref).oid
+    end
+
     private
 
     # transforms releases/foo-1.yml, releases/bar-2.yml to:
@@ -52,20 +56,20 @@ module Bosh::Workspace
     end
 
     def last_commit
-      @repo.log.object("origin").first
+      @repo.remotes['origin'].ls.find { |r| r[:name] == 'HEAD' }[:oid]
     end
 
     def version_ref
-      @repo.log.object(manifest).first
+      Rugged::Blame.new(@repo, manifest).first[:final_commit_id]
     end
 
     def init_repo
       if File.directory?(repo_dir)
-        @repo ||= Git.open(repo_dir)
+        @repo ||= Rugged::Repository.new(repo_dir)
       else
         releases_dir = File.dirname(repo_dir)
         FileUtils.mkdir_p(releases_dir)
-        @repo = Git.clone(@git_uri, @name, path: releases_dir)
+        @repo = Rugged::Repository.clone_at(@git_uri, repo_dir)
       end
     end
   end
