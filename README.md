@@ -1,5 +1,5 @@
 # Bosh workspace
-[![Build Status](https://img.shields.io/travis/swisscom/bosh-workspace.svg?style=flat-square)](https://travis-ci.org/swisscom/bosh-workspace) [![Test Coverage](https://img.shields.io/codeclimate/coverage/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Code Climate](https://img.shields.io/codeclimate/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Dependency Status](https://img.shields.io/gemnasium/swisscom/bosh-workspace.svg?style=flat-square)](https://gemnasium.com/swisscom/bosh-workspace)
+[![Build Status](https://img.shields.io/travis/swisscom/bosh-workspace/master.svg?style=flat-square)](https://travis-ci.org/swisscom/bosh-workspace) [![Test Coverage](https://img.shields.io/codeclimate/coverage/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Code Climate](https://img.shields.io/codeclimate/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Dependency Status](https://img.shields.io/gemnasium/swisscom/bosh-workspace.svg?style=flat-square)](https://gemnasium.com/swisscom/bosh-workspace)
 
 
 This is a `bosh` cli plugin for creating reproducible and upgradable deployments.
