@@ -2,9 +2,11 @@ module Bosh::Workspace
   describe DeploymentPatch do
     let(:stemcells) { [{ 'name' => 'foo', 'version' => 1 }] }
     let(:releases) { [{ 'name' => 'bar', 'version' => 2 }] }
-    let(:templates_ref) { '803b66609eea575ba336417c15f8a5d030a114a0' }
-    let(:templates_dir) { 'templates' }
-    let(:templates_repo) { instance_double('Git::Base') }
+    let(:templates_dir) do
+      home = extracted_asset_dir("home", "foo-boshworkspace.zip")
+      File.join(home, "foo-boshworkspace", "templates")
+    end
+    let(:templates_ref) { 'bb802816a44d0fd23fd0120f4fdd42578089d025' }
     let(:patch) { DeploymentPatch.new(stemcells, releases, templates_ref) }
     let(:patch_yaml_data) { patch_data.to_yaml }
     let(:deployment_file) { get_tmp_file_path deployment.to_yaml }
@@ -22,30 +24,20 @@ module Bosh::Workspace
     end
 
     describe '#create' do
-      let(:templates_commit) { instance_double('Git::Object::Commit') }
-      let(:submodule?) { true }
       subject { DeploymentPatch.create deployment_file, templates_dir }
 
-      before do
-        allow(File).to receive(:exist?).with(/#{templates_dir}\/\.git/)
-          .and_return(submodule?)
-        allow(Git).to receive(:open).with(templates_dir)
-          .and_return(templates_repo)
-        allow(templates_repo).to receive(:log).with(1)
-          .and_return([templates_commit])
-        allow(templates_commit).to receive(:sha)
-          .and_return(templates_ref)
+      context "with templates submodule" do
+        its(:stemcells) { should eq stemcells }
+        its(:releases) { should eq releases }
+        its(:templates_ref) { should eq templates_ref }
       end
 
-      its(:stemcells) { should eq stemcells }
-      its(:releases) { should eq releases }
-      its(:templates_ref) { should eq templates_ref }
-
       context "without templates submodule" do
-        let(:submodule?) { false }
+        let(:templates_dir) do
+          asset_dir("manifests-repo/templates")
+        end
 
         it "ignores templates directory" do
-          expect(Git).to_not receive(:open)
           expect(subject.templates_ref).to be_nil
         end
       end
@@ -104,19 +96,16 @@ module Bosh::Workspace
     end
 
     describe '#apply' do
+      let(:templates_ref) { '505b82012133673a9150d4e83aede1a07598154b' }
       let(:deployment) { { "stemcells" => [], "releases" => [] } }
       let(:deployment_new) { { "stemcells" => stemcells, "releases" => releases } }
       subject { patch.apply(deployment_file, templates_dir) }
 
-      it 'applies changes' do
-        expect(Dir).to receive(:chdir).with(templates_dir).and_yield
-        expect_any_instance_of(Shell).to receive(:run)
-          .with(/git fetch/)
-        expect_any_instance_of(Shell).to receive(:run)
-          .with(/checkout #{templates_ref}/)
+      it 'applies changes'  do
         expect(IO).to receive(:write)
           .with(deployment_file, deployment_new.to_yaml)
         subject
+        expect(Dir.entries(templates_dir)).to include "bar.yml"
       end
 
       context "without templates_ref" do
@@ -130,7 +119,7 @@ module Bosh::Workspace
 
     describe '#changes' do
       context 'with changes' do
-        let(:new_patch) do 
+        let(:new_patch) do
           DeploymentPatch.new(
             [{ 'name' => 'foo', 'version' => 2 }, { 'name' => 'baz', 'version' => 1 }],
             [{ 'name' => 'qux', 'version' => 3 }],
@@ -141,7 +130,7 @@ module Bosh::Workspace
 
         its([:stemcells]) { should eq "changed foo 1 2, added baz 1" }
         its([:releases]) { should eq "removed bar 2, added qux 3" }
-        its([:templates_ref]) { should eq "changed 803b666 e598fec" }
+        its([:templates_ref]) { should eq "changed bb80281 e598fec" }
 
         context 'without templates_ref' do
           subject { patch.changes(new_patch) }
