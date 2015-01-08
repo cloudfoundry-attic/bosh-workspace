@@ -1,5 +1,6 @@
-require "git"
+require "rugged"
 require "hashdiff"
+
 module Bosh::Workspace
   class DeploymentPatch
     include Bosh::Cli::Validation
@@ -7,7 +8,7 @@ module Bosh::Workspace
 
     def self.create(deployment_file, templates_dir)
       if File.exist? File.join(templates_dir, '.git')
-        ref = Git.open(templates_dir).log(1).first.sha
+        ref = Rugged::Repository.new(templates_dir).head.target.oid
       end
       deployment = YAML.load_file deployment_file
       new(deployment["stemcells"], deployment["releases"], ref)
@@ -85,18 +86,9 @@ module Bosh::Workspace
     end
 
     def checkout_submodule(dir, ref)
-      Dir.chdir(dir) do
-        git "fetch"
-        git "checkout #{ref}"
-      end
-    end
-
-    def git(args)
-      shell.run("unset GIT_INDEX_FILE && git #{args}")
-    end
-
-    def shell
-      @shell ||= Shell.new(StringIO.new)
+      repo = Rugged::Repository.new(dir)
+      repo.fetch('origin')
+      repo.checkout ref, strategy: :force
     end
   end
 end

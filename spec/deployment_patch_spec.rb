@@ -99,20 +99,23 @@ module Bosh::Workspace
       let(:templates_ref) { '505b82012133673a9150d4e83aede1a07598154b' }
       let(:deployment) { { "stemcells" => [], "releases" => [] } }
       let(:deployment_new) { { "stemcells" => stemcells, "releases" => releases } }
+      let(:template_files) { Dir.entries(templates_dir) }
+
       subject { patch.apply(deployment_file, templates_dir) }
 
       it 'applies changes'  do
         expect(IO).to receive(:write)
           .with(deployment_file, deployment_new.to_yaml)
         subject
-        expect(Dir.entries(templates_dir)).to include "bar.yml"
+        expect(template_files).to include "bar.yml"
       end
 
       context "without templates_ref" do
         let(:templates_ref) { nil }
         it 'leaves templates dir as is' do
-          expect(Git).to_not receive(:open)
           subject
+          expect(template_files).to include "foo.yml"
+          expect(template_files).to_not include "bar.yml"
         end
       end
     end

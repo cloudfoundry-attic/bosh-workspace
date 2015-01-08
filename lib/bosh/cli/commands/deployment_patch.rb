@@ -1,4 +1,5 @@
 require "bosh/workspace"
+require "git"
 
 module Bosh::Cli::Command
   class DeploymentPatch < Base
