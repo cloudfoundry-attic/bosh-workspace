@@ -4,7 +4,11 @@ module Bosh::Workspace
     let(:releases) { [{ 'name' => 'bar', 'version' => 2 }] }
     let(:templates_dir) do
       home = extracted_asset_dir("home", "foo-boshworkspace.zip")
-      File.join(home, "foo-boshworkspace", "templates")
+      workspace = File.join(home, "foo-boshworkspace")
+      Dir[File.join(workspace, ".git/**/config")].each do |c|
+        IO.write(c, IO.read(c).gsub(/(\/U.+tmp)/, home))
+      end
+      File.join(workspace, "templates")
     end
     let(:templates_ref) { 'bb802816a44d0fd23fd0120f4fdd42578089d025' }
     let(:patch) { DeploymentPatch.new(stemcells, releases, templates_ref) }
@@ -87,11 +91,11 @@ module Bosh::Workspace
     end
 
     describe '#to_file' do
-      let(:patch_file) { 'foo.yml' }
+      let(:patch_file) { get_tmp_file_path '{}' }
 
       it 'writes to file' do
-        expect(IO).to receive(:write).with(patch_file, patch_yaml_data)
         patch.to_file(patch_file)
+        expect(IO.read(patch_file)).to eq patch_yaml_data
       end
     end
 
@@ -103,10 +107,9 @@ module Bosh::Workspace
 
       subject { patch.apply(deployment_file, templates_dir) }
 
-      it 'applies changes'  do
-        expect(IO).to receive(:write)
-          .with(deployment_file, deployment_new.to_yaml)
+      it 'applies changes' do
         subject
+        expect(IO.read(deployment_file)).to eq deployment_new.to_yaml
         expect(template_files).to include "bar.yml"
       end
 
