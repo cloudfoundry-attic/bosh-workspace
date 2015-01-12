@@ -58,7 +58,11 @@ module Bosh::Cli::Command
 
       context 'with changes' do
         let(:changes?) { true }
-        let(:repo) { instance_double 'Git::Repo' }
+        let(:index) do
+          instance_double('Rugged::Index',
+            read_tree: true, write_tree: true, add_all: true)
+        end
+        let(:repo) { instance_double 'Rugged::Repository', index: index }
 
         def expect_patch_changes_table
           expect(command).to receive(:say) do |s|
@@ -70,6 +74,7 @@ module Bosh::Cli::Command
         end
 
         before do
+          allow(repo).to receive_message_chain('head.target.tree')
           expect(current_patch).to receive(:changes).with(patch)
             .and_return(changes)
         end
@@ -83,9 +88,12 @@ module Bosh::Cli::Command
 
           context 'without no-commit' do
             it 'applies changes, shows changes and commits' do
-              expect(Git).to receive(:open).with(project_dir).and_return(repo)
-              expect(repo).to receive(:commit_all)
-                .with("Applied stemcells foo, releases bar, templates_ref baz")
+              expect(Rugged::Repository).to receive(:new)
+                .with(project_dir).and_return(repo)
+              expect(Rugged::Commit).to receive(:create) do |repo, options|
+                expect(options[:message])
+                  .to eq "Applied stemcells foo, releases bar, templates_ref baz"
+              end
               command.apply(patch_file)
             end
           end

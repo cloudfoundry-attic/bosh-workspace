@@ -1,5 +1,4 @@
 require "bosh/workspace"
-require "git"
 
 module Bosh::Cli::Command
   class DeploymentPatch < Base
@@ -25,7 +24,7 @@ module Bosh::Cli::Command
       if current_deployment_patch.changes?(@patch)
         if !options[:dry_run]
           @patch.apply(current_deployment_file, templates_dir)
-          repo.commit_all changes_message  unless options[:no_commit]
+          commit_all unless options[:no_commit]
           say "Successfully applied deployment patch:"
         else
           say "Deployment patch:"
@@ -62,8 +61,20 @@ module Bosh::Cli::Command
       end
     end
 
+    def commit_all
+      index = repo.index
+      index.read_tree(repo.head.target.tree)
+      index.add_all
+      options = {
+        tree: index.write_tree(repo),
+        message: changes_message,
+        update_ref: 'HEAD'
+      }
+      Rugged::Commit.create(repo, options)
+    end
+
     def repo
-      @repo ||= Git.open(Dir.getwd)
+      @repo ||= Rugged::Repository.new(Dir.getwd)
     end
 
     def patch_changes
