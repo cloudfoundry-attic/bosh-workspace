@@ -1,11 +1,18 @@
 describe Bosh::Workspace::Release do
+  include Bosh::Workspace::GitCredenialsHelper
   let(:name) { "foo"}
   let(:version) { 3 }
   let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
   let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
-  let(:release) { Bosh::Workspace::Release.new release_data, releases_dir }
   let(:templates) { Dir[File.join(releases_dir, name, "templates/*.yml")].to_s }
+  let(:release) { load_release(release_data) }
+
+  def load_release(release_data)
+    Bosh::Workspace::Release.new(release_data, releases_dir).tap do |r|
+      fetch_or_clone_repo(r.repo_dir, repo)
+    end
+  end
 
   describe "#update_repo" do
     subject { Dir[File.join(releases_dir, name, "releases/foo*.yml")].to_s }
@@ -78,9 +85,7 @@ describe Bosh::Workspace::Release do
 
     context "already cloned repo" do
       before do
-        data = { "name" => name, "version" => 1, "git" => repo }
-        cloned_release = Bosh::Workspace::Release.new(data, releases_dir)
-        cloned_release.update_repo
+        load_release("name" => name, "version" => 1, "git" => repo).update_repo
       end
 
       it "version 3" do
@@ -93,9 +98,7 @@ describe Bosh::Workspace::Release do
       let(:version) { "11" }
 
       before do
-        data = { "name" => "bar", "version" => 2, "git" => repo }
-        other_release = Bosh::Workspace::Release.new(data, releases_dir)
-        other_release.update_repo
+        load_release("name" => "bar", "version" => 2, "git" => repo).update_repo
       end
 
       it "version 11" do
@@ -109,9 +112,7 @@ describe Bosh::Workspace::Release do
       let(:version) { "12" }
 
       before do
-        data = { "name" => name, "version" => 1, "git" => repo }
-        cloned_release = Bosh::Workspace::Release.new(data, releases_dir)
-        cloned_release.update_repo
+        load_release("name" => name, "version" => 1, "git" => repo).update_repo
         extracted_asset_dir("foo", "foo-boshrelease-repo-updated.zip")
       end
 
@@ -125,7 +126,7 @@ describe Bosh::Workspace::Release do
   describe "attributes" do
     subject { release }
     its(:name){ should eq name }
-    its(:git_uri){ should eq repo }
+    its(:git_url){ should eq repo }
     its(:repo_dir){ should match(/\/#{name}$/) }
     its(:manifest_file){ should match(/\/#{name}-#{version}.yml$/) }
     its(:manifest){ should match "releases/#{name}-#{version}.yml$" }
