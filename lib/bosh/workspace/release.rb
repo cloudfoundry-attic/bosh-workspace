@@ -1,4 +1,3 @@
-require "rugged"
 module Bosh::Workspace
   class Release
     attr_reader :name, :git_uri, :repo_dir
@@ -13,8 +12,7 @@ module Bosh::Workspace
     end
 
     def update_repo
-      @repo.fetch('origin')
-      @repo.checkout last_commit, strategy: :force
+      @repo.fetch('origin', ['HEAD:refs/remotes/origin/HEAD'])
       @repo.checkout ref || version_ref, strategy: :force
     end
 
@@ -55,11 +53,8 @@ module Bosh::Workspace
       end
     end
 
-    def last_commit
-      @repo.remotes['origin'].ls.find { |r| r[:name] == 'HEAD' }[:oid]
-    end
-
     def version_ref
+      @repo.checkout 'refs/remotes/origin/HEAD', strategy: :force
       Rugged::Blame.new(@repo, manifest).first[:final_commit_id]
     end
 

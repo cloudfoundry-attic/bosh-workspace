@@ -2,11 +2,14 @@ module Bosh; module Workspace; end; end
 
 require "membrane"
 require "shellwords"
+require "rugged"
+require "hashdiff"
 require "cli/core_ext"
 require "cli/validation"
 
 require "bosh/workspace/helpers/spiff_helper"
 require "bosh/workspace/helpers/project_deployment_helper"
+require "bosh/workspace/helpers/git_credentials_helper"
 require "bosh/workspace/helpers/release_helper"
 require "bosh/workspace/helpers/stemcell_helper"
 require "bosh/workspace/helpers/dns_helper"

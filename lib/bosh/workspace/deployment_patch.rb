@@ -1,6 +1,3 @@
-require "rugged"
-require "hashdiff"
-
 module Bosh::Workspace
   class DeploymentPatch
     include Bosh::Cli::Validation

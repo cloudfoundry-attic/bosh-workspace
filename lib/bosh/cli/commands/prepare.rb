@@ -5,6 +5,7 @@ module Bosh::Cli::Command
     include Bosh::Cli::Validation
     include Bosh::Workspace
     include ProjectDeploymentHelper
+    include GitCredenialsHelper
     include ReleaseHelper
     include StemcellHelper
 
@@ -26,6 +27,7 @@ module Bosh::Cli::Command
     def prepare_release_repos
       project_deployment_releases.each do |release|
         say "Cloning release '#{release.name.make_green}' to satisfy template references"
+        ## fetch_or_clone_repo(release.repo_dir, release.git_uri)
         release.update_repo
         msg = "Version '#{release.version.to_s.make_green}'"
         msg = "Ref '#{release.ref.make_green}'" if release.ref
@@ -65,10 +67,10 @@ module Bosh::Cli::Command
       end
     end
 
-    def cached_stemcell_upload(stemcell) 
+    def cached_stemcell_upload(stemcell)
       unless stemcell.downloaded?
         say "Downloading '#{stemcell.name_version.make_green}'"
-        stemcell_download(stemcell.file_name) 
+        stemcell_download(stemcell.file_name)
       end
       say "Uploading '#{stemcell.name_version.make_green}'"
       stemcell_upload(stemcell.file)
