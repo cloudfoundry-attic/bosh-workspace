@@ -3,7 +3,7 @@ module Bosh::Workspace
     include Bosh::Cli::Validation
 
     def initialize(file)
-      @credentials = YAML.load_file @file
+      @credentials = YAML.load_file file
     end
 
     def perform_validation(options = {})
@@ -19,11 +19,10 @@ module Bosh::Workspace
     private
 
     def credentials
-      c = @credentials.map do |c|
+      Hash[@credentials.map do |c|
         [c.delete('url'),
-         c.each_with_object({}) { |(k, v), h| k[v.to_sym] = h }]
-      end
-      Hash[c]
+         c.each_with_object({}) { |(k, v), h| h[k.to_sym] = v }]
+      end]
     end
   end
 end
