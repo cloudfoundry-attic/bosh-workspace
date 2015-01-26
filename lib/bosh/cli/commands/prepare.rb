@@ -26,8 +26,8 @@ module Bosh::Cli::Command
 
     def prepare_release_repos
       project_deployment_releases.each do |release|
-        say "Cloning release '#{release.name.make_green}' to satisfy template references"
-        ## fetch_or_clone_repo(release.repo_dir, release.git_uri)
+        say "Fetching release '#{release.name.make_green}' to satisfy template references"
+        fetch_or_clone_repo(release.repo_dir, release.git_url)
         release.update_repo
         msg = "Version '#{release.version.to_s.make_green}'"
         msg = "Ref '#{release.ref.make_green}'" if release.ref

@@ -5,7 +5,7 @@ describe Bosh::Cli::Command::Prepare do
     let(:command) { Bosh::Cli::Command::Prepare.new }
     let(:release) do
       instance_double("Bosh::Workspace::Release",
-        name: "foo", version: "1", repo_dir: ".releases/foo",
+        name: "foo", version: "1", repo_dir: ".releases/foo", git_url: "/.git",
         name_version: "foo/1", manifest_file: "releases/foo-1.yml")
     end
     let(:stemcell) do
@@ -33,6 +33,8 @@ describe Bosh::Cli::Command::Prepare do
         expect(release).to receive(:ref).and_return(ref)
         expect(command).to receive(:release_uploaded?)
           .with(release.name, release.version).and_return(release_uploaded)
+        expect(command).to receive(:fetch_or_clone_repo)
+          .with(release.repo_dir, release.git_url)
       end
 
       context "release uploaded" do
@@ -80,7 +82,7 @@ describe Bosh::Cli::Command::Prepare do
       context "stemcell not uploaded" do
         let(:stemcell_uploaded) { false }
 
-        before do 
+        before do
           allow(stemcell).to receive(:downloaded?)
             .and_return(stemcell_downloaded)
         end
