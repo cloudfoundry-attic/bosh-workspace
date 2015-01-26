@@ -3,7 +3,7 @@ module Bosh::Workspace
     class Credentials < Membrane::Schemas::Base
       def validate(object)
         Membrane::SchemaParser.parse do
-          [Enum(UsernamePassword, SshKey)]
+          [enum(UsernamePassword.new, SshKey.new)]
         end.validate object
       end
 
