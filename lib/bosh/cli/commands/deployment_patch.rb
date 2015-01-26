@@ -3,6 +3,7 @@ require "bosh/workspace"
 module Bosh::Cli::Command
   class DeploymentPatch < Base
     include Bosh::Workspace::ProjectDeploymentHelper
+    include Bosh::Workspace::GitCredenialsHelper
 
     usage "create deployment patch"
     desc "Extract patch from the current directory and optionally writes to file"
@@ -23,6 +24,7 @@ module Bosh::Cli::Command
 
       if current_deployment_patch.changes?(@patch)
         if !options[:dry_run]
+          fetch_repo(templates_dir) if @patch.templates_ref
           @patch.apply(current_deployment_file, templates_dir)
           commit_all unless options[:no_commit]
           say "Successfully applied deployment patch:"

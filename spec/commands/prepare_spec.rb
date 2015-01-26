@@ -24,7 +24,7 @@ describe Bosh::Cli::Command::Prepare do
     end
 
     describe "prepare_release(s/_repos)" do
-      let(:releases) { [ release ] }
+      let(:releases) { [release] }
       let(:stemcells) { [] }
       let(:ref) { nil }
 

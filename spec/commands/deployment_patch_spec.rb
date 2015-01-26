@@ -5,15 +5,18 @@ module Bosh::Cli::Command
 
   describe DeploymentPatch do
     let(:command) { DeploymentPatch.new }
-    let(:patch) { instance_double 'Bosh::Workspace::DeploymentPatch' }
+    let(:patch) do
+      instance_double 'Bosh::Workspace::DeploymentPatch', templates_ref: ref
+    end
     let(:current_patch) { instance_double 'Bosh::Workspace::DeploymentPatch' }
     let(:deployment_file) { 'deployments/foo.yml' }
     let(:patch_file) { 'patch.yml' }
     let(:project_dir) { File.realpath Dir.mktmpdir }
     let(:changes?) { nil }
     let(:valid?) { true }
+    let(:ref) { "baz" }
     let(:changes) do
-      { stemcells: "foo", releases: "bar", templates_ref: "baz" }
+      { stemcells: "foo", releases: "bar", templates_ref: ref }
     end
 
     before do
@@ -69,7 +72,6 @@ module Bosh::Cli::Command
             subject = s.to_s.delete ' '
             expect(subject).to include "stemcells|foo"
             expect(subject).to include "releases|bar"
-            expect(subject).to include "templates_ref|baz"
           end
         end
 
@@ -81,20 +83,41 @@ module Bosh::Cli::Command
 
         context 'no dry-run' do
           before do
+            allow(command).to receive(:fetch_repo).with(/templates/)
             expect(patch).to receive(:apply).with(deployment_file, /templates/)
             expect(command).to receive(:say).with /successfully applied/i
             expect_patch_changes_table
           end
 
           context 'without no-commit' do
-            it 'applies changes, shows changes and commits' do
+            before do
               expect(Rugged::Repository).to receive(:new)
                 .with(project_dir).and_return(repo)
+            end
+
+            def expect_commit(message)
               expect(Rugged::Commit).to receive(:create) do |repo, options|
-                expect(options[:message])
-                  .to eq "Applied stemcells foo, releases bar, templates_ref baz"
+                expect(options[:message]).to match message
               end
+            end
+
+            it 'applies changes, shows changes and commits' do
+              expect_commit "Applied stemcells foo," \
+                            " releases bar, templates_ref baz"
               command.apply(patch_file)
+            end
+
+            context 'without templates_ref' do
+              let(:ref) { nil }
+              let(:changes) do
+                { stemcells: "foo", releases: "bar" }
+              end
+
+              it 'applies changes, shows changes and commits' do
+                expect_commit("Applied stemcells foo, releases bar")
+                expect(command).to_not receive(:fetch_repo)
+                command.apply(patch_file)
+              end
             end
           end
 

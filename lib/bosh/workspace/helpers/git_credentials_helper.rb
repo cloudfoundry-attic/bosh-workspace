@@ -4,11 +4,20 @@ module Bosh::Workspace
 
     def fetch_or_clone_repo(dir, url)
       repo = File.exist?(dir) ? open_repo(dir) : init_repo(dir, url)
-      repo.fetch('origin', REFSPEC, connection_options_for(repo, url))
-      repo.checkout 'refs/remotes/origin/HEAD', strategy: :force
+      fetch_and_checkout(repo)
+    end
+
+    def fetch_repo(dir)
+      fetch_and_checkout(open_repo(dir))
     end
 
     private
+
+    def fetch_and_checkout(repo)
+      url = repo.remotes['origin'].url
+      repo.fetch('origin', REFSPEC, connection_options_for(repo, url))
+      repo.checkout 'refs/remotes/origin/HEAD', strategy: :force
+    end
 
     def connection_options_for(repo, url)
       return {} if check_connection(repo, url)

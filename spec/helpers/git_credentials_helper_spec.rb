@@ -14,30 +14,44 @@ module Bosh::Workspace
     let(:url) { "foo/bar.git" }
     let(:dir) { File.join(work_dir, '.releases', 'foo') }
     let(:repo) { instance_double 'Rugged::Repository' }
-    let(:remote) { instance_double 'Rugged::Remote' }
+    let(:remote) { instance_double 'Rugged::Remote', url: url }
+
+    before do
+      allow(Rugged::Repository).to receive(:new).with(dir).and_return(repo)
+      allow(File).to receive(:exist?).with(dir).and_return(dir_exist)
+      allow(repo).to receive_message_chain("remotes.[]").and_return(remote)
+      allow(repo).to receive_message_chain("remotes.create_anonymous")
+        .with(url).and_return(remote)
+      allow(remote).to receive(:check_connection).with(:fetch)
+        .and_return(!auth_required, credentials_auth_valid)
+      allow(repo).to receive(:checkout).with(/origin\/HEAD/, strategy: :force)
+    end
+
+    def expect_no_credentials
+      expect(repo).to receive(:fetch).with('origin', Array, {})
+    end
+
+    let(:dir_exist) { true }
+    let(:auth_required) { false }
+    let(:credentials_auth_valid) { true }
+
+    describe "fetch_repo" do
+      subject do
+        GitCredenialsHelperTester.new(work_dir).fetch_repo(dir)
+      end
+
+      context "with existing repo" do
+        it do
+          expect_no_credentials
+          subject
+        end
+      end
+    end
 
     describe "fetch_or_clone_repo" do
       subject do
         GitCredenialsHelperTester.new(work_dir).fetch_or_clone_repo(dir, url)
       end
-
-      before do
-        allow(Rugged::Repository).to receive(:new).with(dir).and_return(repo)
-        allow(File).to receive(:exist?).with(dir).and_return(dir_exist)
-        allow(repo).to receive_message_chain("remotes.create_anonymous")
-          .with(url).and_return(remote)
-        allow(remote).to receive(:check_connection).with(:fetch)
-          .and_return(!auth_required, credentials_auth_valid)
-        allow(repo).to receive(:checkout).with(/origin\/HEAD/, strategy: :force)
-      end
-
-      def expect_no_credentials
-        expect(repo).to receive(:fetch).with('origin', Array, {})
-      end
-
-      let(:dir_exist) { true }
-      let(:auth_required) { false }
-      let(:credentials_auth_valid) { true }
 
       context "with existing repo" do
         it do

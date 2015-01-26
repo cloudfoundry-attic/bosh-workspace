@@ -84,7 +84,6 @@ module Bosh::Workspace
 
     def checkout_submodule(dir, ref)
       repo = Rugged::Repository.new(dir)
-      repo.fetch('origin')
       repo.checkout ref, strategy: :force
     end
   end
