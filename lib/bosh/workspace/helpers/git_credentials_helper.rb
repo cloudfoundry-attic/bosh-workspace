@@ -4,17 +4,26 @@ module Bosh::Workspace
 
     def fetch_or_clone_repo(dir, url)
       repo = File.exist?(dir) ? open_repo(dir) : init_repo(dir, url)
-
-      options = {}
-      unless repo.remotes.create_anonymous(url).check_connection(:fetch)
-        options = { credentials: require_credetials_for(url) }
-      end
-
-      repo.fetch('origin', REFSPEC, options)
+      repo.fetch('origin', REFSPEC, connection_options_for(repo, url))
       repo.checkout 'refs/remotes/origin/HEAD', strategy: :force
     end
 
     private
+
+    def connection_options_for(repo, url)
+      return {} if check_connection(repo, url)
+
+      options = { credentials: require_credetials_for(url) }
+      unless check_connection(repo, url, options)
+        say "Using credentials from: #{credentials_file}"
+        err "Invalid credentials for: #{url}"
+      end
+      options
+    end
+
+    def check_connection(repo, url, options = {})
+      repo.remotes.create_anonymous(url).check_connection(:fetch)
+    end
 
     def init_repo(dir, url)
       FileUtils.mkdir_p File.dirname(dir)
@@ -31,14 +40,14 @@ module Bosh::Workspace
       @credentials ||= Credentials.new(credentials_file)
     end
 
-    def credetials_for(url)
+    def require_credetials_for(url)
       unless File.exist? credentials_file
         say("Authentication is required for: #{url}".make_red)
         err("Credentials file does not exist: #{credentials_file}".make_red)
       end
       unless credentials.valid?
         say("Validation errors:".make_red)
-        thing.errors.each { |error| say("- #{error}") }
+        credentials.errors.each { |error| say("- #{error}") }
         err("'#{credentials_file}' is not valid".make_red)
       end
       if creds = credentials.find_by_url(url)
@@ -50,7 +59,7 @@ module Bosh::Workspace
     end
 
     def credentials_file
-      File.join work_dir, '.credentails.yml'
+      File.join work_dir, '.credentials.yml'
     end
 
     def load_git_credentials(credentials)

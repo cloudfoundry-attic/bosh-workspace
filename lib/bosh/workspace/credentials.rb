@@ -22,7 +22,7 @@ module Bosh::Workspace
       c = @credentials.map do |c|
         [c.delete('url'),
          c.each_with_object({}) { |(k, v), h| k[v.to_sym] = h }]
-      do
+      end
       Hash[c]
     end
   end
