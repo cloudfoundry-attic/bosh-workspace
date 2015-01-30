@@ -18,9 +18,9 @@ cd fg-boshworkspace
 Lets create the initial files & directories.
 ```
 mkdir deployments templates
-echo 'source "https://rubygems.org"\n\ngem "bosh-workspace"' > Gemfile
-echo "2.0.0" > .ruby-version
-echo '.stemcells*\n.deployments*\n.releases*\n.stubs*\n' > .gitignore
+echo -e 'source "https://rubygems.org"\n\ngem "bosh-workspace"' > Gemfile
+echo "2.1.0" > .ruby-version
+echo -e '.stemcells*\n.deployments*\n.releases*\n.stubs*\n' > .gitignore
 ```
 
 Now install the gems by running bundler.
