@@ -74,7 +74,10 @@ module Bosh::Workspace
     def load_git_credentials(credentials)
       case credentials.keys
       when %i(private_key)
-        options = { privatekey: temp_key_file(credentials[:private_key]) }
+        options = {
+          username: 'git',
+          privatekey: temp_key_file(credentials[:private_key])
+        }
         Rugged::Credentials::SshKey.new(options)
       when %i(username password)
         Rugged::Credentials::UserPassword.new(credentials)
