@@ -31,7 +31,7 @@ module Bosh::Workspace
     end
 
     def check_connection(repo, url, options = {})
-      repo.remotes.create_anonymous(url).check_connection(:fetch)
+      repo.remotes.create_anonymous(url).check_connection(:fetch, options)
     end
 
     def init_repo(dir, url)
