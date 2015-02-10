@@ -3,11 +3,11 @@ module Bosh::Workspace
     include Bosh::Cli::Validation
 
     def initialize(file)
-      @credentials = YAML.load_file file
+      @raw_credentials = YAML.load_file file
     end
 
     def perform_validation(options = {})
-      Schemas::Credentials.new.validate @credentials
+      Schemas::Credentials.new.validate @raw_credentials
     rescue Membrane::SchemaValidationError => e
       errors << e.message
     end
@@ -19,10 +19,12 @@ module Bosh::Workspace
     private
 
     def credentials
-      Hash[@credentials.map do |c|
-        [c.delete('url'),
-         c.each_with_object({}) { |(k, v), h| h[k.to_sym] = v }]
-      end]
+      @credentials ||= begin
+        Hash[@raw_credentials.map do |c|
+          [c.delete('url'),
+          c.each_with_object({}) { |(k, v), h| h[k.to_sym] = v }]
+        end]
+      end
     end
   end
 end

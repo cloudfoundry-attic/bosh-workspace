@@ -13,7 +13,8 @@ module Bosh::Workspace
     end
 
     describe '#find_by_url' do
-      it "returns credentials when found" do
+      it "returns credentials when found multiple times" do
+        expect(subject.find_by_url("foo")).to eq({ private_key: "foobarkey" })
         expect(subject.find_by_url("foo")).to eq({ private_key: "foobarkey" })
       end
 
