@@ -78,7 +78,7 @@ describe Bosh::Workspace::Release do
       let(:version) { "12" }
 
       it "raises an error" do
-        expect { release.update_repo }.
+        expect { release.version }.
           to raise_error(/Could not find version/)
       end
     end

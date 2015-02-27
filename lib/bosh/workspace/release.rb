@@ -11,7 +11,7 @@ module Bosh::Workspace
     end
 
     def update_repo
-      repo.checkout ref || version_ref, strategy: :force
+      repo.checkout ref || repo.head.target_id, strategy: :force
     end
 
     def manifest_file
