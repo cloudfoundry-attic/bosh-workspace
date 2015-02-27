@@ -17,3 +17,4 @@ test/version_tmp
 tmp
 *.generated_manifests
 *.DS_Store
+/spec/assets/manifests-repo/.releases/*

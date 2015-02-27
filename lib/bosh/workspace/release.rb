@@ -48,15 +48,22 @@ module Bosh::Workspace
     # { "1" => foo-1.yml, "2" => bar-2.yml }
     def final_releases
       @final_releases ||= begin
-        Hash[Dir[File.join(repo_dir, "releases", "*.yml")]
+        new_style_repo = File.directory?(File.join(repo_dir, "releases", @name))
+        releases_dir = new_style_repo ? "releases/#{@name}" : "releases"
+
+        Hash[Dir[File.join(repo_dir, releases_dir, "*.yml")]
           .reject { |f| f[/index.yml/] }
-          .map { |dir| File.join("releases", File.basename(dir)) }
+          .map { |dir| File.join(releases_dir, File.basename(dir)) }
           .map { |version| [version[/(\d+)/].to_i, version] }]
       end
     end
 
     def version_ref
-      Rugged::Blame.new(repo, manifest).first[:final_commit_id]
+      # figure out the last commit which changed the release manifest file
+      # in other words the commit sha of the final release
+      repo.walk(repo.head.target) do |commit|
+        return commit.oid if commit.tree.path(manifest)
+      end
     end
   end
 end
