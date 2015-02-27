@@ -48,9 +48,11 @@ module Bosh::Workspace
     # { "1" => foo-1.yml, "2" => bar-2.yml }
     def final_releases
       @final_releases ||= begin
-        Hash[Dir[File.join(repo_dir, "releases", "*.yml")]
+        releases_dir = File.directory?(File.join(repo_dir, "releases", @name))? "releases/#{@name}" : "releases"
+
+        Hash[Dir[File.join(repo_dir, releases_dir, "*.yml")]
           .reject { |f| f[/index.yml/] }
-          .map { |dir| File.join("releases", File.basename(dir)) }
+          .map { |dir| File.join(releases_dir, File.basename(dir)) }
           .map { |version| [version[/(\d+)/].to_i, version] }]
       end
     end
