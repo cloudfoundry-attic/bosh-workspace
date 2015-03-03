@@ -9,7 +9,7 @@ module Bosh::Workspace
       @spec_version = release["version"]
       @git_uri = release["git"]
       @repo_dir = File.join(releases_dir, @name)
-      init_repo
+      init_repo unless @git_uri.empty?
     end
 
     def update_repo

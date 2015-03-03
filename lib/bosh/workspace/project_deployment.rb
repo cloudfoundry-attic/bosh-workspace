@@ -7,10 +7,10 @@ module Bosh::Workspace
 
     RELEASE_SCHEMA = Membrane::SchemaParser.parse do
       {
-        "name"    => String,
-        "version" => enum(Integer, "latest"),
+        "name"          => String,
+        "version"       => enum(Integer, "latest"),
         optional("ref") => enum(String),
-        "git"     => String,
+        optional("git") => String,
       }
     end
 
