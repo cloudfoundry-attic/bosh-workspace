@@ -1,21 +1,17 @@
-require "git"
 module Bosh::Workspace
   class Release
-    attr_reader :name, :git_uri, :repo_dir, :ref
+    attr_reader :name, :git_url, :repo_dir
 
     def initialize(release, releases_dir)
       @name = release["name"]
       @ref = release["ref"]
       @spec_version = release["version"]
-      @git_uri = release["git"]
+      @git_url = release["git"]
       @repo_dir = File.join(releases_dir, @name)
-      init_repo
     end
 
     def update_repo
-      @repo.fetch "origin", tags: true
-      @repo.checkout last_commit
-      @repo.checkout ref || version_ref
+      repo.checkout ref || version_ref, strategy: :force
     end
 
     def manifest_file
@@ -38,34 +34,35 @@ module Bosh::Workspace
       @spec_version.to_i
     end
 
+    def ref
+      @ref && repo.lookup(@ref).oid
+    end
+
     private
+
+    def repo
+      @repo ||= Rugged::Repository.new(repo_dir)
+    end
 
     # transforms releases/foo-1.yml, releases/bar-2.yml to:
     # { "1" => foo-1.yml, "2" => bar-2.yml }
     def final_releases
       @final_releases ||= begin
-        Hash[Dir[File.join(repo_dir, "releases", "*.yml")]
+        new_style_repo = File.directory?(File.join(repo_dir, "releases", @name))
+        releases_dir = new_style_repo ? "releases/#{@name}" : "releases"
+
+        Hash[Dir[File.join(repo_dir, releases_dir, "*.yml")]
           .reject { |f| f[/index.yml/] }
-          .map { |dir| File.join("releases", File.basename(dir)) }
+          .map { |dir| File.join(releases_dir, File.basename(dir)) }
           .map { |version| [version[/(\d+)/].to_i, version] }]
       end
     end
 
-    def last_commit
-      @repo.log.object("origin").first
-    end
-
     def version_ref
-      @repo.log.object(manifest).first
-    end
-
-    def init_repo
-      if File.directory?(repo_dir)
-        @repo ||= Git.open(repo_dir)
-      else
-        releases_dir = File.dirname(repo_dir)
-        FileUtils.mkdir_p(releases_dir)
-        @repo = Git.clone(@git_uri, @name, path: releases_dir)
+      # figure out the last commit which changed the release manifest file
+      # in other words the commit sha of the final release
+      repo.walk(repo.head.target) do |commit|
+        return commit.oid if commit.tree.path(manifest)
       end
     end
   end

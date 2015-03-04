@@ -19,8 +19,11 @@ require "archive/zip"
 require "cli"
 
 require "bosh/workspace"
+require "bosh/workspace/tasks"
 
 RSpec.configure do |config|
+  config.filter_run focus: true
+  config.run_all_when_everything_filtered = true
   config.raise_errors_for_deprecations!
   config.expect_with :rspec do |c|
     c.syntax = :expect
@@ -28,7 +31,7 @@ RSpec.configure do |config|
 end
 
 # load all files in spec/support/* (but not lower down)
-Dir[File.dirname(__FILE__) + '/support/*'].each do |path|
+Dir[File.dirname(__FILE__) + '/support/*/*.rb'].each do |path|
   require path unless File.directory?(path)
 end
 
@@ -81,9 +84,12 @@ end
 def extracted_asset_dir(name, *path)
   zipped_file = asset_dir(*path)
   target_dir = File.expand_path("../../tmp/#{name}", __FILE__)
-  unless File.directory?(target_dir)
-    FileUtils.mkdir_p(target_dir)
-    Archive::Zip.extract(zipped_file, target_dir)
-  end
+  FileUtils.rm_rf(target_dir) if File.exist?(target_dir)
+  FileUtils.mkdir_p(target_dir)
+  Archive::Zip.extract(zipped_file, target_dir)
   target_dir
+end
+
+def project_root
+  File.expand_path('../../', __FILE__)
 end
