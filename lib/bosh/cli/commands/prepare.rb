@@ -26,6 +26,7 @@ module Bosh::Cli::Command
 
     def prepare_release_repos
       project_deployment_releases.each do |release|
+        require_git_url_error if release.git_url.nil?
         say "Fetching release '#{release.name.make_green}' to satisfy template references"
         fetch_or_clone_repo(release.repo_dir, release.git_url)
         release.update_repo
@@ -34,6 +35,11 @@ module Bosh::Cli::Command
         say "#{msg} has been checkout into:"
         say "- #{release.repo_dir}"
       end
+    end
+
+    def require_git_url_error
+      say "`bosh prepare deployment' can not be used:"
+      err("`git:' is missing from `release:'".make_red)
     end
 
     def prepare_releases
