@@ -6,7 +6,7 @@ module Bosh::Workspace::Schemas
 
     subject { Releases.new.validate(releases) }
 
-    %w(name version git).each do |field_name|
+    %w(name version).each do |field_name|
       context "missing #{field_name}" do
         let(:releases) { [release.delete_if { |k| k == field_name }] }
         it { expect { subject }.to raise_error(/#{field_name}.*missing/i) }

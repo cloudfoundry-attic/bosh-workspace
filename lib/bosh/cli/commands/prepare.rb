@@ -26,6 +26,7 @@ module Bosh::Cli::Command
 
     def prepare_release_repos
       project_deployment_releases.each do |release|
+        next if release.git_url.empty?
         say "Fetching release '#{release.name.make_green}' to satisfy template references"
         fetch_or_clone_repo(release.repo_dir, release.git_url)
         release.update_repo
