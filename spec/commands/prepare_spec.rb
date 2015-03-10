@@ -28,34 +28,48 @@ describe Bosh::Cli::Command::Prepare do
       let(:stemcells) { [] }
       let(:ref) { nil }
 
-      before do
-        expect(release).to receive(:update_repo)
-        expect(release).to receive(:ref).and_return(ref)
-        expect(command).to receive(:release_uploaded?)
+      context "releasewith git " do
+        before do
+          expect(release).to receive(:update_repo)
+          expect(release).to receive(:ref).and_return(ref)
+          expect(command).to receive(:release_uploaded?)
           .with(release.name, release.version).and_return(release_uploaded)
-        expect(command).to receive(:fetch_or_clone_repo)
+          expect(command).to receive(:fetch_or_clone_repo)
           .with(release.repo_dir, release.git_url)
-      end
+        end
+        context "release uploaded" do
+          let(:release_uploaded) { true }
 
-      context "release uploaded" do
-        let(:release_uploaded) { true }
+          it "does not upload the release" do
+            expect(command).to_not receive(:release_upload)
+            command.prepare
+          end
+        end
 
-        it "does not upload the release" do
-          expect(command).to_not receive(:release_upload)
-          command.prepare
+        context "release not uploaded with ref" do
+          let(:release_uploaded) { false }
+          let(:ref) { "0f910f" }
+
+          context "without release ref" do
+            it "does upload the release" do
+              expect(release).to receive(:ref).and_return(ref)
+              expect(command).to receive(:release_upload).with(release.manifest_file)
+              command.prepare
+            end
+          end
         end
       end
 
-      context "release not uploaded with ref" do
+      context "if the release git_url is not given" do
         let(:release_uploaded) { false }
-        let(:ref) { "0f910f" }
+        let(:release) do
+          instance_double("Bosh::Workspace::Release",
+                          name: "foo", version: "1", repo_dir: ".releases/foo", git_url: nil,
+                          name_version: "foo/1", manifest_file: "releases/foo-1.yml")
+        end
 
-        context "without release ref" do
-          it "does upload the release" do
-            expect(release).to receive(:ref).and_return(ref)
-            expect(command).to receive(:release_upload).with(release.manifest_file)
-            command.prepare
-          end
+        it "notifies the user that the git property must be specified" do
+          expect{ command.prepare }.to raise_error(/`git:' is missing from `release:/)
         end
       end
     end
@@ -66,7 +80,7 @@ describe Bosh::Cli::Command::Prepare do
 
       before do
         expect(command).to receive(:stemcell_uploaded?)
-          .with(stemcell.name, stemcell.version).and_return(stemcell_uploaded)
+        .with(stemcell.name, stemcell.version).and_return(stemcell_uploaded)
       end
 
       context "stemcell uploaded" do
@@ -84,7 +98,7 @@ describe Bosh::Cli::Command::Prepare do
 
         before do
           allow(stemcell).to receive(:downloaded?)
-            .and_return(stemcell_downloaded)
+          .and_return(stemcell_downloaded)
         end
 
         context "stemcell downloaded" do

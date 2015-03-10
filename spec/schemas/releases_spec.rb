@@ -27,5 +27,10 @@ module Bosh::Workspace::Schemas
       let(:releases) { [release.delete_if { |k| k == "ref" }] }
       it { expect { subject }.to_not raise_error }
     end
+
+    context "optional git" do
+      let(:releases) { [release.delete_if { |k| k == "git" }] }
+      it { expect { subject }.to_not raise_error }
+    end
   end
 end
