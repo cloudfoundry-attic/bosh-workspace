@@ -26,7 +26,7 @@ describe Bosh::Workspace::ReleaseHelper do
     end
 
     let(:manifest_file) { "foo-1.yml." }
-    subject { release_helper.release_upload(manifest_file) }
+    subject { release_helper.release_upload(manifest_file, work_dir) }
 
     it "uploads release" do
       expect(release_cmd).to receive(:upload).with(manifest_file)
@@ -37,7 +37,7 @@ describe Bosh::Workspace::ReleaseHelper do
   describe "#release_uploaded?" do
     let(:releases) { { "versions" => %w(1 2 3) } }
     subject { release_helper.release_uploaded?("foo", version) }
-    before do 
+    before do
       expect(director).to receive(:get_release)
         .with("foo").and_return(releases)
     end

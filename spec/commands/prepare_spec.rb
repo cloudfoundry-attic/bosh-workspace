@@ -53,7 +53,8 @@ describe Bosh::Cli::Command::Prepare do
           context "without release ref" do
             it "does upload the release" do
               expect(release).to receive(:ref).and_return(ref)
-              expect(command).to receive(:release_upload).with(release.manifest_file)
+              expect(command).to receive(:release_upload)
+                .with(release.manifest_file, release.repo_dir)
               command.prepare
             end
           end
