@@ -19,8 +19,8 @@ module Bosh::Workspace::Schemas
     end
 
     context "invalid version" do
-      let(:releases) { release["version"] = "foo"; [release] }
-      it { expect { subject }.to raise_error(/version.*doesn't validate/i) }
+      let(:releases) { release["version"] = "+foo"; [release] }
+      it { expect { subject }.to raise_error(/version.*should match/i) }
     end
 
     context "optional ref" do
