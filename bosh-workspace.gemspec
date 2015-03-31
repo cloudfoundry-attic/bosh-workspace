@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "semi_semantic", "~> 1.1.0"
   spec.add_runtime_dependency "membrane", "~> 1.1.0"
   spec.add_runtime_dependency "hashdiff", "~> 0.2.1"
-  spec.add_runtime_dependency "rugged", "~> 0.22.0b5"
+  spec.add_runtime_dependency "rugged", "~> 0.23.0b1"
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rspec", "~> 3.1.0"
