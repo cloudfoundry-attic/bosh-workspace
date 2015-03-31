@@ -44,11 +44,15 @@ module Bosh::Workspace
       @repo ||= Rugged::Repository.new(repo_dir)
     end
 
+    def new_style_repo
+      dir = File.join(repo_dir, "releases", @name)
+      File.directory?(dir) && !File.symlink?(dir)
+    end
+
     # transforms releases/foo-1.yml, releases/bar-2.yml to:
     # { "1" => foo-1.yml, "2" => bar-2.yml }
     def final_releases
       @final_releases ||= begin
-        new_style_repo = File.directory?(File.join(repo_dir, "releases", @name))
         releases_dir = new_style_repo ? "releases/#{@name}" : "releases"
 
         Hash[Dir[File.join(repo_dir, releases_dir, "*.yml")]
