@@ -20,8 +20,8 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 2.0.0'
 
-  spec.add_runtime_dependency "bosh_cli",  ">= 1.2682.0"
-  spec.add_runtime_dependency "bosh_common",  ">= 1.2682.0"
+  spec.add_runtime_dependency "bosh_cli",  ">= 1.2905.0"
+  spec.add_runtime_dependency "bosh_common",  ">= 1.2905.0"
   spec.add_runtime_dependency "semi_semantic", "~> 1.1.0"
   spec.add_runtime_dependency "membrane", "~> 1.1.0"
   spec.add_runtime_dependency "hashdiff", "~> 0.2.1"

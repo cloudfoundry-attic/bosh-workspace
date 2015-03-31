@@ -24,7 +24,7 @@ module Bosh::Workspace
 
       options = { credentials: require_credetials_for(url) }
       unless check_connection(repo, url, options)
-        say "Using credentials from: #{credentials_file}"
+        say "Using credentials from: #{git_credentials_file}"
         err "Invalid credentials for: #{url}"
       end
       options
@@ -45,42 +45,42 @@ module Bosh::Workspace
       Rugged::Repository.new(dir)
     end
 
-    def credentials
-      @credentials ||= Credentials.new(credentials_file)
+    def git_credentials
+      @git_credentials ||= Credentials.new(git_credentials_file)
     end
 
     def require_credetials_for(url)
-      unless File.exist? credentials_file
+      unless File.exist? git_credentials_file
         say("Authentication is required for: #{url}".make_red)
-        err("Credentials file does not exist: #{credentials_file}".make_red)
+        err("Credentials file does not exist: #{git_credentials_file}".make_red)
       end
-      unless credentials.valid?
+      unless git_credentials.valid?
         say("Validation errors:".make_red)
-        credentials.errors.each { |error| say("- #{error}") }
-        err("'#{credentials_file}' is not valid".make_red)
+        git_credentials.errors.each { |error| say("- #{error}") }
+        err("'#{git_credentials_file}' is not valid".make_red)
       end
-      if creds = credentials.find_by_url(url)
+      if creds = git_credentials.find_by_url(url)
         load_git_credentials(creds)
       else
-        say("Credential look up failed in: #{credentials_file}")
+        say("Credential look up failed in: #{git_credentials_file}")
         err("No credentials found for: #{url}".make_red)
       end
     end
 
-    def credentials_file
+    def git_credentials_file
       File.join work_dir, '.credentials.yml'
     end
 
-    def load_git_credentials(credentials)
-      case credentials.keys
+    def load_git_credentials(git_credentials)
+      case git_credentials.keys
       when %i(private_key)
         options = {
           username: 'git',
-          privatekey: temp_key_file(credentials[:private_key])
+          privatekey: temp_key_file(git_credentials[:private_key])
         }
         Rugged::Credentials::SshKey.new(options)
       when %i(username password)
-        Rugged::Credentials::UserPassword.new(credentials)
+        Rugged::Credentials::UserPassword.new(git_credentials)
       end
     end
 
