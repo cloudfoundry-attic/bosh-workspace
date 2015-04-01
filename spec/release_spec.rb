@@ -2,7 +2,7 @@ describe Bosh::Workspace::Release do
   include Bosh::Workspace::GitCredenialsHelper
   let(:name) { "foo" }
   let(:release) { load_release(release_data) }
-  let(:version) { 3 }
+  let(:version) { "3" }
   let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
   let(:templates) { Dir[File.join(releases_dir, name, "templates/*.yml")].to_s }
@@ -18,7 +18,8 @@ describe Bosh::Workspace::Release do
 
     describe "#update_repo" do
       subject do
-        Dir[File.join(releases_dir, name, "releases/#{name}/foo*.yml")].to_s
+        # puts `cd #{File.join(releases_dir, name)} && git checkout origin/HEAD && git log`
+        Dir[File.join(releases_dir, name, "releases/**/foo*.yml")].to_s
       end
 
       context "latest version" do
@@ -27,24 +28,33 @@ describe Bosh::Workspace::Release do
         let(:version) { "latest" }
 
         it "checks out repo" do
-          expect(subject).to match(/foo-11.yml/)
+          expect(subject).to match(/releases\/foo\/foo-12.yml/)
         end
+      end
 
-        it "does not include templates from master" do
-          expect(templates).to_not match(/deployment.yml/)
+      context "version from before new structure" do
+        before { release.update_repo }
+
+        let(:version) { "11" }
+
+        it "checks out repo" do
+          expect(subject).to match(/releases\/foo-11.yml/)
         end
       end
     end
 
     describe "attributes" do
+      let(:version) { "12" }
       subject { release }
       its(:name) { should eq name }
       its(:git_url) { should eq repo }
       its(:repo_dir) { should match(/\/#{name}$/) }
-      its(:manifest_file) { should match(/\/#{name}-#{version}.yml$/) }
       its(:manifest) { should match "releases/#{name}/#{name}-#{version}.yml$" }
       its(:name_version) { should eq "#{name}/#{version}" }
       its(:version) { should eq version }
+      its(:manifest_file) do
+        should match(/\/releases\/#{name}\/#{name}-#{version}.yml$/)
+      end
     end
   end
 
@@ -102,7 +112,7 @@ describe Bosh::Workspace::Release do
         end
       end
 
-      context "updated version " do
+      context "updated version" do
         let(:version) { "11" }
 
         it "checks out file with multiple commits" do
@@ -135,7 +145,7 @@ describe Bosh::Workspace::Release do
         let(:version) { "11" }
 
         before do
-          load_release("name" => "bar", "version" => 2, "git" => repo).update_repo
+          load_release("name" => "foo", "version" => 2, "git" => repo).update_repo
         end
 
         it "version 11" do
@@ -212,7 +222,7 @@ describe Bosh::Workspace::Release do
         let(:version) { "11" }
 
         before do
-          load_release("name" => "bar", "version" => 2, "git" => repo).update_repo
+          load_release("name" => "foo", "version" => 2, "git" => repo).update_repo
         end
 
         it "version 11" do
@@ -245,7 +255,7 @@ describe Bosh::Workspace::Release do
       its(:manifest_file) { should match(/\/#{name}-#{version}.yml$/) }
       its(:manifest) { should match "releases/#{name}-#{version}.yml$" }
       its(:name_version) { should eq "#{name}/#{version}" }
-      its(:version) { should eq version }
+      its(:version) { should eq version.to_s }
     end
   end
 end
