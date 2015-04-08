@@ -15,6 +15,8 @@ module Bosh::Workspace
     let(:dir) { File.join(work_dir, '.releases', 'foo') }
     let(:repo) { instance_double 'Rugged::Repository' }
     let(:remote) { instance_double 'Rugged::Remote', url: url }
+    let(:protocol) { :http }
+    let(:git_url) { instance_double 'GitRemoteURL', protocol: protocol }
 
     before do
       allow(Rugged::Repository).to receive(:new).with(dir).and_return(repo)
@@ -25,6 +27,7 @@ module Bosh::Workspace
       allow(remote).to receive(:check_connection).with(:fetch, Hash)
         .and_return(!auth_required, credentials_auth_valid)
       allow(repo).to receive(:checkout).with(/origin\/HEAD/, strategy: :force)
+      allow(GitRemoteUrl).to receive(:new).and_return(git_url)
     end
 
     def expect_no_credentials
@@ -93,6 +96,26 @@ module Bosh::Workspace
           allow(credentials).to receive(:valid?).and_return(credentials_valid)
           allow(credentials).to receive(:find_by_url)
             .with(url).and_return(creds_hash)
+        end
+
+        context "without supported protocol" do
+          before do
+            expect(Rugged).to receive(:features).and_return([])
+          end
+
+          let(:protocol) { :https }
+
+          it "raises" do
+            expect { subject }.to raise_error /rugged requires https/i
+          end
+        end
+
+        context "with git protocol" do
+          let(:protocol) { :git }
+
+          it "raises" do
+            expect { subject }.to raise_error /not support authentication/i
+          end
         end
 
         context "with sshkey" do

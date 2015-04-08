@@ -50,6 +50,7 @@ module Bosh::Workspace
     end
 
     def require_credetials_for(url)
+      validate_url_protocol_support!(url)
       unless File.exist? git_credentials_file
         say("Authentication is required for: #{url}".make_red)
         err("Credentials file does not exist: #{git_credentials_file}".make_red)
@@ -64,6 +65,19 @@ module Bosh::Workspace
       else
         say("Credential look up failed in: #{git_credentials_file}")
         err("No credentials found for: #{url}".make_red)
+      end
+    end
+
+    def validate_url_protocol_support!(url)
+      protocol = GitRemoteUrl.new(url).protocol
+      case protocol
+      when :git
+        err("Somthing is wrong, the git protocol does not support authentication")
+      when :https, :ssh
+        unless Rugged.features.include? protocol
+          say("Please reinstall Rugged gem with #{protocol} support: http://git.io/veiyJ")
+          err("Rugged requires #{protocol} support for: #{url}")
+        end
       end
     end
 
