@@ -24,9 +24,11 @@ module Bosh::Workspace
       allow(repo).to receive_message_chain("remotes.[]").and_return(remote)
       allow(repo).to receive_message_chain("remotes.create_anonymous")
         .with(url).and_return(remote)
+      allow(repo).to receive_message_chain("references.[].resolve.target_id")
+        .and_return(:commit_id)
       allow(remote).to receive(:check_connection).with(:fetch, Hash)
         .and_return(!auth_required, credentials_auth_valid)
-      allow(repo).to receive(:checkout).with(/origin\/HEAD/, strategy: :force)
+      allow(repo).to receive(:checkout).with(:commit_id, strategy: :force)
       allow(GitRemoteUrl).to receive(:new).and_return(git_url)
     end
 

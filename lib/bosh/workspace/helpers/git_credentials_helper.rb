@@ -16,11 +16,13 @@ module Bosh::Workspace
     def fetch_and_checkout(repo)
       url = repo.remotes['origin'].url
       repo.fetch('origin', REFSPEC, connection_options_for(repo, url))
-      repo.checkout 'refs/remotes/origin/HEAD', strategy: :force
+      commit = repo.references['refs/remotes/origin/HEAD'].resolve.target_id
+      repo.checkout commit, strategy: :force
     end
 
     def connection_options_for(repo, url)
       return {} if check_connection(repo, url)
+      validate_url_protocol_support!(url)
 
       options = { credentials: require_credetials_for(url) }
       unless check_connection(repo, url, options)
@@ -50,7 +52,6 @@ module Bosh::Workspace
     end
 
     def require_credetials_for(url)
-      validate_url_protocol_support!(url)
       unless File.exist? git_credentials_file
         say("Authentication is required for: #{url}".make_red)
         err("Credentials file does not exist: #{git_credentials_file}".make_red)
