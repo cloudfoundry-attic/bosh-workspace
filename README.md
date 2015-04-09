@@ -95,6 +95,35 @@ git add . && git commit -m "Added cf-warden deployment"
 Congratulations you should now have a running Cloud Foundry.
 For further reference on how to start using it go to the [bosh-lite documentation](https://github.com/cloudfoundry/bosh-lite#try-your-cloud-foundry-deployment).
 
+### Using private boshreleases
+When using a boshrelease from a location which requires authentication
+a `.credentials.yml` file is required, located at the root of your boshworkspace.
+Two types of authentication are supported: `username/password` and `sshkey`.
+
+Example `.credentials.yml` file:
+```yaml
+- url: https://github.com/example/top-secret-boshrelease.git
+  username: foo
+  password: bar
+- url: ssh://git@github.com/example/super-secret-boshrelease.git
+  private_key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIICXAIBAAKBgQDHFr+KICms+tuT1OXJwhCUmR2dKVy7psa8xzElSyzqx7oJyfJ1
+    JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMXqHxf+ZH9BL1gk9Y6kCnbM5R6
+    0gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBugspULZVNRxq7veq/fzwIDAQAB
+    AoGBAJ8dRTQFhIllbHx4GLbpTQsWXJ6w4hZvskJKCLM/o8R4n+0W45pQ1xEiYKdA
+    Z/DRcnjltylRImBD8XuLL8iYOQSZXNMb1h3g5/UGbUXLmCgQLOUUlnYt34QOQm+0
+    KvUqfMSFBbKMsYBAoQmNdTHBaz3dZa8ON9hh/f5TT8u0OWNRAkEA5opzsIXv+52J
+    duc1VGyX3SwlxiE2dStW8wZqGiuLH142n6MKnkLU4ctNLiclw6BZePXFZYIK+AkE
+    xQ+k16je5QJBAN0TIKMPWIbbHVr5rkdUqOyezlFFWYOwnMmw/BKa1d3zp54VP/P8
+    +5aQ2d4sMoKEOfdWH7UqMe3FszfYFvSu5KMCQFMYeFaaEEP7Jn8rGzfQ5HQd44ek
+    lQJqmq6CE2BXbY/i34FuvPcKU70HEEygY6Y9d8J3o6zQ0K9SYNu+pcXt4lkCQA3h
+    jJQQe5uEGJTExqed7jllQ0khFJzLMx0K6tj0NeeIzAaGCQz13oo2sCdeGRHO4aDh
+    HH6Qlq/6UOV5wP8+GAcCQFgRCcB+hrje8hfEEefHcFpyKH+5g1Eu1k0mLrxK2zd+
+    4SlotYRHgPCEubokb2S1zfZDWIXW3HmggnGgM949TlY=
+    -----END RSA PRIVATE KEY-----
+```
+
 ## Experimental
 ### dns support
 Dns support can be enabled by adding a `domain_name` property to your deployment.
