@@ -1,7 +1,13 @@
 module Bosh::Workspace::Schemas
   describe Releases do
     let(:release) do
-      {"name" => "foo", "version" => 1, "ref" => "cec3ec1", "git" => "example.com/git.git"}
+      {
+        "name" => "foo",
+        "version" => 1,
+        "path" => "release",
+        "ref" => "cec3ec1",
+        "git" => "example.com/git.git"
+      }
     end
 
     subject { Releases.new.validate(releases) }
@@ -30,6 +36,11 @@ module Bosh::Workspace::Schemas
 
     context "optional git" do
       let(:releases) { [release.delete_if { |k| k == "git" }] }
+      it { expect { subject }.to_not raise_error }
+    end
+
+    context "optional git" do
+      let(:releases) { [release.delete_if { |k| k == "path" }] }
       it { expect { subject }.to_not raise_error }
     end
   end
