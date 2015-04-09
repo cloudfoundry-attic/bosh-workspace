@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/cloudfoundry-incubator/bosh-workspace.png?label=ready&title=Ready)](https://waffle.io/cloudfoundry-incubator/bosh-workspace)
 # Bosh workspace
 [![Build Status](https://img.shields.io/travis/cloudfoundry-incubator/bosh-workspace/master.svg?style=flat-square)](https://travis-ci.org/cloudfoundry-incubator/bosh-workspace) [![Test Coverage](https://img.shields.io/codeclimate/coverage/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Code Climate](https://img.shields.io/codeclimate/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Dependency Status](https://img.shields.io/gemnasium/cloudfoundry-incubator/bosh-workspace.svg?style=flat-square)](https://gemnasium.com/cloudfoundry-incubator/bosh-workspace)
 
