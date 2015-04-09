@@ -5,6 +5,7 @@ module Bosh::Workspace
     def initialize(release, releases_dir)
       @name = release["name"]
       @ref = release["ref"]
+      @path = release["path"]
       @spec_version = release["version"].to_s
       @git_url = release["git"]
       @repo_dir = File.join(releases_dir, @name)
@@ -46,7 +47,8 @@ module Bosh::Workspace
     end
 
     def releases_dir
-      new_style_repo ? "releases/#{@name}" : "releases"
+      dir = new_style_repo ? "releases/#{@name}" : "releases"
+      @path ? File.join(@path, dir) : dir
     end
 
     def releases_tree

@@ -18,7 +18,6 @@ describe Bosh::Workspace::Release do
 
     describe "#update_repo" do
       subject do
-        # puts `cd #{File.join(releases_dir, name)} && git checkout origin/HEAD && git log`
         Dir[File.join(releases_dir, name, "releases/**/foo*.yml")].to_s
       end
 
@@ -256,6 +255,43 @@ describe Bosh::Workspace::Release do
       its(:manifest) { should match "releases/#{name}-#{version}.yml$" }
       its(:name_version) { should eq "#{name}/#{version}" }
       its(:version) { should eq version.to_s }
+    end
+  end
+
+  context "given a release which is located in a subfolder" do
+    let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo-subdir.zip") }
+    let(:release_data) do
+      { "name" => name, "version" => version, "git" => repo, "path" => "release"  }
+    end
+
+    describe "#update_repo" do
+      subject do
+        Dir[File.join(releases_dir, name, "release/releases/**/*.yml")].to_s
+      end
+
+      context "latest version" do
+        before { release.update_repo }
+
+        let(:version) { "latest" }
+
+        it "checks out repo" do
+          expect(subject).to match(/release\/releases\/foo-12.yml/)
+        end
+      end
+    end
+
+    describe "attributes" do
+      let(:version) { "12" }
+      subject { release }
+      its(:name) { should eq name }
+      its(:git_url) { should eq repo }
+      its(:repo_dir) { should match(/\/#{name}$/) }
+      its(:manifest) { should match "release/releases/#{name}-#{version}.yml$" }
+      its(:name_version) { should eq "#{name}/#{version}" }
+      its(:version) { should eq version }
+      its(:manifest_file) do
+        should match(/\/release\/releases\/#{name}-#{version}.yml$/)
+      end
     end
   end
 end

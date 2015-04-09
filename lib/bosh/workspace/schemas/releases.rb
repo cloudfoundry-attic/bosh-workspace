@@ -4,10 +4,11 @@ module Bosh::Workspace
       def validate(object)
         Membrane::SchemaParser.parse do
           [{
-            "name"          => String,
-            "version"       => ReleaseVersion.new,
-            optional("ref") => enum(String),
-            optional("git") => String,
+            "name"           => String,
+            "version"        => ReleaseVersion.new,
+            optional("path") => enum(String),
+            optional("ref")  => enum(String),
+            optional("git")  => String,
           }]
         end.validate object
       end
