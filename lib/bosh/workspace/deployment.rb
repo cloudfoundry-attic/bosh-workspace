@@ -38,14 +38,6 @@ module Bosh::Workspace
       @raw.errands
     end
 
-    def apply_patch
-      @raw.apply_patch
-    end
-
-    def create_patch
-      @raw.create_patch
-    end
-
     private
 
     def schema
@@ -53,8 +45,6 @@ module Bosh::Workspace
         {
           "name"                   => /^((?!\.yml).)*$/, # Should not contain .yml
           "target"                 => String,
-          optional("apply_patch")  => String,
-          optional("create_patch") => String,
           optional("errands")      => [String]
         }
       end
