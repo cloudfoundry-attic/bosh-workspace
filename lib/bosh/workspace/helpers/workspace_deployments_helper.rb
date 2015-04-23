@@ -19,14 +19,6 @@ module Bosh::Workspace
       @context.new(Bosh::Cli::Command::Errand).run_errand(errand)
     end
 
-    private
-
-    def set_context(deployment)
-      args = %i(target username password merged_file)
-             .map { |a| deployment.send(a) }
-      @context = BoshCommandContext.new(*args)
-    end
-
     def deployments
       unless File.exists? deployments_file
         err "Could not find Deployments file: #{deployments_file}"
@@ -35,6 +27,14 @@ module Bosh::Workspace
       @deployments ||= begin
         YAML.load_file(deployments_file).map { |d| Deployment.new(d)  }
       end
+    end
+
+    private
+
+    def set_context(deployment)
+      args = %i(target username password merged_file)
+             .map { |a| deployment.send(a) }
+      @context = BoshCommandContext.new(*args)
     end
 
     def deployments_file

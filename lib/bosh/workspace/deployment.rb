@@ -30,12 +30,20 @@ module Bosh::Workspace
       File.join ".deployments", file_name
     end
 
+    def base_name
+      @raw.name
+    end
+
     def file_name
       @raw.name + ".yml"
     end
 
     def errands
       @raw.errands
+    end
+
+    def project_deployment_file
+      File.join "deployments", file_name
     end
 
     private
