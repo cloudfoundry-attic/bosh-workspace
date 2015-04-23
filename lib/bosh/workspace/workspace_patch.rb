@@ -108,7 +108,7 @@ module Bosh::Workspace
 
     def hash_changes(old, new)
       cs = changeset(old, new)
-      cs.changed? ? cs.summary.join("\n") : nil
+      cs.changed? ? cs.summary(1).join("\n") : nil
     end
 
     def checkout_submodule(dir, ref)
