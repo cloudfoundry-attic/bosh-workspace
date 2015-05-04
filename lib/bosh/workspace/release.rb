@@ -35,6 +35,10 @@ module Bosh::Workspace
       @ref && repo.lookup(@ref).oid
     end
 
+    def release_dir
+      @path ? File.join(@repo_dir, @path) : @repo_dir
+    end
+
     private
 
     def repo
@@ -42,7 +46,8 @@ module Bosh::Workspace
     end
 
     def new_style_repo
-      dir = File.join(repo_dir, "releases", @name)
+      base = @path ? File.join(@path, 'releases') : 'releases'
+      dir = File.join(repo_dir, base, @name)
       File.directory?(dir) && !File.symlink?(dir)
     end
 

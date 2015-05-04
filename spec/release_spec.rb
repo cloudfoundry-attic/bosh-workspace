@@ -48,6 +48,7 @@ describe Bosh::Workspace::Release do
       its(:name) { should eq name }
       its(:git_url) { should eq repo }
       its(:repo_dir) { should match(/\/#{name}$/) }
+      its(:release_dir) { should match(/\/#{name}$/) }
       its(:manifest) { should match "releases/#{name}/#{name}-#{version}.yml$" }
       its(:name_version) { should eq "#{name}/#{version}" }
       its(:version) { should eq version }
@@ -251,6 +252,7 @@ describe Bosh::Workspace::Release do
       its(:name) { should eq name }
       its(:git_url) { should eq repo }
       its(:repo_dir) { should match(/\/#{name}$/) }
+      its(:release_dir) { should match(/\/#{name}$/) }
       its(:manifest_file) { should match(/\/#{name}-#{version}.yml$/) }
       its(:manifest) { should match "releases/#{name}-#{version}.yml$" }
       its(:name_version) { should eq "#{name}/#{version}" }
@@ -286,6 +288,7 @@ describe Bosh::Workspace::Release do
       its(:name) { should eq name }
       its(:git_url) { should eq repo }
       its(:repo_dir) { should match(/\/#{name}$/) }
+      its(:release_dir) { should match(/\/#{name}\/release$/) }
       its(:manifest) { should match "release/releases/#{name}-#{version}.yml$" }
       its(:name_version) { should eq "#{name}/#{version}" }
       its(:version) { should eq version }

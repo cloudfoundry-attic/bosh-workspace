@@ -6,7 +6,8 @@ describe Bosh::Cli::Command::Prepare do
     let(:release) do
       instance_double("Bosh::Workspace::Release",
         name: "foo", version: "1", repo_dir: ".releases/foo", git_url: "/.git",
-        name_version: "foo/1", manifest_file: "releases/foo-1.yml")
+        release_dir: '.releases/foo/sub', name_version: "foo/1",
+        manifest_file: "releases/foo-1.yml")
     end
     let(:stemcell) do
       instance_double("Bosh::Workspace::Stemcell",
@@ -54,7 +55,7 @@ describe Bosh::Cli::Command::Prepare do
             it "does upload the release" do
               expect(release).to receive(:ref).and_return(ref)
               expect(command).to receive(:release_upload)
-                .with(release.manifest_file, release.repo_dir)
+                .with(release.manifest_file, release.release_dir)
               command.prepare
             end
           end
