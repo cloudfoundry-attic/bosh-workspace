@@ -69,7 +69,7 @@ describe Bosh::Workspace::Release do
         let(:version) { "latest" }
 
         it "checks out repo" do
-          expect(subject).to match(/foo-11.yml/)
+          expect(subject).to match(/foo-12.yml/)
         end
 
         it "does not include templates from master" do
@@ -78,7 +78,7 @@ describe Bosh::Workspace::Release do
       end
 
       context "specific version" do
-        let(:version) { "11" }
+        let(:version) { "12" }
         before { release.update_repo }
 
         it "checks out repo" do
@@ -121,7 +121,7 @@ describe Bosh::Workspace::Release do
       end
 
       context "non existing version " do
-        let(:version) { "12" }
+        let(:version) { "13" }
 
         it "raises an error" do
           expect { release.update_repo }.
@@ -198,7 +198,7 @@ describe Bosh::Workspace::Release do
       end
 
       context "non existing version " do
-        let(:version) { "12" }
+        let(:version) { "13" }
 
         it "raises an error" do
           expect { release.version }.
