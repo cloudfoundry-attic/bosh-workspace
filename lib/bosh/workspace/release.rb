@@ -1,5 +1,6 @@
 module Bosh::Workspace
   class Release
+    include GitCredenialsHelper
     attr_reader :name, :git_url, :repo_dir
 
     def initialize(release, releases_dir)
@@ -13,6 +14,31 @@ module Bosh::Workspace
 
     def update_repo
       repo.checkout ref || release[:commit], strategy: :force
+      required_submodules.each do |submodule|
+        fetch_or_clone_repo(File.join(repo_dir, submodule.path), submodule.url)
+        submodule.repository.checkout submodule.index_oid
+      end
+    end
+
+    def required_submodules
+      required = []
+      if FileTest.exists?(File.join(repo.workdir, "templates"))
+        Find.find(File.join(repo.workdir, "templates")) do |path|
+          if FileTest.symlink?(path) and ! FileTest.exists?(path)
+            if File.readlink(path).start_with?("/")
+              target = File.readlink(path)
+            else
+              target = File.expand_path(File.join(File.dirname(path), File.readlink(path)))
+            end
+            repo.submodules.each do |submodule|
+              if target.start_with?(File.join(repo.workdir, submodule.path))
+                required.push(submodule)
+              end
+            end
+          end
+        end
+      end
+      required
     end
 
     def manifest_file
