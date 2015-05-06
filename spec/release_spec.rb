@@ -1,5 +1,5 @@
 describe Bosh::Workspace::Release do
-  include Bosh::Workspace::GitCredenialsHelper
+  include Bosh::Workspace::GitCredentialsHelper
   let(:name) { "foo" }
   let(:release) { load_release(release_data) }
   let(:version) { "3" }

@@ -1,6 +1,6 @@
 module Bosh::Workspace
   class Release
-    include GitCredenialsHelper
+    include GitCredentialsHelper
     attr_reader :name, :git_url, :repo_dir
 
     def initialize(release, releases_dir)

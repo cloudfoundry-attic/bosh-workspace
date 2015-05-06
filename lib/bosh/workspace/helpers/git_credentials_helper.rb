@@ -1,5 +1,5 @@
 module Bosh::Workspace
-  module GitCredenialsHelper
+  module GitCredentialsHelper
     REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
 
     def fetch_or_clone_repo(dir, url)
