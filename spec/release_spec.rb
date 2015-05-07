@@ -69,7 +69,12 @@ describe Bosh::Workspace::Release do
           system("rm -rf #{releases_dir}")
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
-          load_release("name" => name, "version" => 1, "git" => repo).update_repo
+          release = load_release("name" => name, "version" => 1, "git" => repo)
+          release.update_repo
+          release.required_submodules.each do |submodule|
+            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
+            release.update_submodule(submodule)
+          end
         end
 
         it "clones + checks out required submodules" do
@@ -85,7 +90,12 @@ describe Bosh::Workspace::Release do
           system("rm -rf #{releases_dir}")
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
-          load_release("name" => name, "version" => 2, "git" => repo).update_repo
+          release = load_release("name" => name, "version" => 2, "git" => repo)
+          release.update_repo
+          release.required_submodules.each do |submodule|
+            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
+            release.update_submodule(submodule)
+          end
         end
 
         it "clones + checks out required submodules" do
