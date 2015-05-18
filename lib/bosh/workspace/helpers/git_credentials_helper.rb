@@ -1,5 +1,5 @@
 module Bosh::Workspace
-  module GitCredenialsHelper
+  module GitCredentialsHelper
     REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
 
     def fetch_or_clone_repo(dir, url)
@@ -24,7 +24,7 @@ module Bosh::Workspace
       return {} if check_connection(repo, url)
       validate_url_protocol_support!(url)
 
-      options = { credentials: require_credetials_for(url) }
+      options = { credentials: require_credentials_for(url) }
       unless check_connection(repo, url, options)
         say "Using credentials from: #{git_credentials_file}"
         err "Invalid credentials for: #{url}"
@@ -51,7 +51,7 @@ module Bosh::Workspace
       @git_credentials ||= Credentials.new(git_credentials_file)
     end
 
-    def require_credetials_for(url)
+    def require_credentials_for(url)
       unless File.exist? git_credentials_file
         say("Authentication is required for: #{url}".make_red)
         err("Credentials file does not exist: #{git_credentials_file}".make_red)
