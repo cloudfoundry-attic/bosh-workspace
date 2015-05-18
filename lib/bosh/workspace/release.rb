@@ -16,7 +16,7 @@ module Bosh::Workspace
     end
 
     def update_submodule(submodule)
-      submodule.repository.checkout submodule.head_oid
+      submodule.repository.checkout submodule.head_oid, strategy: :force
     end
 
     def required_submodules
