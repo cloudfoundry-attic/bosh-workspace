@@ -3,7 +3,7 @@ require "bosh/workspace"
 module Bosh::Cli::Command
   class DeploymentPatch < Base
     include Bosh::Workspace::ProjectDeploymentHelper
-    include Bosh::Workspace::GitCredenialsHelper
+    include Bosh::Workspace::GitCredentialsHelper
 
     usage "create deployment patch"
     desc "Extract patch from the current directory and optionally writes to file"

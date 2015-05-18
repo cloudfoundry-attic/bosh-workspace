@@ -1,7 +1,7 @@
 module Bosh::Workspace
-  describe GitCredenialsHelper do
-    class GitCredenialsHelperTester
-      include Bosh::Workspace::GitCredenialsHelper
+  describe GitCredentialsHelper do
+    class GitCredentialsHelperTester
+      include Bosh::Workspace::GitCredentialsHelper
 
       attr_reader :work_dir
 
@@ -42,7 +42,7 @@ module Bosh::Workspace
 
     describe "fetch_repo" do
       subject do
-        GitCredenialsHelperTester.new(work_dir).fetch_repo(dir)
+        GitCredentialsHelperTester.new(work_dir).fetch_repo(dir)
       end
 
       context "with existing repo" do
@@ -55,7 +55,7 @@ module Bosh::Workspace
 
     describe "fetch_or_clone_repo" do
       subject do
-        GitCredenialsHelperTester.new(work_dir).fetch_or_clone_repo(dir, url)
+        GitCredentialsHelperTester.new(work_dir).fetch_or_clone_repo(dir, url)
       end
 
       context "with existing repo" do
