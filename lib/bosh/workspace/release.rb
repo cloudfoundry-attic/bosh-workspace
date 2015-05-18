@@ -16,12 +16,12 @@ module Bosh::Workspace
     end
 
     def update_submodule(submodule)
-      submodule.repository.checkout submodule.index_oid
+      submodule.repository.checkout submodule.head_oid
     end
 
     def required_submodules
       required = []
-      broken_symlink_templates.each do |template|
+      symlink_templates.each do |template|
         submodule = submodule_for(template)
         if submodule
           required.push(submodule)
@@ -122,11 +122,11 @@ module Bosh::Workspace
       false
     end
 
-    def broken_symlink_templates
+    def symlink_templates
       templates = []
       if FileTest.exists?(templates_dir)
         Find.find(templates_dir) do |file|
-          if FileTest.symlink?(file) and ! FileTest.exists?(file)
+          if FileTest.symlink?(file)
             templates.push(symlink_target(file))
           end
         end
