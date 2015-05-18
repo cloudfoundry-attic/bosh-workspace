@@ -58,6 +58,88 @@ describe Bosh::Workspace::Release do
     end
   end
 
+  context "given a release with submodule templates" do
+    let(:repo) { extracted_asset_dir("supermodule", "supermodule-boshrelease-repo.zip") }
+    let(:subrepo) { extracted_asset_dir("submodule-boshrelease", "submodule-boshrelease-repo.zip") }
+    let(:name) { "supermodule" }
+
+    describe "#update_repo" do
+      subject { Rugged::Repository.new(File.join(releases_dir, name)) }
+      context "with templates in submodules" do
+        before do
+          system("rm -rf #{releases_dir}")
+          allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
+
+          release = load_release("name" => name, "version" => 1, "git" => repo)
+          release.update_repo
+          release.required_submodules.each do |submodule|
+            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
+            release.update_submodule(submodule)
+          end
+        end
+
+        it "clones + checks out required submodules" do
+          expect(subject.submodules["src/submodule"].workdir_oid)
+            .to eq "2244c436777f7c305fb81a8a6e29079c92a2ab9d"
+        end
+        it "doesn't clone/checkout extraneous submodules" do
+          expect(subject.submodules["src/other"].workdir_oid).to eq nil
+        end
+      end
+      context "with templates in submodules" do
+        before do
+          system("rm -rf #{releases_dir}")
+          allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
+
+          release = load_release("name" => name, "version" => 2, "git" => repo)
+          release.update_repo
+          release.required_submodules.each do |submodule|
+            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
+            release.update_submodule(submodule)
+          end
+        end
+
+        it "clones + checks out required submodules" do
+          expect(subject.submodules["src/submodule"].workdir_oid)
+            .to eq "95eed8c967af969d659a766b0551a75a729a7b65"
+        end
+        it "doesn't clone/checkout extraneous submodules" do
+          expect(subject.submodules["src/other"].workdir_oid).to eq nil
+        end
+      end
+
+      context "from v1 to v2" do
+        before do
+          system("rm -rf #{releases_dir}")
+          allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
+        end
+
+        it "updates the submodules appropriately" do
+          release = load_release("name" => name, "version" => 1, "git" => repo)
+          release.update_repo
+          release.required_submodules.each do |submodule|
+            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
+            release.update_submodule(submodule)
+          end
+          expect(subject.submodules["src/submodule"].workdir_oid)
+            .to eq "2244c436777f7c305fb81a8a6e29079c92a2ab9d"
+          expect(subject.submodules["src/other"].workdir_oid).to eq nil
+
+          # Now move to v2 on existing repo
+          release = load_release("name" => name, "version" => 2, "git" => repo)
+          release.update_repo
+          release.required_submodules.each do |submodule|
+            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
+            release.update_submodule(submodule)
+          end
+          expect(subject.submodules["src/submodule"].workdir_oid)
+            .to eq "95eed8c967af969d659a766b0551a75a729a7b65"
+          expect(subject.submodules["src/other"].workdir_oid).to eq nil
+        end
+      end
+    end
+  end
+
   context "given a release with deprecated structure within 'releases' folder" do
     let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
 

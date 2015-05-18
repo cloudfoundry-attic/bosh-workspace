@@ -3,7 +3,7 @@ module Bosh::Workspace
     REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
 
     def fetch_or_clone_repo(dir, url)
-      repo = File.exist?(dir) ? open_repo(dir) : init_repo(dir, url)
+      repo = File.exist?(File.join(dir, '.git')) ? open_repo(dir) : init_repo(dir, url)
       fetch_and_checkout(repo)
     end
 

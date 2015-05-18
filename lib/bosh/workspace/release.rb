@@ -15,6 +15,21 @@ module Bosh::Workspace
       repo.checkout ref || release[:commit], strategy: :force
     end
 
+    def update_submodule(submodule)
+      submodule.repository.checkout submodule.head_oid, strategy: :force
+    end
+
+    def required_submodules
+      required = []
+      symlink_templates.each do |template|
+        submodule = submodule_for(template)
+        if submodule
+          required.push(submodule)
+        end
+      end
+      required
+    end
+
     def manifest_file
       File.join(repo_dir, manifest)
     end
@@ -90,6 +105,39 @@ module Bosh::Workspace
         err("Could not find version: #{@spec_version} for release: #{@name}")
       end
       release
+    end
+
+    def templates_dir
+      File.join(repo.workdir, "templates")
+    end
+
+    def symlink_target(file)
+      if File.readlink(file).start_with?("/")
+        return File.readlink(file)
+      else
+        return File.expand_path(File.join(File.dirname(file), File.readlink(file)))
+      end
+    end
+
+    def submodule_for(file)
+      repo.submodules.each do |submodule|
+        if file.start_with?(File.join(repo.workdir, submodule.path))
+          return submodule
+        end
+      end
+      false
+    end
+
+    def symlink_templates
+      templates = []
+      if FileTest.exists?(templates_dir)
+        Find.find(templates_dir) do |file|
+          if FileTest.symlink?(file)
+            templates.push(symlink_target(file))
+          end
+        end
+      end
+      templates
     end
   end
 end

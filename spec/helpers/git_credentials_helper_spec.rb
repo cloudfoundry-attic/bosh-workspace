@@ -20,7 +20,7 @@ module Bosh::Workspace
 
     before do
       allow(Rugged::Repository).to receive(:new).with(dir).and_return(repo)
-      allow(File).to receive(:exist?).with(dir).and_return(dir_exist)
+      allow(File).to receive(:exist?).with(File.join(dir, '.git')).and_return(dir_exist)
       allow(repo).to receive_message_chain("remotes.[]").and_return(remote)
       allow(repo).to receive_message_chain("remotes.create_anonymous")
         .with(url).and_return(remote)
