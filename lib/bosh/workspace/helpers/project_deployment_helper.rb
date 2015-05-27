@@ -46,10 +46,15 @@ module Bosh::Workspace
 
       say("Generating deployment manifest")
       ManifestBuilder.build(project_deployment, work_dir)
-      
+
       if domain_name = project_deployment.domain_name
         say("Transforming to dynamic networking (dns)")
         DnsHelper.transform(project_deployment.merged_file, domain_name)
+      end
+
+      if cloud_config = project_deployment.cloud_config
+        say("Transforming to cloud config")
+        CloudConfigHelper.transform(project_deployment.merged_file, cloud_config)
       end
     end
 

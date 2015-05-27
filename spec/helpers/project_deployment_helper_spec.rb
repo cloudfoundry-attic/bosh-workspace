@@ -135,6 +135,7 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
   describe "#build_project_deployment" do
     subject { project_deployment_helper.build_project_deployment }
     let(:domain_name) { "bosh" }
+    let(:cloud_config) { "cloud_config" }
     let(:merged_file) { "foo/bar" }
 
     it "builds project deployment manifest" do
@@ -142,14 +143,18 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
       expect(project_deployment_helper).to receive(:work_dir)
         .and_return(work_dir)
       expect(project_deployment).to receive(:domain_name)
-        .and_return(domain_name)
-      expect(project_deployment).to receive(:merged_file)
+         .and_return(domain_name)
+      expect(project_deployment).to receive(:cloud_config)
+         .and_return(cloud_config)
+      expect(project_deployment).to receive(:merged_file).twice
         .and_return(merged_file)
 
       expect(Bosh::Workspace::ManifestBuilder).to receive(:build)
         .with(project_deployment, work_dir)
       expect(Bosh::Workspace::DnsHelper).to receive(:transform)
         .with(merged_file, domain_name)
+      expect(Bosh::Workspace::CloudConfigHelper).to receive(:transform)
+        .with(merged_file, cloud_config)
 
       subject
     end

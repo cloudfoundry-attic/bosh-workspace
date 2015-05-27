@@ -9,6 +9,7 @@ module Bosh::Workspace
             "name"                  => String,
             "director_uuid"         => enum(UUID_REGEX, "current"),
             optional("domain_name") => String,
+            optional("cloud_config")=> CloudConfig.new,
             "releases"              => Releases.new,
             "stemcells"             => Stemcells.new,
             "templates"             => [String],

@@ -1,0 +1,23 @@
+name: name
+
+director_uuid: uuid
+
+networks: networks
+
+resource_pools: resource_pools
+
+disk_pools: disk_pools
+
+properties: properties
+
+update: update
+
+releases: releases
+
+jobs:
+  - name: foo
+    networks:
+      - name: default
+        static_ips:
+          - 10.244.2.2
+
