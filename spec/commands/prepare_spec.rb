@@ -6,7 +6,7 @@ describe Bosh::Cli::Command::Prepare do
     let(:release) do
       instance_double("Bosh::Workspace::Release",
         name: "foo", version: "1", repo_dir: ".releases/foo", git_url: "/.git",
-        release_dir: '.releases/foo/sub', name_version: "foo/1",
+        release_dir: '.releases/foo/sub', name_version: "foo/1", url: nil,
         manifest_file: "releases/foo-1.yml")
     end
     let(:stemcell) do
