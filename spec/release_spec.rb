@@ -405,4 +405,25 @@ describe Bosh::Workspace::Release do
       end
     end
   end
+
+  context "given a release which moved a directory to a symlink across versions" do
+    let(:repo) { extracted_asset_dir("symlinkreplacement", "symlinkreplacement-boshrelease-repo.zip") }
+    let(:name) { "symlinkreplacement" }
+
+    describe "#update_repo" do
+      subject { Rugged::Repository.new(File.join(releases_dir, name)) }
+      context "using a previous version should work" do
+        before do
+          FileUtils.rm_rf(releases_dir)
+
+          release = load_release("name" => name, "version" => "1", "git" => repo)
+          release.update_repo
+        end
+        it "git state is happy" do
+          expect(subject.head.target.oid).to eq "d96521d1940934b1941e0f4a462d3a5e9f31c75d"
+          expect(subject.diff_workdir(subject.head.target.oid).size).to eq 0
+        end
+      end
+    end
+  end
 end
