@@ -12,7 +12,16 @@ module Bosh::Workspace
     end
 
     def update_repo
-      repo.checkout ref || release[:commit], strategy: :force
+      last_error = ''
+      hash = ref || release[:commit]
+      begin
+        repo.checkout hash, strategy: :force
+        repo.reset hash, :hard
+      rescue Rugged::IndexError => e
+        raise e if e.message == last_error
+        last_error = e.message
+        retry
+      end
     end
 
     def update_submodule(submodule)
