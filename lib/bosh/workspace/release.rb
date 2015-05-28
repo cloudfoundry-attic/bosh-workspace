@@ -3,12 +3,13 @@ module Bosh::Workspace
     attr_reader :name, :git_url, :repo_dir
 
     def initialize(release, releases_dir)
-      @name = release["name"]
-      @ref = release["ref"]
-      @path = release["path"]
-      @spec_version = release["version"].to_s
-      @git_url = release["git"]
-      @repo_dir = File.join(releases_dir, @name)
+      @name         = release[:name]
+      @ref          = release[:ref]
+      @path         = release[:path]
+      @spec_version = release[:version].to_s
+      @git_url      = release[:git]
+      @repo_dir     = File.join(releases_dir, @name)
+      @url          = release[:url]
     end
 
     def update_repo
@@ -52,6 +53,10 @@ module Bosh::Workspace
 
     def release_dir
       @path ? File.join(@repo_dir, @path) : @repo_dir
+    end
+
+    def url
+      @url && @url.gsub("^VERSION^", version)
     end
 
     private

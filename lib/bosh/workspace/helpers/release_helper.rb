@@ -7,9 +7,9 @@ module Bosh::Workspace
       remote_release && remote_release["versions"].include?(version.to_s)
     end
 
-    def release_upload(manifest_file, release_dir)
+    def release_upload(manifest_file_or_release_url, release_dir)
       Dir.chdir(release_dir) do
-        release_cmd.upload(manifest_file)
+        release_cmd.upload(manifest_file_or_release_url)
       end
     end
 

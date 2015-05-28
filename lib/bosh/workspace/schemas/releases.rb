@@ -6,6 +6,7 @@ module Bosh::Workspace
           [{
             "name"           => String,
             "version"        => ReleaseVersion.new,
+            optional("url")  => String,
             optional("path") => enum(String),
             optional("ref")  => enum(String),
             optional("git")  => String,
