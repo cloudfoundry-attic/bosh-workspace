@@ -55,11 +55,11 @@ module Bosh::Workspace
       @path ? File.join(@repo_dir, @path) : @repo_dir
     end
 
+    private
+
     def repo
       @repo ||= Rugged::Repository.new(repo_dir)
     end
-
-    private
 
     def update_repo_with_ref(repository, ref)
       repository.checkout_tree ref, strategy: :force

@@ -384,19 +384,24 @@ describe Bosh::Workspace::Release do
 
   context "correct checkout behavior:" do
     let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
+    let(:release_data) { { "name" => name, "version" => version,
+                           "git" => repo, "ref" => :fooref } }
+    let(:repo) { 'foo/bar' }
+    let(:repository) do
+      instance_double('Rugged::Repository', lookup: double(oid: :fooref))
+    end
 
     describe "#update_repo_with_ref" do
-      subject { Rugged::Repository.new(File.join(releases_dir, name)) }
-      context "calls checkout_tree and checkout" do
-        before do
-          FileUtils::rm_rf(releases_dir)
-          release = load_release("name" => name, "version" => 1, "git" => repo)
-        end
-        it "to prevent weird git states" do
-          expect(release.repo).to receive("checkout_tree").at_least(:once)
-          expect(release.repo).to receive("checkout").at_least(:once)
-          release.update_repo
-        end
+      subject { Bosh::Workspace::Release.new(release_data, releases_dir) }
+
+      before do
+        expect(Rugged::Repository).to receive(:new).and_return(repository)
+      end
+
+      it "calls checkout_tree and checkout" do
+        expect(repository).to receive("checkout_tree").at_least(:once)
+        expect(repository).to receive("checkout").at_least(:once)
+        subject.update_repo
       end
     end
   end
