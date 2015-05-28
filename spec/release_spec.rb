@@ -379,4 +379,34 @@ describe Bosh::Workspace::Release do
       end
     end
   end
+
+  context "when encountering a IndexError during checkout" do
+    subject { Bosh::Workspace::Release.new(release_data, releases_dir) }
+    let(:release_data) { { "name" => name, "version" => version,
+                           "git" => repo, "ref" => :fooref } }
+    let(:repo) { 'foo/bar' }
+    let(:repository) do
+      instance_double('Rugged::Repository', lookup: double(oid: :fooref))
+    end
+
+    before do
+      expect(Rugged::Repository).to receive(:new).and_return(repository)
+    end
+
+    it "raises on duplicate error" do
+      expect(repository).to receive(:checkout).twice
+        .and_raise(Rugged::IndexError, "first error")
+      expect { subject.update_repo }.to raise_error /first error/
+    end
+
+    it "raises on duplicate error" do
+      expect(repository).to receive(:checkout)
+        .and_raise(Rugged::IndexError, "first error")
+      expect(repository).to receive(:checkout)
+        .and_raise(Rugged::IndexError, "second error")
+      expect(repository).to receive(:checkout)
+      expect(repository).to receive(:reset)
+      subject.update_repo
+    end
+  end
 end
