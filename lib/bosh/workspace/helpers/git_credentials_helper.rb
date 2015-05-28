@@ -17,6 +17,7 @@ module Bosh::Workspace
       url = repo.remotes['origin'].url
       repo.fetch('origin', REFSPEC, connection_options_for(repo, url))
       commit = repo.references['refs/remotes/origin/HEAD'].resolve.target_id
+      repo.checkout_tree commit, strategy: :force
       repo.checkout commit, strategy: :force
     end
 
