@@ -1,3 +1,5 @@
+require "FileUtils"
+
 describe Bosh::Workspace::Release do
   include Bosh::Workspace::GitCredentialsHelper
   let(:name) { "foo" }
@@ -67,7 +69,7 @@ describe Bosh::Workspace::Release do
       subject { Rugged::Repository.new(File.join(releases_dir, name)) }
       context "with templates in submodules" do
         before do
-          system("rm -rf #{releases_dir}")
+          FileUtils::rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
           release = load_release("name" => name, "version" => 1, "git" => repo)
@@ -88,7 +90,7 @@ describe Bosh::Workspace::Release do
       end
       context "with templates in submodules" do
         before do
-          system("rm -rf #{releases_dir}")
+          FileUtils::rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
           release = load_release("name" => name, "version" => 2, "git" => repo)
@@ -110,7 +112,7 @@ describe Bosh::Workspace::Release do
 
       context "from v1 to v2" do
         before do
-          system("rm -rf #{releases_dir}")
+          FileUtils::rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
         end
 
@@ -387,7 +389,7 @@ describe Bosh::Workspace::Release do
       subject { Rugged::Repository.new(File.join(releases_dir, name)) }
       context "calls checkout_tree and checkout" do
         before do
-          system("rm -rf #{releases_dir}")
+          FileUtils::rm_rf(releases_dir)
           release = load_release("name" => name, "version" => 1, "git" => repo)
         end
         it "to prevent weird git states" do
