@@ -1,14 +1,12 @@
 describe Bosh::Workspace::DnsHelper do
   describe ".transform" do
     subject do
-      Bosh::Workspace::CloudConfigHelper.transform(generated_manifest, cloud_config)
+      Bosh::Workspace::CloudConfigHelper.transform(generated_manifest, networks)
       YAML.load(IO.read(generated_manifest))
     end
 
     let(:generated_manifest) { get_tmp_file_path(content) }
-    let(:cloud_config) do
-      { 'networks' => [{ 'name' => 'default', 'rename' => 'shared' }] }
-    end
+    let(:networks) { [{ 'name' => 'default', 'rename' => 'shared' }] }
     let(:content) { asset_file("cloud_config/manifest.yml") }
 
     context "networks" do

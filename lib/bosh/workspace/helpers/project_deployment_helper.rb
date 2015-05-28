@@ -52,9 +52,10 @@ module Bosh::Workspace
         DnsHelper.transform(project_deployment.merged_file, domain_name)
       end
 
-      if cloud_config = project_deployment.cloud_config
-        say("Transforming to cloud config")
-        CloudConfigHelper.transform(project_deployment.merged_file, cloud_config)
+      if project_deployment.cloud_config
+        say("Applying cloud-config post merge steps ")
+        CloudConfigHelper.transform(project_deployment.merged_file,
+                                    project_deployment.networks)
       end
     end
 

@@ -20,7 +20,7 @@ require "bosh/workspace/schemas/deployment_patch"
 require "bosh/workspace/schemas/releases"
 require "bosh/workspace/schemas/stemcells"
 require "bosh/workspace/schemas/credentials"
-require "bosh/workspace/schemas/cloud_config"
+require "bosh/workspace/schemas/networks"
 
 require "bosh/workspace/shell"
 require "bosh/workspace/manifest_builder"

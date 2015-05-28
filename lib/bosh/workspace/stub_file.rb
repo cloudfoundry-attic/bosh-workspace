@@ -12,6 +12,7 @@ module Bosh::Workspace
       @releases = project_deployment.releases
       @stemcells = project_deployment.stemcells
       @meta = project_deployment.meta
+      @networks = project_deployment.networks
     end
 
     def write(file)
@@ -19,16 +20,25 @@ module Bosh::Workspace
     end
 
     def content
-      {
+      content = {
         "name" => name,
         "director_uuid" => director_uuid,
         "releases" => releases,
         "meta" => meta
       }
+
+      content["networks"] = networks if networks
+      content
     end
 
     def releases
       @releases.map { |r| r.select { |key| %w[name version].include?(key) } }
+    end
+
+    def networks
+      @networks.map do |n|
+        { 'name' => n['name'], 'subnets' => [{ 'static' => n['static'] }] }
+      end
     end
 
     def meta

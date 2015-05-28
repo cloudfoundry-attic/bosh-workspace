@@ -6,10 +6,13 @@ describe Bosh::Workspace::StubFile do
     releases: [ { "name" => "foo", "version" => "latest", "git" => "release_repo.git" } ],
     templates: ["foo.yml"],
     meta: meta,
-    merged_file: ".deployments/foo.yml")
+    merged_file: ".deployments/foo.yml",
+    networks: networks)
   }
   let(:meta) {{ "foo" => "bar" }}
   let(:stemcells) { [ { "name" => "foo", "version" => "2"} ] }
+  let(:networks) { [{ 'name' => 'foo', 'rename_to' => 'shared',
+                      'static' => ['10.0.0.1'] }] }
   let(:path) { "foo/.stubs/bar.yml"}
 
   let(:stub_file) { Bosh::Workspace::StubFile.new(project_deployment) }
@@ -39,6 +42,7 @@ describe Bosh::Workspace::StubFile do
     its(["name"]) { should eq project_deployment.name }
     its(["director_uuid"]) { should eq project_deployment.director_uuid }
     its(["releases"]) { should be_a(Array) }
+    its(["networks"]) { should be_a(Array) }
     its(["meta"]) { should be_a(Hash) }
   end
 
@@ -46,6 +50,13 @@ describe Bosh::Workspace::StubFile do
     it "filters disallowed keys" do
       expect(subject.releases.first).to_not include "git" => "release_repo.git"
       expect(subject.releases.first).to include "name" => "foo", "version" => "latest"
+    end
+  end
+
+  describe "#networks" do
+    it "restructures networks" do
+      expect(subject.networks)
+        .to eq [{ "name" => "foo", "subnets" => [{ "static" => ["10.0.0.1"] }] }]
     end
   end
 

@@ -1,8 +1,8 @@
 module Bosh::Workspace
   class CloudConfigHelper
-    def self.transform(generated_manifest, cloud_config)
+    def self.transform(generated_manifest, networks)
       @manifest = YAML.load(IO.read(generated_manifest))
-      @networks = cloud_config['networks']
+      @networks = networks
 
       transform_networks
       transform_manifest

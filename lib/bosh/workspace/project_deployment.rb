@@ -28,7 +28,7 @@ module Bosh::Workspace
       end
     end
 
-    %w[name templates releases stemcells meta domain_name cloud_config]
+    %w[name templates releases stemcells meta domain_name cloud_config networks]
       .each do |var|
       define_method var do
         @manifest[var]
