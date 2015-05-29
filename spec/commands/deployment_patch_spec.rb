@@ -29,7 +29,8 @@ module Bosh::Cli::Command
         .and_return(changes?)
       expect(command).to receive(:require_project_deployment)
       allow(command).to receive_message_chain("project_deployment.file")
-        .and_return(deployment_file)
+                         .and_return(deployment_file)
+      expect(command).to receive(:say).with /experimental/i
     end
 
     describe '.create' do
