@@ -4,7 +4,7 @@ describe Bosh::Workspace::Release do
   let(:release) { load_release(release_data) }
   let(:version) { "3" }
   let(:url) { "http://local.url/release" }
-  let(:release_data) { { name: name, version: version, git: repo } }
+  let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
   let(:templates) { Dir[File.join(releases_dir, name, "templates/*.yml")].to_s }
 
@@ -44,7 +44,7 @@ describe Bosh::Workspace::Release do
     end
 
     describe "attributes" do
-      let(:release_data) { { name: name, version: version, git: repo } }
+      let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
       let(:version) { "12" }
 
       subject { release }
@@ -64,7 +64,7 @@ describe Bosh::Workspace::Release do
         context "with a version placeholder" do
           let(:url) { "http://local.url/release?^VERSION^" }
           let(:version) { "12" }
-          let(:release_data) { { name: name, version: version, url: url } }
+          let(:release_data) { { "name" => name, "version" => version, "url" => url } }
 
           it 'replaces the version placeholder with the version number' do
             expect(release.url).to eq "http://local.url/release?12"
@@ -74,7 +74,7 @@ describe Bosh::Workspace::Release do
         context 'with no version placeholder' do
           let(:url) { "http://local.url/release" }
           let(:version) { "12" }
-          let(:release_data) {{ name: name, version: version, url: url }}
+          let(:release_data) {{ "name" => name, "version" => version, "url" => url }}
 
           it 'returns the same url' do
             expect(release.url).to eq "http://local.url/release"
@@ -96,7 +96,7 @@ describe Bosh::Workspace::Release do
           system("rm -rf #{releases_dir}")
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
-          release = load_release( name: name, version: 1, git: repo)
+          release = load_release( "name" => name, "version" => 1, "git" => repo)
           release.update_repo
           release.required_submodules.each do |submodule|
             fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
@@ -117,7 +117,7 @@ describe Bosh::Workspace::Release do
           system("rm -rf #{releases_dir}")
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
-          release = load_release( name: name, version: 2, git: repo)
+          release = load_release( "name" => name, "version" => 2, "git" => repo)
           release.update_repo
           release.required_submodules.each do |submodule|
             fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
@@ -141,7 +141,7 @@ describe Bosh::Workspace::Release do
         end
 
         it "updates the submodules appropriately" do
-          release = load_release(name: name, version: 1, git: repo)
+          release = load_release("name" => name, "version" => 1, "git" => repo)
           release.update_repo
           release.required_submodules.each do |submodule|
             fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
@@ -152,7 +152,7 @@ describe Bosh::Workspace::Release do
           expect(subject.submodules["src/other"].workdir_oid).to eq nil
 
           # Now move to v2 on existing repo
-          release = load_release(name: name, version: 2, git: repo)
+          release = load_release("name" => name, "version" => 2, "git" => repo)
           release.update_repo
           release.required_submodules.each do |submodule|
             fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
@@ -210,7 +210,7 @@ describe Bosh::Workspace::Release do
 
       context "specific ref with latest release" do
         let(:release_data) do
-          {name: name, version: "latest", ref: "66658", git: repo}
+          {"name" => name, "version" => "latest", "ref" => "66658", "git" => repo}
         end
 
         it "checks out repo" do
@@ -240,7 +240,7 @@ describe Bosh::Workspace::Release do
 
       context "already cloned repo" do
         before do
-          load_release(name: name, version: 1, git: repo).update_repo
+          load_release("name" => name, "version" => 1, "git" => repo).update_repo
         end
 
         it "version 3" do
@@ -253,7 +253,7 @@ describe Bosh::Workspace::Release do
         let(:version) { "11" }
 
         before do
-          load_release(name: "foo", version: 2, git: repo).update_repo
+          load_release("name" => "foo", "version" => 2, "git" => repo).update_repo
         end
 
         it "version 11" do
@@ -287,7 +287,7 @@ describe Bosh::Workspace::Release do
 
       context "specific ref with latest release" do
         let(:release_data) do
-          {name: name, version: "latest", ref: "66658", git: repo}
+          {"name" => name, "version" => "latest", "ref" => "66658", "git" => repo}
         end
 
         it "checks out repo" do
@@ -317,7 +317,7 @@ describe Bosh::Workspace::Release do
 
       context "already cloned repo" do
         before do
-          load_release(name: name, version: 1, git: repo).update_repo
+          load_release("name" => name, "version" => 1, "git" => repo).update_repo
         end
 
         it "version 3" do
@@ -330,7 +330,7 @@ describe Bosh::Workspace::Release do
         let(:version) { "11" }
 
         before do
-          load_release(name: "foo", version: 2, git: repo).update_repo
+          load_release("name" => "foo", "version" => 2, "git" => repo).update_repo
         end
 
         it "version 11" do
@@ -344,7 +344,7 @@ describe Bosh::Workspace::Release do
         let(:version) { "12" }
 
         before do
-          load_release(name: name, version: 1, git: repo).update_repo
+          load_release("name" => name, "version" => 1, "git" => repo).update_repo
           extracted_asset_dir("foo", "foo-boshrelease-repo-updated.zip")
         end
 
@@ -371,7 +371,7 @@ describe Bosh::Workspace::Release do
   context "given a release which is located in a subfolder" do
     let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo-subdir.zip") }
     let(:release_data) do
-      { name: name, version: version, git: repo, path: "release"  }
+      { "name" => name, "version" => version, "git" => repo, "path" => "release"  }
     end
 
     describe "#update_repo" do

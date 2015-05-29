@@ -1,5 +1,5 @@
 module Bosh
   module Manifests
-    VERSION = "0.9.1.rc1"
+    VERSION = "0.9.0.rc6"
   end
 end
