@@ -8,6 +8,7 @@ module Bosh::Cli::Command
     usage "create deployment patch"
     desc "Extract patch from the current directory and optionally writes to file"
     def create(deployment_patch)
+      experimental_banner
       require_project_deployment
       current_deployment_patch.to_file(deployment_patch)
       say "Wrote patch to #{deployment_patch}"
@@ -18,6 +19,7 @@ module Bosh::Cli::Command
     option "--dry-run", "only show the changes without applying them"
     option "--no-commit", "do not commit applied changes"
     def apply(deployment_patch)
+      experimental_banner
       require_project_deployment
       @patch = Bosh::Workspace::DeploymentPatch.from_file(deployment_patch)
       validate_deployment_patch(@patch, deployment_patch)
@@ -39,6 +41,10 @@ module Bosh::Cli::Command
     end
 
     private
+
+    def experimental_banner
+      say "this command is experimental and could change in the future".make_red
+    end
 
     def templates_dir
       File.join(Dir.getwd, 'templates')
