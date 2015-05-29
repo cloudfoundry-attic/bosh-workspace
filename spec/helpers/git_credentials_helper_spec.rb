@@ -28,6 +28,7 @@ module Bosh::Workspace
         .and_return(:commit_id)
       allow(remote).to receive(:check_connection).with(:fetch, Hash)
         .and_return(!auth_required, credentials_auth_valid)
+      allow(repo).to receive(:checkout_tree).with(:commit_id, strategy: :force)
       allow(repo).to receive(:checkout).with(:commit_id, strategy: :force)
       allow(GitRemoteUrl).to receive(:new).and_return(git_url)
     end
@@ -48,6 +49,8 @@ module Bosh::Workspace
       context "with existing repo" do
         it do
           expect_no_credentials
+          expect(repo).to receive("checkout_tree")
+          expect(repo).to receive("checkout")
           subject
         end
       end
@@ -61,6 +64,8 @@ module Bosh::Workspace
       context "with existing repo" do
         it do
           expect_no_credentials
+          expect(repo).to receive("checkout_tree")
+          expect(repo).to receive("checkout")
           subject
         end
       end

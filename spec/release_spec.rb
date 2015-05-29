@@ -1,3 +1,5 @@
+require "fileutils"
+
 describe Bosh::Workspace::Release do
   include Bosh::Workspace::GitCredentialsHelper
   let(:name) { "foo" }
@@ -67,7 +69,7 @@ describe Bosh::Workspace::Release do
       subject { Rugged::Repository.new(File.join(releases_dir, name)) }
       context "with templates in submodules" do
         before do
-          system("rm -rf #{releases_dir}")
+          FileUtils.rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
           release = load_release("name" => name, "version" => 1, "git" => repo)
@@ -88,7 +90,7 @@ describe Bosh::Workspace::Release do
       end
       context "with templates in submodules" do
         before do
-          system("rm -rf #{releases_dir}")
+          FileUtils.rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
           release = load_release("name" => name, "version" => 2, "git" => repo)
@@ -110,7 +112,7 @@ describe Bosh::Workspace::Release do
 
       context "from v1 to v2" do
         before do
-          system("rm -rf #{releases_dir}")
+          FileUtils.rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
         end
 
@@ -376,6 +378,51 @@ describe Bosh::Workspace::Release do
       its(:version) { should eq version }
       its(:manifest_file) do
         should match(/\/release\/releases\/#{name}-#{version}.yml$/)
+      end
+    end
+  end
+
+  context "correct checkout behavior:" do
+    let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
+    let(:release_data) { { "name" => name, "version" => version,
+                           "git" => repo, "ref" => :fooref } }
+    let(:repo) { 'foo/bar' }
+    let(:repository) do
+      instance_double('Rugged::Repository', lookup: double(oid: :fooref))
+    end
+
+    describe "#update_repo_with_ref" do
+      subject { Bosh::Workspace::Release.new(release_data, releases_dir) }
+
+      before do
+        expect(Rugged::Repository).to receive(:new).and_return(repository)
+      end
+
+      it "calls checkout_tree and checkout" do
+        expect(repository).to receive("checkout_tree").at_least(:once)
+        expect(repository).to receive("checkout").at_least(:once)
+        subject.update_repo
+      end
+    end
+  end
+
+  context "given a release which moved a directory to a symlink across versions" do
+    let(:repo) { extracted_asset_dir("symlinkreplacement", "symlinkreplacement-boshrelease-repo.zip") }
+    let(:name) { "symlinkreplacement" }
+
+    describe "#update_repo" do
+      subject { Rugged::Repository.new(File.join(releases_dir, name)) }
+      context "using a previous version should work" do
+        before do
+          FileUtils.rm_rf(releases_dir)
+
+          release = load_release("name" => name, "version" => "1", "git" => repo)
+          release.update_repo
+        end
+        it "git state is happy" do
+          expect(subject.head.target.oid).to eq "d96521d1940934b1941e0f4a462d3a5e9f31c75d"
+          expect(subject.diff_workdir(subject.head.target.oid).size).to eq 0
+        end
       end
     end
   end

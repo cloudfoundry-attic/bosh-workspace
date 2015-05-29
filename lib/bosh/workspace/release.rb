@@ -12,11 +12,12 @@ module Bosh::Workspace
     end
 
     def update_repo
-      repo.checkout ref || release[:commit], strategy: :force
+      hash = ref || release[:commit]
+      update_repo_with_ref(repo, hash)
     end
 
     def update_submodule(submodule)
-      submodule.repository.checkout submodule.head_oid, strategy: :force
+      update_repo_with_ref(submodule.repository, submodule.head_oid)
     end
 
     def required_submodules
@@ -58,6 +59,11 @@ module Bosh::Workspace
 
     def repo
       @repo ||= Rugged::Repository.new(repo_dir)
+    end
+
+    def update_repo_with_ref(repository, ref)
+      repository.checkout_tree ref, strategy: :force
+      repository.checkout ref, strategy: :force
     end
 
     def new_style_repo
