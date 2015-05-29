@@ -9,6 +9,5 @@ group :development do
 end
 
 group :test do
-  gem "FileUtils"
   gem "codeclimate-test-reporter", require: nil
 end

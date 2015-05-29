@@ -1,4 +1,4 @@
-require "FileUtils"
+require "fileutils"
 
 describe Bosh::Workspace::Release do
   include Bosh::Workspace::GitCredentialsHelper
@@ -69,7 +69,7 @@ describe Bosh::Workspace::Release do
       subject { Rugged::Repository.new(File.join(releases_dir, name)) }
       context "with templates in submodules" do
         before do
-          FileUtils::rm_rf(releases_dir)
+          FileUtils.rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
           release = load_release("name" => name, "version" => 1, "git" => repo)
@@ -90,7 +90,7 @@ describe Bosh::Workspace::Release do
       end
       context "with templates in submodules" do
         before do
-          FileUtils::rm_rf(releases_dir)
+          FileUtils.rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
 
           release = load_release("name" => name, "version" => 2, "git" => repo)
@@ -112,7 +112,7 @@ describe Bosh::Workspace::Release do
 
       context "from v1 to v2" do
         before do
-          FileUtils::rm_rf(releases_dir)
+          FileUtils.rm_rf(releases_dir)
           allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
         end
 
