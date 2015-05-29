@@ -56,6 +56,9 @@ module Bosh::Cli::Command
       if release_uploaded?(release.name, release.version)
         say "Release '#{release.name_version.make_green}' exists"
         say "Skipping upload"
+      elsif release.url
+        say "Uploading '#{release.url}'"
+        release_remote(release.url, release.release_dir)
       else
         say "Uploading '#{release.name_version.make_green}'"
         release_upload(release.manifest_file, release.release_dir)
