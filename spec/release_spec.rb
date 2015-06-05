@@ -86,6 +86,44 @@ describe Bosh::Workspace::Release do
     end
   end
 
+  context "given a release with index + release v1 last touched on the same commit" do
+    let(:repo) { extracted_asset_dir("foo-bar", "foo-bar-boshrelease-repo.zip") }
+    let(:name) { "foo-bar" }
+
+    before do
+      FileUtils.rm_rf(releases_dir)
+    end
+
+    describe "#update_repo" do
+      subject do
+        Dir[File.join(releases_dir, name, "releases/foo-bar/foo-bar*.yml")].to_s
+      end
+
+      context "latest version" do
+        before { release.update_repo }
+          let(:version) { "latest" }
+          it "checks out repo" do
+          expect(subject).to match(/releases\/foo-bar\/foo-bar-2.yml/)
+        end
+      end
+    end
+
+    describe "attributes" do
+      let(:version) { "1" }
+      subject { release }
+      its(:name) { should eq name}
+      its(:git_url) { should eq repo }
+      its(:repo_dir) { should match(/\/#{name}$/) }
+      its(:manifest) { should match "releases/#{name}/#{name}-#{version}.yml$" }
+      its(:name_version) { should eq "#{name}/#{version}" }
+      its(:version) { should eq version }
+      its(:manifest_file) do
+        should match(/\/releases\/#{name}\/#{name}-#{version}.yml$/)
+      end
+    end
+  end
+
+
   context "given a release with submodule templates" do
     let(:repo) { extracted_asset_dir("supermodule", "supermodule-boshrelease-repo.zip") }
     let(:subrepo) { extracted_asset_dir("submodule-boshrelease", "submodule-boshrelease-repo.zip") }

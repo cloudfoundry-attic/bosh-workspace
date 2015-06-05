@@ -90,22 +90,22 @@ module Bosh::Workspace
     # [ { version: "1", commit: ee8d52f5d, manifest: releases/foo-1.yml } ]
     def final_releases
       @final_releases ||= begin
-        final_releases = {}
+        final_releases = []
         releases_tree.walk_blobs(:preorder) do |_, entry|
           next if entry[:filemode] == 40960 # Skip symlinks
           path = File.join(releases_dir, entry[:name])
           blame = Rugged::Blame.new(repo, path)[0]
-          time = blame[:final_signature][:time]
           commit_id = blame[:final_commit_id]
           manifest = blame[:orig_path]
           version = entry[:name][/#{@name}-(.+)\.yml/, 1]
-          final_releases[time] = {
-            version: version, manifest: manifest, commit: commit_id
-          }
+          if ! version.nil?
+            final_releases.push({
+              version: version, manifest: manifest, commit: commit_id
+            })
+          end
         end
 
-        final_releases.sort_by { |k, _| k }
-          .map { |a| a[1] }.reject { |f| f[:manifest][/index.yml/] }
+        final_releases.sort! { |a, b| a[:version].to_i <=> b[:version].to_i }
       end
     end
 
