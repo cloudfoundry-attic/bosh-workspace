@@ -94,7 +94,13 @@ module Bosh::Workspace
         releases_tree.walk_blobs(:preorder) do |_, entry|
           next if entry[:filemode] == 40960 # Skip symlinks
           path = File.join(releases_dir, entry[:name])
-          blame = Rugged::Blame.new(repo, path)[0]
+          blame = Rugged::Blame.new(repo, path).reduce { |memo, hunk|
+            if memo.nil? || hunk[:final_signature][:time] > memo[:final_signature][:time]
+              hunk
+            else
+              memo
+            end
+          }
           commit_id = blame[:final_commit_id]
           manifest = blame[:orig_path]
           version = entry[:name][/#{@name}-(.+)\.yml/, 1]
