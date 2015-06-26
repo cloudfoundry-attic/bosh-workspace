@@ -123,6 +123,15 @@ Example `.credentials.yml` file:
     -----END RSA PRIVATE KEY-----
 ```
 
+## Install Notes
+
+### Ubuntu
+cmake and libcurl4-openssl-dev is needed for rugged install
+
+```
+sudo apt-get install cmake libcurl4-openssl-dev
+```
+
 ## Experimental
 ### dns support
 Dns support can be enabled by adding a `domain_name` property to your deployment.
