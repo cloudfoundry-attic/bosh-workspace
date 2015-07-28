@@ -38,7 +38,9 @@ module Bosh::Cli::Command
         build_project_deployment
       end
 
-      deployment_cmd(options).perform
+      command = deployment_cmd(options)
+      command.perform
+      @exit_code = command.exit_code
     end
 
     private
