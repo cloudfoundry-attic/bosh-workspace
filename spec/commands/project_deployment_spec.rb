@@ -66,10 +66,12 @@ describe Bosh::Cli::Command::ProjectDeployment do
       expect(command).to receive(:project_deployment?)
         .and_return(is_project_deployment)
       expect(deployment_cmd).to receive(:perform)
+      expect(deployment_cmd).to receive(:exit_code).and_return(exit_code)
     end
 
     context "with project deployment" do
       let(:is_project_deployment) { true }
+      let(:exit_code) { 0 }
 
       it "requires project deployment" do
         expect(command).to receive(:require_project_deployment)
@@ -80,9 +82,21 @@ describe Bosh::Cli::Command::ProjectDeployment do
 
     context "with normal deployment" do
       let(:is_project_deployment) { false }
+      let(:exit_code) { 0 }
 
       it "deploys" do
         subject
+        expect(command.exit_code).to eq(0)
+      end
+    end
+
+    context "with failing deployment" do
+      let(:is_project_deployment) { false }
+      let(:exit_code) { 1 }
+
+      it "reports the exit_code correctly" do
+        subject
+        expect(command.exit_code).to eq(1)
       end
     end
   end
