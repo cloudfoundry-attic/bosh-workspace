@@ -23,6 +23,16 @@ module Bosh::Workspace::Schemas
       it { expect { subject }.to_not raise_error }
     end
 
+    context "patch version with multiple dots" do
+      let(:stemcells) { stemcell["version"] = "1.2.3"; [stemcell] }
+      it { expect { subject }.to_not raise_error }
+    end
+
+    context "fails for versions with too many dots" do
+      let(:stemcells) { stemcell["version"] = "1.2.3.4"; [stemcell] }
+      it { expect { subject }.to raise_error(/version.*should match/i) }
+    end
+
     context "patch version float" do
       let(:stemcells) { stemcell["version"] = 2719.1; [stemcell] }
       it { expect { subject }.to_not raise_error }

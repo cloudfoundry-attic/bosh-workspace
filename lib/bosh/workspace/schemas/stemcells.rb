@@ -16,9 +16,9 @@ module Bosh::Workspace
         return if object.is_a? Integer
         return if object.is_a? Float
         return if object == "latest"
-        return if object.to_s =~ /^\d+\.\d+$/
+        return if object.to_s =~ /^\d+(\.\d+){1,2}$/
         raise Membrane::SchemaValidationError.new(
-          "Should match: latest, version.patch or version. Given: #{object}")
+          "Should match: latest, version.patch.micropatch, version.patch or version. Given: #{object}")
       end
     end
   end

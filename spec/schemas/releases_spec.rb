@@ -24,6 +24,11 @@ module Bosh::Workspace::Schemas
       it { expect { subject }.to_not raise_error }
     end
 
+    context "semantic version" do
+      let(:releases) { release["version"] = "1.2.3"; [release] }
+      it { expect { subject }.to_not raise_error }
+    end
+
     context "invalid version" do
       let(:releases) { release["version"] = "+foo"; [release] }
       it { expect { subject }.to raise_error(/version.*should match/i) }
