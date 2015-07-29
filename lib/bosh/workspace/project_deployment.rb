@@ -7,7 +7,7 @@ module Bosh::Workspace
     def initialize(file)
       @file = file
       err("Deployment file does not exist: #{file}") unless File.exist? @file
-      @manifest = YAML.load_file @file
+      @manifest = Psych.load(ERB.new(File.read(@file)).result)
     end
 
     def perform_validation(options = {})
