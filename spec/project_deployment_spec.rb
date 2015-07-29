@@ -1,9 +1,10 @@
 module Bosh::Workspace
   describe ProjectDeployment do
     subject { Bosh::Workspace::ProjectDeployment.new manifest_file }
-    let(:manifest_file) { get_tmp_file_path(manifest.to_yaml, file_name) }
+    let(:manifest_file) { get_tmp_file_path(ruby_code + manifest.to_yaml, file_name) }
     let(:file_name) { "foo.yml" }
     let(:manifest) { :manifest }
+    let(:ruby_code) { "<% ruby_var=42 %>" }
 
     describe ".new" do
       context "deployment file does not exist" do
