@@ -1,3 +1,4 @@
+<% ruby_var=42 %>
 name: foo
 templates:
   - foo/bar.yml
