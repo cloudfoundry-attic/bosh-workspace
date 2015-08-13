@@ -28,8 +28,9 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "rugged", "~> 0.23.1"
 
   spec.add_development_dependency "bundler", "~> 1.6"
-  spec.add_development_dependency "rspec", "~> 3.1.0"
+  spec.add_development_dependency "rspec", "~> 3.3.0"
   spec.add_development_dependency "climate_control", "~> 0.0.3"
+  spec.add_development_dependency "webmock", "~> 1.21.0"
   spec.add_development_dependency "rspec-its", '~> 1.1.0'
   spec.add_development_dependency "rake"
   spec.add_development_dependency "archive-zip", "~> 0.7.0"
