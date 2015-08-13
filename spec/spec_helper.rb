@@ -11,6 +11,7 @@ $:.unshift(File.expand_path("../../lib", __FILE__))
 
 require "rspec/core"
 require "rspec/its"
+require "climate_control"
 
 require "tmpdir"
 require "archive/zip"
@@ -92,4 +93,8 @@ end
 
 def project_root
   File.expand_path('../../', __FILE__)
+end
+
+def with_modified_env(options, &block)
+  ClimateControl.modify(options, &block)
 end

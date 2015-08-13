@@ -1,3 +1,8 @@
+require 'io/wait'
+require 'webrick'
+require 'webrick/httpproxy'
+require 'vcr'
+
 module Bosh::Workspace::Tasks
   describe 'workspace' do
     include_context "rake"
@@ -84,16 +89,15 @@ module Bosh::Workspace::Tasks
       subject { rake["workspace:clean"] }
 
       it "deletes all deployments" do
-        ENV["DESTROY_DEPLOYMENTS"] = "true"
-        expect_bosh_command("delete deployment foo-z1 --force", ignore_failures: true)
-        subject.invoke
+        with_modified_env DESTROY_DEPLOYMENTS: "true" do
+          expect_bosh_command("delete deployment foo-z1 --force", ignore_failures: true)
+          subject.invoke
+        end
       end
 
       it "raises error when DESTROY_DEPLOYMENTS is not set" do
         expect { subject.invoke }.to raise_error /destroy_deployments/i
       end
-
-      after { ENV.delete_if { |e| e =~ /DESTROY_DEPLOYMENTS/ } }
     end
   end
 end
