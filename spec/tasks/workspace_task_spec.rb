@@ -1,8 +1,3 @@
-require 'io/wait'
-require 'webrick'
-require 'webrick/httpproxy'
-require 'vcr'
-
 module Bosh::Workspace::Tasks
   describe 'workspace' do
     include_context "rake"
