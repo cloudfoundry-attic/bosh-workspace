@@ -12,6 +12,7 @@ $:.unshift(File.expand_path("../../lib", __FILE__))
 require "rspec/core"
 require "rspec/its"
 require "climate_control"
+require 'ephemeral_response'
 
 require "tmpdir"
 require "archive/zip"
@@ -97,4 +98,10 @@ end
 
 def with_modified_env(options, &block)
   ClimateControl.modify(options, &block)
+end
+
+EphemeralResponse.configure do |config|
+  config.fixture_directory = asset_dir("ephemeral_response")
+  config.skip_expiration = true
+  config.debug_output = $stderr
 end
