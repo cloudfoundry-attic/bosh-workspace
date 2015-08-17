@@ -25,12 +25,12 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "semi_semantic", "~> 1.1.0"
   spec.add_runtime_dependency "membrane", "~> 1.1.0"
   spec.add_runtime_dependency "hashdiff", "~> 0.2.1"
-  spec.add_runtime_dependency "rugged", "~> 0.23.1"
+  spec.add_runtime_dependency "rugged", "~> 0.23.2"
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rspec", "~> 3.3.0"
   spec.add_development_dependency "climate_control", "~> 0.0.3"
-  spec.add_development_dependency "ephemeral_response", "~> 0.4.0"
+  spec.add_development_dependency "puffing-billy", "~> 0.5.1"
   spec.add_development_dependency "webmock", "~> 1.21.0"
   spec.add_development_dependency "rspec-its", '~> 1.1.0'
   spec.add_development_dependency "rake"

@@ -1,0 +1,34 @@
+---
+:scope: 
+:url: http://github.com/libgit2/TestGitRepository.git/info/refs?service=git-upload-pack
+:body: ''
+:status: 200
+:method: get
+:headers:
+  Server: GitHub Babel 2.0
+  Content-Type: application/x-git-upload-pack-advertisement
+  Expires: Fri, 01 Jan 1980 00:00:00 GMT
+  Pragma: no-cache
+  Cache-Control: no-cache, max-age=0, must-revalidate
+  Vary: Accept-Encoding
+  Connection: close
+:content: !binary |-
+  MDAxZSMgc2VydmljZT1naXQtdXBsb2FkLXBhY2sKMDAwMDAwZmU0OTMyMmJi
+  MTdkM2FjYzkxNDZmOThjOTdkMDc4NTEzMjI4YmJmM2MwIEhFQUQAbXVsdGlf
+  YWNrIHRoaW4tcGFjayBzaWRlLWJhbmQgc2lkZS1iYW5kLTY0ayBvZnMtZGVs
+  dGEgc2hhbGxvdyBuby1wcm9ncmVzcyBpbmNsdWRlLXRhZyBtdWx0aV9hY2tf
+  ZGV0YWlsZWQgbm8tZG9uZSBzeW1yZWY9SEVBRDpyZWZzL2hlYWRzL21hc3Rl
+  ciBhZ2VudD1naXQvMjoyLjQuNX5zaW1vbnNqLXdpcC1kYWVtb24tcnVuLWhv
+  b2tzLTExNjctZ2FlNjgyOGYKMDA0NDA5NjZhNDM0ZWIxYTAyNWRiNmI3MTQ4
+  NWFiNjNhM2JmYmVhNTIwYjYgcmVmcy9oZWFkcy9maXJzdC1tZXJnZQowMDNm
+  NDkzMjJiYjE3ZDNhY2M5MTQ2Zjk4Yzk3ZDA3ODUxMzIyOGJiZjNjMCByZWZz
+  L2hlYWRzL21hc3RlcgowMDQyNDJlNGU3YzVlNTA3ZTExM2ViYmI3ODAxYjE2
+  YjUyY2Y4NjdiN2NlMSByZWZzL2hlYWRzL25vLXBhcmVudAowMDQ1ZDk2YzRl
+  ODAzNDU1MzRlY2NlZTVhYzdiMDdmYzc2MDNiNTYxMjRjYiByZWZzL3RhZ3Mv
+  YW5ub3RhdGVkX3RhZwowMDQ4YzA3MGFkOGMwODg0MGM4MTE2ZGE4NjViMmQ2
+  NTU5M2E2YmI5Y2QyYSByZWZzL3RhZ3MvYW5ub3RhdGVkX3RhZ157fQowMDNj
+  NTVhMWE3NjBkZjRiODZhMDIwOTRhOTA0ZGZhNTExZGViNTY1NTkwNSByZWZz
+  L3RhZ3MvYmxvYgowMDQzOGY1MGJhMTVkNDkzNTM4MTNjYzZlMjAyOTgwMDJj
+  MGQxN2IwYTllZSByZWZzL3RhZ3MvY29tbWl0X3RyZWUKMDA0NzZlMGM3YmRi
+  OWI0ZWQ5MzIxMjQ5MWVlNzc4Y2ExYzY1MDQ3Y2FiNGUgcmVmcy90YWdzL25l
+  YXJseS1kYW5nbGluZwowMDAw
