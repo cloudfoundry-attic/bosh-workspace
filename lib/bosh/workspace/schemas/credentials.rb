@@ -19,8 +19,9 @@ module Bosh::Workspace
           when :ssh
             next if creds.keys.include? 'private_key'
             validation_err "Provide private_key for: #{creds['url']}"
+          else
+            validation_err "Credentials not supported for: #{creds['url']}"
           end
-          validation_err "Credentials not supported for: #{creds['url']}"
         end
       end
 

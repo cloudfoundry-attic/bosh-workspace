@@ -5,7 +5,6 @@ module Bosh::Cli::Command
     include Bosh::Cli::Validation
     include Bosh::Workspace
     include ProjectDeploymentHelper
-    include GitCredentialsHelper
     include ReleaseHelper
     include StemcellHelper
 
