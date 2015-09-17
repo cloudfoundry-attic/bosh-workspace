@@ -32,16 +32,12 @@ describe Bosh::Cli::Command::Prepare do
 
       context "release with git " do
         before do
-          allow(release).to receive(:required_submodules).and_return(subrepos)
-
           expect(release).to receive(:update_repo)
-          expect(release).to_not receive(:update_submodule)
           expect(release).to receive(:ref).and_return(ref)
           expect(command).to receive(:release_uploaded?)
-          .with(release.name, release.version).and_return(release_uploaded)
-          expect(command).to receive(:fetch_or_clone_repo)
-          .with(release.repo_dir, release.git_url)
+            .with(release.name, release.version).and_return(release_uploaded)
         end
+
         context "release uploaded" do
           let(:release_uploaded) { true }
 
