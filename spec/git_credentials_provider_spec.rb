@@ -1,5 +1,5 @@
 module Bosh::Workspace
-  describe GitCredentialsProvider, focus: true do
+  describe GitCredentialsProvider do
     let!(:credentials_provider) { GitCredentialsProvider.new(file) }
     let(:file) { "credentials_file" }
     let(:file_exist) { true }
