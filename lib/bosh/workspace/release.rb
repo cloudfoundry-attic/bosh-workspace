@@ -1,33 +1,38 @@
 module Bosh::Workspace
   class Release
+    REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
     attr_reader :name, :git_url, :repo_dir
 
-    def initialize(release, releases_dir)
-      @name         = release["name"]
-      @ref          = release["ref"]
-      @path         = release["path"]
-      @spec_version = release["version"].to_s
-      @git_url      = release["git"]
-      @repo_dir     = File.join(releases_dir, @name)
-      @url          = release["url"]
+    def initialize(release, releases_dir, credentials_callback)
+      @name                 = release["name"]
+      @ref                  = release["ref"]
+      @path                 = release["path"]
+      @spec_version         = release["version"].to_s
+      @git_url              = release["git"]
+      @repo_dir             = File.join(releases_dir, @name)
+      @url                  = release["url"]
+      @credentials_callback = credentials_callback
+      fetch_repo
     end
 
     def update_repo
       hash = ref || release[:commit]
       update_repo_with_ref(repo, hash)
+      update_submodules
     end
 
-    def update_submodule(submodule)
-      update_repo_with_ref(submodule.repository, submodule.head_oid)
+    def update_submodules
+      required_submodules.each do |submodule|
+        fetch_repo(submodule_repo(submodule.path, submodule.url))
+        update_repo_with_ref(submodule.repository, submodule.head_oid)
+      end
     end
 
     def required_submodules
       required = []
       symlink_templates.each do |template|
         submodule = submodule_for(template)
-        if submodule
-          required.push(submodule)
-        end
+        required.push(submodule) if submodule
       end
       required
     end
@@ -62,8 +67,35 @@ module Bosh::Workspace
 
     private
 
+    def submodule_repo(path, url)
+      dir = File.join(@repo_dir, path)
+      repo_exists?(dir) ? open_repo(dir) : init_repo(dir, url)
+    end
+
     def repo
-      @repo ||= Rugged::Repository.new(repo_dir)
+      repo_exists? ? open_repo : init_repo
+    end
+
+    def fetch_repo(repo = repo)
+      repo.fetch('origin', REFSPEC, credentials: @credentials_callback)
+      commit = repo.references['refs/remotes/origin/HEAD'].resolve.target_id
+      repo.checkout_tree commit, strategy: :force
+      repo.checkout commit, strategy: :force
+    end
+
+    def repo_exists?(dir = @repo_dir)
+      File.exist?(File.join(dir, '.git'))
+    end
+
+    def open_repo(dir = @repo_dir)
+      Rugged::Repository.new(dir)
+    end
+
+    def init_repo(dir = @repo_dir, url = @git_url)
+      FileUtils.mkdir_p File.dirname(dir)
+      Rugged::Repository.init_at(dir).tap do |repo|
+        repo.remotes.create('origin', url)
+      end
     end
 
     def update_repo_with_ref(repository, ref)

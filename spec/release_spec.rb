@@ -9,11 +9,10 @@ describe Bosh::Workspace::Release do
   let(:release_data) { { "name" => name, "version" => version, "git" => repo } }
   let(:releases_dir) { File.join(asset_dir("manifests-repo"), ".releases") }
   let(:templates) { Dir[File.join(releases_dir, name, "templates/*.yml")].to_s }
+  let(:callback) { proc {} }
 
   def load_release(release_data)
-    Bosh::Workspace::Release.new(release_data, releases_dir).tap do |r|
-      fetch_or_clone_repo(r.repo_dir, repo)
-    end
+    Bosh::Workspace::Release.new(release_data, releases_dir, callback)
   end
 
   context "with new structure within 'releases' folder" do
@@ -138,10 +137,6 @@ describe Bosh::Workspace::Release do
 
           release = load_release( "name" => name, "version" => 1, "git" => repo)
           release.update_repo
-          release.required_submodules.each do |submodule|
-            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
-            release.update_submodule(submodule)
-          end
         end
 
         it "clones + checks out required submodules" do
@@ -159,10 +154,6 @@ describe Bosh::Workspace::Release do
 
           release = load_release( "name" => name, "version" => 2, "git" => repo)
           release.update_repo
-          release.required_submodules.each do |submodule|
-            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
-            release.update_submodule(submodule)
-          end
         end
 
         it "clones + checks out required submodules" do
@@ -183,10 +174,6 @@ describe Bosh::Workspace::Release do
         it "updates the submodules appropriately" do
           release = load_release("name" => name, "version" => 1, "git" => repo)
           release.update_repo
-          release.required_submodules.each do |submodule|
-            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
-            release.update_submodule(submodule)
-          end
           expect(subject.submodules["src/submodule"].workdir_oid)
             .to eq "2244c436777f7c305fb81a8a6e29079c92a2ab9d"
           expect(subject.submodules["src/other"].workdir_oid).to eq nil
@@ -194,10 +181,6 @@ describe Bosh::Workspace::Release do
           # Now move to v2 on existing repo
           release = load_release("name" => name, "version" => 2, "git" => repo)
           release.update_repo
-          release.required_submodules.each do |submodule|
-            fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
-            release.update_submodule(submodule)
-          end
           expect(subject.submodules["src/submodule"].workdir_oid)
             .to eq "95eed8c967af969d659a766b0551a75a729a7b65"
           expect(subject.submodules["src/other"].workdir_oid).to eq nil
@@ -456,10 +439,19 @@ describe Bosh::Workspace::Release do
     end
 
     describe "#update_repo_with_ref" do
-      subject { Bosh::Workspace::Release.new(release_data, releases_dir) }
+      subject do
+        Bosh::Workspace::Release.new(release_data, releases_dir, callback)
+      end
 
       before do
-        expect(Rugged::Repository).to receive(:new).and_return(repository)
+        expect(Rugged::Repository).to receive(:new)
+          .and_return(repository).at_least(:once)
+        expect(repository).to receive(:fetch)
+        expect(repository).to receive(:references) do
+          { 'refs/remotes/origin/HEAD' =>
+            double(resolve: double(target_id: :oid)) }
+        end
+        expect(repository).to receive(:workdir) { 'foo_work_dir' }
       end
 
       it "calls checkout_tree and checkout" do
