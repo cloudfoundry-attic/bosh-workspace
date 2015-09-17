@@ -451,7 +451,6 @@ describe Bosh::Workspace::Release do
           { 'refs/remotes/origin/HEAD' =>
             double(resolve: double(target_id: :oid)) }
         end
-        expect(repository).to receive(:workdir) { 'foo_work_dir' }
       end
 
       it "calls checkout_tree and checkout" do

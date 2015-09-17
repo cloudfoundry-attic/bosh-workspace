@@ -21,22 +21,6 @@ module Bosh::Workspace
       update_submodules
     end
 
-    def update_submodules
-      required_submodules.each do |submodule|
-        fetch_repo(submodule_repo(submodule.path, submodule.url))
-        update_repo_with_ref(submodule.repository, submodule.head_oid)
-      end
-    end
-
-    def required_submodules
-      required = []
-      symlink_templates.each do |template|
-        submodule = submodule_for(template)
-        required.push(submodule) if submodule
-      end
-      required
-    end
-
     def manifest_file
       File.join(repo_dir, manifest)
     end
@@ -67,8 +51,23 @@ module Bosh::Workspace
 
     private
 
+    def update_submodules
+      required_submodules.each do |submodule|
+        fetch_repo(submodule_repo(submodule.path, submodule.url))
+        update_repo_with_ref(submodule.repository, submodule.head_oid)
+      end
+    end
+
+    def required_submodules
+      symlink_templates.map { |t| submodule_for(t) }.compact
+    end
+
+    def repo_path(path)
+      File.join(@repo_dir, path)
+    end
+
     def submodule_repo(path, url)
-      dir = File.join(@repo_dir, path)
+      dir = repo_path(path)
       repo_exists?(dir) ? open_repo(dir) : init_repo(dir, url)
     end
 
@@ -79,8 +78,7 @@ module Bosh::Workspace
     def fetch_repo(repo = repo)
       repo.fetch('origin', REFSPEC, credentials: @credentials_callback)
       commit = repo.references['refs/remotes/origin/HEAD'].resolve.target_id
-      repo.checkout_tree commit, strategy: :force
-      repo.checkout commit, strategy: :force
+      update_repo_with_ref(repo, commit)
     end
 
     def repo_exists?(dir = @repo_dir)
@@ -125,25 +123,23 @@ module Bosh::Workspace
         final_releases = []
         releases_tree.walk_blobs(:preorder) do |_, entry|
           next if entry[:filemode] == 40960 # Skip symlinks
-          path = File.join(releases_dir, entry[:name])
-          blame = Rugged::Blame.new(repo, path).reduce { |memo, hunk|
-            if memo.nil? || hunk[:final_signature][:time] > memo[:final_signature][:time]
-              hunk
-            else
-              memo
-            end
+          next unless version = entry[:name][/#{@name}-(.+)\.yml/, 1]
+          blame = repo_blame(File.join(releases_dir, entry[:name]))
+          final_releases << {
+            version: version,
+            manifest: blame[:orig_path],
+            commit: blame[:final_commit_id]
           }
-          commit_id = blame[:final_commit_id]
-          manifest = blame[:orig_path]
-          version = entry[:name][/#{@name}-(.+)\.yml/, 1]
-          if ! version.nil?
-            final_releases.push({
-              version: version, manifest: manifest, commit: commit_id
-            })
-          end
         end
-
         final_releases.sort! { |a, b| a[:version].to_i <=> b[:version].to_i }
+      end
+    end
+
+    def repo_blame(path)
+      Rugged::Blame.new(repo, path).reduce do |m, h|
+        return h unless m
+        return h if h[:final_signature][:time] > m[:final_signature][:time]
+        return m
       end
     end
 
@@ -157,36 +153,22 @@ module Bosh::Workspace
     end
 
     def templates_dir
-      File.join(repo.workdir, "templates")
+      repo_path 'templates'
     end
 
     def symlink_target(file)
-      if File.readlink(file).start_with?("/")
-        return File.readlink(file)
-      else
-        return File.expand_path(File.join(File.dirname(file), File.readlink(file)))
-      end
+      return File.readlink(file) if File.readlink(file).start_with?("/")
+      File.expand_path(File.join(File.dirname(file), File.readlink(file)))
     end
 
     def submodule_for(file)
-      repo.submodules.each do |submodule|
-        if file.start_with?(File.join(repo.workdir, submodule.path))
-          return submodule
-        end
-      end
-      false
+      repo.submodules.find { |s| file.start_with? repo_path(s.path) }
     end
 
     def symlink_templates
-      templates = []
-      if FileTest.exists?(templates_dir)
-        Find.find(templates_dir) do |file|
-          if FileTest.symlink?(file)
-            templates.push(symlink_target(file))
-          end
-        end
-      end
-      templates
+      return [] unless File.exist?(templates_dir)
+      Find.find(templates_dir)
+        .select { |f| File.symlink?(f) }.map { |f| symlink_target(f) }
     end
   end
 end
