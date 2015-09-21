@@ -23,6 +23,14 @@ module Bosh::Workspace
       end
     end
 
+    describe '#url_protocols' do
+      it "returns credentials when found multiple times" do
+        expect(subject).to receive(:git_protocol_from_url)
+          .with('foo').and_return(:https)
+        expect(subject.url_protocols).to eq('foo' => :https)
+      end
+    end
+
     describe '#perform_validation' do
       context "valid" do
         it "validates" do

@@ -1,35 +1,25 @@
 module Bosh::Workspace
   class Release
+    REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
     attr_reader :name, :git_url, :repo_dir
 
-    def initialize(release, releases_dir)
-      @name         = release["name"]
-      @ref          = release["ref"]
-      @path         = release["path"]
-      @spec_version = release["version"].to_s
-      @git_url      = release["git"]
-      @repo_dir     = File.join(releases_dir, @name)
-      @url          = release["url"]
+    def initialize(release, releases_dir, credentials_callback, options = {})
+      @name                 = release["name"]
+      @ref                  = release["ref"]
+      @path                 = release["path"]
+      @spec_version         = release["version"].to_s
+      @git_url              = release["git"]
+      @repo_dir             = File.join(releases_dir, @name)
+      @url                  = release["url"]
+      @credentials_callback = credentials_callback
+      @offline              = options[:offline]
     end
 
-    def update_repo
+    def update_repo(options = {})
+      fetch_repo
       hash = ref || release[:commit]
       update_repo_with_ref(repo, hash)
-    end
-
-    def update_submodule(submodule)
-      update_repo_with_ref(submodule.repository, submodule.head_oid)
-    end
-
-    def required_submodules
-      required = []
-      symlink_templates.each do |template|
-        submodule = submodule_for(template)
-        if submodule
-          required.push(submodule)
-        end
-      end
-      required
+      update_submodules
     end
 
     def manifest_file
@@ -62,8 +52,55 @@ module Bosh::Workspace
 
     private
 
+    def update_submodules
+      required_submodules.each do |submodule|
+        fetch_repo(submodule_repo(submodule.path, submodule.url))
+        update_repo_with_ref(submodule.repository, submodule.head_oid)
+      end
+    end
+
+    def required_submodules
+      symlink_templates.map { |t| submodule_for(t) }.compact
+    end
+
+    def repo_path(path)
+      File.join(@repo_dir, path)
+    end
+
+    def submodule_repo(path, url)
+      dir = repo_path(path)
+      repo_exists?(dir) ? open_repo(dir) : init_repo(dir, url)
+    end
+
     def repo
-      @repo ||= Rugged::Repository.new(repo_dir)
+      repo_exists? ? open_repo : init_repo
+    end
+
+    def fetch_repo(repo = repo)
+      return if offline?
+      repo.fetch('origin', REFSPEC, credentials: @credentials_callback)
+      commit = repo.references['refs/remotes/origin/HEAD'].resolve.target_id
+      update_repo_with_ref(repo, commit)
+    end
+
+    def repo_exists?(dir = @repo_dir)
+      File.exist?(File.join(dir, '.git'))
+    end
+
+    def open_repo(dir = @repo_dir)
+      Rugged::Repository.new(dir)
+    end
+
+    def init_repo(dir = @repo_dir, url = @git_url)
+      offline_err(url) if offline?
+      FileUtils.mkdir_p File.dirname(dir)
+      Rugged::Repository.init_at(dir).tap do |repo|
+        repo.remotes.create('origin', url)
+      end
+    end
+
+    def offline_err(url)
+      err "Cloning repo: '#{url}' not allowed in offline mode"
     end
 
     def update_repo_with_ref(repository, ref)
@@ -93,68 +130,67 @@ module Bosh::Workspace
         final_releases = []
         releases_tree.walk_blobs(:preorder) do |_, entry|
           next if entry[:filemode] == 40960 # Skip symlinks
-          path = File.join(releases_dir, entry[:name])
-          blame = Rugged::Blame.new(repo, path).reduce { |memo, hunk|
-            if memo.nil? || hunk[:final_signature][:time] > memo[:final_signature][:time]
-              hunk
-            else
-              memo
-            end
+          next unless version = entry[:name][/#{@name}-(.+)\.yml/, 1]
+          blame = repo_blame(File.join(releases_dir, entry[:name]))
+          final_releases << {
+            version: version,
+            manifest: blame[:orig_path],
+            commit: blame[:final_commit_id]
           }
-          commit_id = blame[:final_commit_id]
-          manifest = blame[:orig_path]
-          version = entry[:name][/#{@name}-(.+)\.yml/, 1]
-          if ! version.nil?
-            final_releases.push({
-              version: version, manifest: manifest, commit: commit_id
-            })
-          end
         end
-
         final_releases.sort! { |a, b| a[:version].to_i <=> b[:version].to_i }
       end
     end
 
-    def release
-      return final_releases.last if @spec_version == "latest"
-      release = final_releases.find { |v| v[:version] == @spec_version }
-      unless release
-        err("Could not find version: #{@spec_version} for release: #{@name}")
+    def repo_blame(path)
+      Rugged::Blame.new(repo, path).reduce do |m, h|
+        return h unless m
+        return h if h[:final_signature][:time] > m[:final_signature][:time]
+        return m
       end
-      release
+    end
+
+    def release
+      latest_offline_warning if latest? && offline?
+      return final_releases.last if latest?
+      final_releases.find { |v| v[:version] == @spec_version }.tap do |release|
+        missing_release_err(@spec_version, @name) unless release
+      end
+    end
+
+    def missing_release_err(version, name)
+      err "Could not find version: #{version} for release: #{name}"
+    end
+
+    def latest_offline_warning
+      warning "Using 'latest' local version since in offline mode"
     end
 
     def templates_dir
-      File.join(repo.workdir, "templates")
+      repo_path 'templates'
     end
 
     def symlink_target(file)
-      if File.readlink(file).start_with?("/")
-        return File.readlink(file)
-      else
-        return File.expand_path(File.join(File.dirname(file), File.readlink(file)))
-      end
+      return File.readlink(file) if File.readlink(file).start_with?("/")
+      File.expand_path(File.join(File.dirname(file), File.readlink(file)))
     end
 
     def submodule_for(file)
-      repo.submodules.each do |submodule|
-        if file.start_with?(File.join(repo.workdir, submodule.path))
-          return submodule
-        end
-      end
-      false
+      repo.submodules.find { |s| file.start_with? repo_path(s.path) }
     end
 
     def symlink_templates
-      templates = []
-      if FileTest.exists?(templates_dir)
-        Find.find(templates_dir) do |file|
-          if FileTest.symlink?(file)
-            templates.push(symlink_target(file))
-          end
-        end
-      end
-      templates
+      return [] unless File.exist?(templates_dir)
+      Find.find(templates_dir)
+        .select { |f| File.symlink?(f) }.map { |f| symlink_target(f) }
+    end
+
+    def offline?
+      @offline
+    end
+
+    def latest?
+      @spec_version == "latest"
     end
   end
 end

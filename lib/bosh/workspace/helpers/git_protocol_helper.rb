@@ -1,11 +1,7 @@
 module Bosh::Workspace
-  class GitRemoteUrl
-    def initialize(url)
-      @url = url
-    end
-
-    def protocol()
-      case @url
+  module GitProtocolHelper
+    def git_protocol_from_url(url)
+      case url
       when /^git:/
         return :git
       when /^https:/
@@ -15,7 +11,7 @@ module Bosh::Workspace
       when /(@.+:|^ssh:)/
         return :ssh
       else
-        raise "Unsupported protocol for remote git url: #{@url}"
+        return nil
       end
     end
   end

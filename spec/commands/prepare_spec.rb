@@ -30,18 +30,24 @@ describe Bosh::Cli::Command::Prepare do
       let(:stemcells) { [] }
       let(:ref) { nil }
 
+      context "when only performing local operations" do
+        before { command.add_option(:local, true) }
+        let(:releases) { [] }
+
+        it "enables offline mode" do
+          expect(command).to receive(:offline!)
+          command.prepare
+        end
+      end
+
       context "release with git " do
         before do
-          allow(release).to receive(:required_submodules).and_return(subrepos)
-
           expect(release).to receive(:update_repo)
-          expect(release).to_not receive(:update_submodule)
           expect(release).to receive(:ref).and_return(ref)
           expect(command).to receive(:release_uploaded?)
-          .with(release.name, release.version).and_return(release_uploaded)
-          expect(command).to receive(:fetch_or_clone_repo)
-          .with(release.repo_dir, release.git_url)
+            .with(release.name, release.version).and_return(release_uploaded)
         end
+
         context "release uploaded" do
           let(:release_uploaded) { true }
 
@@ -70,8 +76,8 @@ describe Bosh::Cli::Command::Prepare do
         let(:release_uploaded) { false }
         let(:release) do
           instance_double("Bosh::Workspace::Release",
-                          name: "foo", version: "1", repo_dir: ".releases/foo", git_url: nil,
-                          name_version: "foo/1", manifest_file: "releases/foo-1.yml")
+            name: "foo", version: "1", repo_dir: ".releases/foo", git_url: nil,
+            name_version: "foo/1", manifest_file: "releases/foo-1.yml")
         end
 
         it "notifies the user that the git property must be specified" do

@@ -5,15 +5,16 @@ module Bosh::Cli::Command
     include Bosh::Cli::Validation
     include Bosh::Workspace
     include ProjectDeploymentHelper
-    include GitCredentialsHelper
     include ReleaseHelper
     include StemcellHelper
 
     usage "prepare deployment"
     desc "Resolve deployment requirements"
+    option "--local", "only perform local git operations (don't fetch remote)"
     def prepare
       require_project_deployment
       auth_required
+      offline! if options[:local]
       nl
       prepare_release_repos
       nl
@@ -28,17 +29,16 @@ module Bosh::Cli::Command
       project_deployment_releases.each do |release|
         require_git_url_error if release.git_url.nil?
         say "Fetching release '#{release.name.make_green}' to satisfy template references"
-        fetch_or_clone_repo(release.repo_dir, release.git_url)
         release.update_repo
-        release.required_submodules.each do |submodule|
-          fetch_or_clone_repo(File.join(release.repo_dir, submodule.path), submodule.url)
-          release.update_submodule(submodule)
-        end
-        msg = "Version '#{release.version.to_s.make_green}'"
-        msg = "Ref '#{release.ref.make_green}'" if release.ref
-        say "#{msg} has been checkout into:"
-        say "- #{release.repo_dir}"
+        print_prepare_release_repo_message(release)
       end
+    end
+
+    def print_prepare_release_repo_message(release)
+      msg = "Version '#{release.version.to_s.make_green}'"
+      msg = "Ref '#{release.ref.make_green}'" if release.ref
+      say "#{msg} has been checkout into:"
+      say "- #{release.repo_dir}"
     end
 
     def require_git_url_error
