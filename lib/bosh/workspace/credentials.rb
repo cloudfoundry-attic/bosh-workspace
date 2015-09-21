@@ -19,14 +19,14 @@ module Bosh::Workspace
     end
 
     def url_protocols
-      raw_credentials.map { |c| [c['url'], git_protocol_from_url(c['url'])] }.to_h
+      Hash[raw_credentials.map { |c| [c['url'], git_protocol_from_url(c['url'])] }]
     end
 
     private
 
     def credentials
       @credentials ||= begin
-        raw_credentials.map { |c| [c.delete('url'), symbolize_keys(c)] }.to_h
+        Hash[raw_credentials.map { |c| [c.delete('url'), symbolize_keys(c)] }]
       end
     end
 
