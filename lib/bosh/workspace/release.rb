@@ -3,7 +3,7 @@ module Bosh::Workspace
     REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
     attr_reader :name, :git_url, :repo_dir
 
-    def initialize(release, releases_dir, credentials_callback)
+    def initialize(release, releases_dir, credentials_callback, options = {})
       @name                 = release["name"]
       @ref                  = release["ref"]
       @path                 = release["path"]
@@ -12,10 +12,11 @@ module Bosh::Workspace
       @repo_dir             = File.join(releases_dir, @name)
       @url                  = release["url"]
       @credentials_callback = credentials_callback
-      fetch_repo
+      @offline              = options[:offline]
     end
 
-    def update_repo
+    def update_repo(options = {})
+      fetch_repo
       hash = ref || release[:commit]
       update_repo_with_ref(repo, hash)
       update_submodules
@@ -76,6 +77,7 @@ module Bosh::Workspace
     end
 
     def fetch_repo(repo = repo)
+      return if offline?
       repo.fetch('origin', REFSPEC, credentials: @credentials_callback)
       commit = repo.references['refs/remotes/origin/HEAD'].resolve.target_id
       update_repo_with_ref(repo, commit)
@@ -90,10 +92,15 @@ module Bosh::Workspace
     end
 
     def init_repo(dir = @repo_dir, url = @git_url)
+      offline_err(url) if offline?
       FileUtils.mkdir_p File.dirname(dir)
       Rugged::Repository.init_at(dir).tap do |repo|
         repo.remotes.create('origin', url)
       end
+    end
+
+    def offline_err(url)
+      err "Cloning repo: '#{url}' not allowed in offline mode"
     end
 
     def update_repo_with_ref(repository, ref)
@@ -144,12 +151,19 @@ module Bosh::Workspace
     end
 
     def release
-      return final_releases.last if @spec_version == "latest"
-      release = final_releases.find { |v| v[:version] == @spec_version }
-      unless release
-        err("Could not find version: #{@spec_version} for release: #{@name}")
+      latest_offline_warning if latest? && offline?
+      return final_releases.last if latest?
+      final_releases.find { |v| v[:version] == @spec_version }.tap do |release|
+        missing_release_err(@spec_version, @name) unless release
       end
-      release
+    end
+
+    def missing_release_err(version, name)
+      err "Could not find version: #{version} for release: #{name}"
+    end
+
+    def latest_offline_warning
+      warning "Using 'latest' local version since in offline mode"
     end
 
     def templates_dir
@@ -169,6 +183,14 @@ module Bosh::Workspace
       return [] unless File.exist?(templates_dir)
       Find.find(templates_dir)
         .select { |f| File.symlink?(f) }.map { |f| symlink_target(f) }
+    end
+
+    def offline?
+      @offline
+    end
+
+    def latest?
+      @spec_version == "latest"
     end
   end
 end

@@ -76,6 +76,8 @@ module Bosh::Workspace
       let(:release) { instance_double("Bosh::Workspace::Release") }
       let(:release_data) { { name: "foo" } }
       let(:releases) { [release_data, release_data] }
+      let(:options) { { offline: offline } }
+      let(:offline) { nil }
       let(:credentials_provider) do
         instance_double('Bosh::Workspace::GitCredentialsProvider',
                         callback: :callback)
@@ -89,11 +91,23 @@ module Bosh::Workspace
           .and_return(credentials_provider)
       end
 
-      it "inits releases once" do
+      it "inits releases" do
         expect(Release).to receive(:new).twice
-          .with(release_data, /\/.releases/, :callback).and_return(release)
-        subject
+          .with(release_data, /\/.releases/, :callback, options)
+          .and_return(release)
         expect(subject).to eq [release, release]
+      end
+
+      context "when offline" do
+        before { release_helper.offline! }
+        let(:offline) { true }
+
+        it "inits releases" do
+          expect(Release).to receive(:new).twice
+            .with(release_data, /\/.releases/, :callback, options)
+            .and_return(release)
+          expect(subject).to eq [release, release]
+        end
       end
     end
   end

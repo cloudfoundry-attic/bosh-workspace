@@ -20,14 +20,20 @@ module Bosh::Workspace
     end
 
     def project_deployment_releases
-      @releases ||= begin
-        project_deployment.releases.map do |r|
-          Release.new(r, releases_dir, credentials_callback)
-        end
+      project_deployment.releases.map do |r|
+        Release.new(r, releases_dir, credentials_callback, offline: offline?)
       end
     end
 
+    def offline!
+      @offline = true
+    end
+
     private
+
+    def offline?
+      @offline
+    end
 
     def credentials_callback
       @callback ||= GitCredentialsProvider.new(credentials_file).callback

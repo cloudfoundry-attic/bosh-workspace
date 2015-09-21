@@ -10,9 +10,11 @@ module Bosh::Cli::Command
 
     usage "prepare deployment"
     desc "Resolve deployment requirements"
+    option "--local", "only perform local git operations (don't fetch remote)"
     def prepare
       require_project_deployment
       auth_required
+      offline! if options[:local]
       nl
       prepare_release_repos
       nl
@@ -38,6 +40,7 @@ module Bosh::Cli::Command
       say "#{msg} has been checkout into:"
       say "- #{release.repo_dir}"
     end
+
     def require_git_url_error
       say "`bosh prepare deployment' can not be used:"
       err("`git:' is missing from `release:'".make_red)
