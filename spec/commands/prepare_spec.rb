@@ -3,10 +3,11 @@ require "bosh/cli/commands/prepare"
 describe Bosh::Cli::Command::Prepare do
   describe "#prepare" do
     let(:command) { Bosh::Cli::Command::Prepare.new }
+    let(:url) { nil }
     let(:release) do
       instance_double("Bosh::Workspace::Release",
         name: "foo", version: "1", repo_dir: ".releases/foo", git_url: "/.git",
-        release_dir: '.releases/foo/sub', name_version: "foo/1", url: nil,
+        release_dir: '.releases/foo/sub', name_version: "foo/1", url: url,
         manifest_file: "releases/foo-1.yml")
     end
     let(:stemcell) do
@@ -68,6 +69,17 @@ describe Bosh::Cli::Command::Prepare do
                 .with(release.manifest_file, release.release_dir)
               command.prepare
             end
+          end
+        end
+
+        context "release not uploaded with url" do
+          let(:release_uploaded) { false }
+          let(:url) { "bosh.io/foo/bar.tgz" }
+
+          it "does uploads a remote release" do
+            expect(command).to receive(:release_upload)
+              .with(release.url, release.release_dir)
+            command.prepare
           end
         end
       end
