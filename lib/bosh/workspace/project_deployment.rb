@@ -7,17 +7,16 @@ module Bosh::Workspace
     def initialize(file)
       @file = file
       err("Deployment file does not exist: #{file}") unless File.exist? @file
-      @manifest = Psych.load(ERB.new(File.read(@file)).result)
     end
 
     def perform_validation(options = {})
-      Schemas::ProjectDeployment.new.validate @manifest
+      Schemas::ProjectDeployment.new.validate manifest
     rescue Membrane::SchemaValidationError => e
       errors << e.message
     end
 
     def director_uuid
-      @director_uuid || @manifest["director_uuid"]
+      @director_uuid || manifest["director_uuid"]
     end
 
     def merged_file
@@ -28,9 +27,13 @@ module Bosh::Workspace
       end
     end
 
+    def manifest
+      @manifest ||= Psych.load(ERB.new(File.read(file)).result)
+    end
+
     %w[name templates releases stemcells meta domain_name].each do |var|
       define_method var do
-        @manifest[var]
+        manifest[var]
       end
     end
 

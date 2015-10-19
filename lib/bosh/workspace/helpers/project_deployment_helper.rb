@@ -15,7 +15,7 @@ module Bosh::Workspace
     end
 
     def project_deployment_file?(deployment)
-      Psych.load(ERB.new(File.read(deployment)).result).has_key?("templates")
+      ProjectDeployment.new(deployment).manifest.has_key?("templates")
     end
 
     def require_project_deployment
