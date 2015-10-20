@@ -6,7 +6,7 @@ module Bosh::Workspace
 
     def initialize(file)
       @file = file
-      err("Deployment file does not exist: #{file}") unless File.exist? @file
+      err("Deployment file does not exist: #{file}") unless File.exist?(@file)
     end
 
     def perform_validation(options = {})

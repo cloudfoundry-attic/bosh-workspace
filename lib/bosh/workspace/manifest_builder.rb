@@ -1,5 +1,6 @@
 module Bosh::Workspace
   class ManifestBuilder
+    attr_reader :merge_tool
 
     def self.build(project_deployment, work_dir)
       manifest_builder = ManifestBuilder.new(project_deployment, work_dir)

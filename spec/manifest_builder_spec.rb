@@ -2,7 +2,8 @@ describe Bosh::Workspace::ManifestBuilder do
   let(:project_deployment) { instance_double("Bosh::Workspace::Project_Deployment",
     name: "bar",
     templates: ["foo.yml"],
-    merged_file: ".deployments/foo.yml")
+    merged_file: ".deployments/foo.yml",
+    merge_tool: Bosh::Workspace::MergeTool.new)
   }
   let(:work_dir) { asset_dir("manifests-repo") }
 
@@ -20,7 +21,7 @@ describe Bosh::Workspace::ManifestBuilder do
   end
 
   describe "#merge_templates" do
-    subject { Bosh::Workspace::ManifestBuilder.new project_deployment, work_dir }
+    subject { Bosh::Workspace::ManifestBuilder.new(project_deployment, work_dir) }
 
     before do
       allow(File).to receive(:exists?).with(/templates\//)
@@ -30,7 +31,7 @@ describe Bosh::Workspace::ManifestBuilder do
     context "missing template" do
       let(:template_exists) { false }
       it "raises error" do
-        expect{ subject.merge_templates }.to raise_error(/does not exist/)
+        expect { subject.merge_templates }.to raise_error(/does not exist/)
       end
     end
 
@@ -47,14 +48,14 @@ describe Bosh::Workspace::ManifestBuilder do
       context "no hidden dirs" do
         let(:dir_exists) { false }
         it "creates hidden dirs" do
-          expect(subject).to receive(:spiff_merge)
+          expect(subject.merge_tool).to receive(:merge)
           expect(Dir).to receive(:mkdir).with(/.stubs/)
           subject.merge_templates
         end
       end
 
       it "generates manifest with spiff" do
-        expect(subject).to receive(:spiff_merge) do |args|
+          expect(subject.merge_tool).to receive(:merge) do |args|
           if args.is_a?(Array)
             expect(args.first).to match(/\/templates\/.+yml/)
             expect(args.last).to match(/\.stubs\/.+yml/)

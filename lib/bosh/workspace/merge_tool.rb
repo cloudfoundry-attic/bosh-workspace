@@ -4,7 +4,7 @@ module Bosh::Workspace
 
     attr_accessor :name, :version
 
-    def initialize(merge_tool)
+    def initialize(merge_tool = nil)
       @name, @version = case merge_tool
       when Hash
         unless (%w(name version) & merge_tool.keys).size == 2
