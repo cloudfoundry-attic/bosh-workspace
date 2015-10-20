@@ -29,9 +29,7 @@ module Bosh::Workspace
 
     def manifest
       return @manifest unless @manifest.nil?
-      puts stub.to_json
       renderer = Bosh::Template::Renderer.new(context: stub.to_json)
-      puts renderer.inspect
       @manifest = Psych.load(renderer.render(file))
     end
 
