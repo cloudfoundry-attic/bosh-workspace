@@ -6,7 +6,7 @@ module Bosh::Workspace
 
     def initialize(file)
       @file = file
-      err("Deployment file does not exist: #{file}") unless File.exist? @file
+      err("Deployment file does not exist: #{file}") unless File.exist?(@file)
     end
 
     def perform_validation(options = {})
@@ -28,7 +28,15 @@ module Bosh::Workspace
     end
 
     def manifest
-      @manifest ||= Psych.load(ERB.new(File.read(file)).result)
+      return @manifest unless @manifest.nil?
+      renderer = Bosh::Template::Renderer.new(context: stub.to_json)
+      @manifest = Psych.load(renderer.render(file))
+    end
+
+    def stub
+      return @stub unless @stub.nil?
+      stub_file = File.expand_path(File.join(file_dirname, "../stubs", file_basename))
+      @stub = File.exist?(stub_file) ? Psych.load(File.read(stub_file)) : {}
     end
 
     %w[name templates releases stemcells meta domain_name].each do |var|

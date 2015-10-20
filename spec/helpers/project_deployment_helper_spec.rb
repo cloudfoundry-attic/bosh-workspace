@@ -23,7 +23,7 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
   describe "project_deployment?" do
     subject { project_deployment_helper.project_deployment? }
     let(:project_deployment_helper) { ProjectDeploymentHelperTester.new(director, deployment) }
-    let(:deployment) { File.join work_dir, deployment_path }
+    let(:deployment) { File.join(work_dir, deployment_path) }
 
     context "deployment" do
       context "without associated project deployment" do

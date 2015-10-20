@@ -1,7 +1,8 @@
 module Bosh::Workspace
   describe ProjectDeployment do
     subject { Bosh::Workspace::ProjectDeployment.new manifest_file }
-    let(:manifest_file) { get_tmp_file_path(ruby_code + manifest.to_yaml, file_name) }
+    let(:manifest_content) { ruby_code + manifest.to_yaml }
+    let(:manifest_file) { get_tmp_file_path(manifest_content, file_name) }
     let(:file_name) { "foo.yml" }
     let(:manifest) { :manifest }
     let(:ruby_code) { "<% ruby_var=42 %>" }
@@ -12,6 +13,47 @@ module Bosh::Workspace
           allow(File).to receive(:exist?).with(manifest_file).and_return(false)
         end
         it { expect { subject }.to raise_error(/deployment file.+not exist/i) }
+      end
+    end
+
+    describe '#manifest' do
+      let(:stub_file) { /stubs\/#{file_name}/ }
+      before do
+        allow(File).to receive(:exist?).with(manifest_file).and_return(true)
+        allow(File).to receive(:read).with(manifest_file).and_return(manifest_content)
+      end
+
+      context 'with stub file' do
+        let(:manifest) { { 'director_uuid' => '<%= p("stub.value") %>' } }
+        let(:stub_content) { "---\nproperties:\n  stub:\n    value: litmus\n" }
+        before do
+          allow(File).to receive(:exist?).with(stub_file).and_return(true)
+          allow(File).to receive(:read).with(stub_file).and_return(stub_content)
+        end
+
+        it 'reads manifest using bosh-template render' do
+          expect(subject.manifest['director_uuid']).to eq('litmus')
+        end
+
+        context 'with missing properties' do
+          let(:stub_content) { "---\nproperties:\n  stub: litmus\n" }
+          it 'raises error' do
+            expect { subject.manifest }.to raise_error
+          end        
+        end
+
+      end
+
+      context 'without stub file' do
+        let(:manifest) { { 'director_uuid' => 'litmus' } }
+
+        before do
+          allow(File).to receive(:exist?).with(stub_file).and_return(false)
+        end
+
+        it 'reads manifest without errors' do
+          expect(subject.manifest['director_uuid']).to eq('litmus')
+        end
       end
     end
 
