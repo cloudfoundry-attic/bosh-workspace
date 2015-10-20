@@ -16,35 +16,43 @@ module Bosh::Workspace
       end
     end
 
-    describe '#stub' do
+    describe '#manifest' do
       let(:stub_file) { /stubs\/#{file_name}/ }
-      let(:stub_content) { "---\nproperties:\n  stub:\n    value: litmus\n" }
       before do
         allow(File).to receive(:exist?).with(manifest_file).and_return(true)
+        allow(File).to receive(:read).with(manifest_file).and_return(manifest_content)
       end
 
       context 'with stub file' do
         let(:manifest) { { 'director_uuid' => '<%= p("stub.value") %>' } }
+        let(:stub_content) { "---\nproperties:\n  stub:\n    value: litmus\n" }
         before do
           allow(File).to receive(:exist?).with(stub_file).and_return(true)
           allow(File).to receive(:read).with(stub_file).and_return(stub_content)
-          allow(File).to receive(:read).with(manifest_file).and_return(manifest_content)
         end
 
-        it 'renders manifest using bosh-template' do
-          expect(subject.director_uuid).to eq('litmus')
+        it 'reads manifest using bosh-template render' do
+          expect(subject.manifest['director_uuid']).to eq('litmus')
         end
+
+        context 'with missing properties' do
+          let(:stub_content) { "---\nproperties:\n  stub: litmus\n" }
+          it 'raises error' do
+            expect { subject.manifest }.to raise_error
+          end        
+        end
+
       end
 
       context 'without stub file' do
         let(:manifest) { { 'director_uuid' => 'litmus' } }
 
         before do
-          allow(File).to receive(:exist?).with(/stubs\/#{file_name}/).and_return(false)
+          allow(File).to receive(:exist?).with(stub_file).and_return(false)
         end
 
-        it 'renders manifest without bosh-template' do
-          expect(subject.director_uuid).to eq('litmus')
+        it 'reads manifest without errors' do
+          expect(subject.manifest['director_uuid']).to eq('litmus')
         end
       end
     end
