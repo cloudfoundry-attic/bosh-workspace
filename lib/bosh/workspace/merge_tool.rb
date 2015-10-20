@@ -7,9 +7,6 @@ module Bosh::Workspace
     def initialize(merge_tool = nil)
       @name, @version = case merge_tool
       when Hash
-        unless (%w(name version) & merge_tool.keys).size == 2
-          err("merge_tool options should contain name and version")
-        end
         [merge_tool['name'], merge_tool['version']]
       when String
         [merge_tool, 'current']
