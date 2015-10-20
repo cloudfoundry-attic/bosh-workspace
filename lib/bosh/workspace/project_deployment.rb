@@ -36,8 +36,6 @@ module Bosh::Workspace
     def stub
       return @stub unless @stub.nil?
       stub_file = File.join(file_dirname.gsub(/\/deployments\/?$/, ''), 'stubs', file_basename)
-      puts "stub_file: #{stub_file}"
-      puts "stub: #{Psych.load(File.read(stub_file))}" if File.exist?(stub_file)
       @stub = File.exist?(stub_file) ? Psych.load(File.read(stub_file)) : {}
     end
 
