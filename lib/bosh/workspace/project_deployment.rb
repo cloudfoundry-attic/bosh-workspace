@@ -27,6 +27,10 @@ module Bosh::Workspace
       end
     end
 
+    def merge_tool
+      Bosh::Workspace::MergeTool.new(manifest['merge_tool'])
+    end
+
     def manifest
       @manifest ||= Psych.load(ERB.new(File.read(file)).result)
     end
