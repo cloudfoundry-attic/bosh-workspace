@@ -49,8 +49,8 @@ module Bosh::Workspace
       run_merge_tool('-v') do |output|
         actual_version = output.match(/(\d+\.\d+\.\d+)/).to_a.first
         if actual_version.nil? || actual_version != version
-          say "[WARNING] Deployment requires #{name} to have version #{version}\n".make_yellow
-          say "          Your actual #{name} version is #{actual_version}.".make_yellow
+          warning "Deployment requires #{name} to have version #{version}. " +
+                  "Your actual #{name} version is #{actual_version}."
         end
       end
     end

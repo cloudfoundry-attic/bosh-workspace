@@ -86,8 +86,7 @@ module Bosh::Workspace
           describe 'with wrong version' do
             let(:output) { "#{tool_name} version 0.2.0" }
             it 'merges manifests' do
-              expect(subject).to receive(:say).with(/WARNING/)
-              expect(subject).to receive(:say).with(/0\.2\.0/)
+              expect(subject).to receive(:warning).with(/0\.2\.0/)
               subject.merge(templates, target_file)
             end
           end
