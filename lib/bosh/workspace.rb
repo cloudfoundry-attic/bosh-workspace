@@ -6,6 +6,7 @@ require "rugged"
 require "hashdiff"
 require "cli/core_ext"
 require "cli/validation"
+require "bosh/template/renderer"
 
 require "bosh/workspace/helpers/project_deployment_helper"
 require "bosh/workspace/helpers/release_helper"
