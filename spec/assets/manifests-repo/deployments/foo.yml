@@ -3,3 +3,4 @@ name: foo
 templates:
   - foo/bar.yml
 meta: {}
+stub_value: <%= p('stub.value') %>
