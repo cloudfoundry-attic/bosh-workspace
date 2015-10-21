@@ -1,6 +1,6 @@
 module Bosh::Workspace
   class ManifestBuilder
-    include Bosh::Workspace::SpiffHelper
+    attr_reader :merge_tool
 
     def self.build(project_deployment, work_dir)
       manifest_builder = ManifestBuilder.new(project_deployment, work_dir)
@@ -9,22 +9,20 @@ module Bosh::Workspace
 
     def initialize(project_deployment, work_dir)
       @project_deployment = project_deployment
+      @merge_tool = @project_deployment.merge_tool
       @work_dir = work_dir
     end
 
     def merge_templates
-      spiff_merge spiff_template_paths, @project_deployment.merged_file
+      @merge_tool.merge(template_paths, @project_deployment.merged_file)
     end
 
     private
 
-    def spiff_template_paths
-      spiff_templates = template_paths
-      spiff_templates << stub_file_path
-    end
-
     def template_paths
-      @project_deployment.templates.map { |t| template_path(t) }
+      @template_paths ||= @project_deployment.templates.map do |t|
+        template_path(t)
+      end.push(stub_file_path)
     end
 
     def stub_file_path

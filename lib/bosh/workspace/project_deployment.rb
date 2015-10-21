@@ -27,6 +27,10 @@ module Bosh::Workspace
       end
     end
 
+    def merge_tool
+      Bosh::Workspace::MergeTool.new(manifest['merge_tool'])
+    end
+
     def manifest
       return @manifest unless @manifest.nil?
       renderer = Bosh::Template::Renderer.new(context: stub.to_json)

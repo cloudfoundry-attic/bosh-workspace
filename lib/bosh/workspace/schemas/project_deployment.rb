@@ -12,10 +12,23 @@ module Bosh::Workspace
             "releases"              => Releases.new,
             "stemcells"             => Stemcells.new,
             "templates"             => [String],
-            "meta"                  => Hash
+            "meta"                  => Hash,
+            optional("merge_tool")  => MergeTool.new
           }
         end.validate object
       end
+
+      class MergeTool < Membrane::Schemas::Base
+        def validate(object)
+          return if object.is_a? String
+          return if object.is_a? Hash &&
+                    (%w(name version) & object.keys).size == 2 &&
+                    object['version'] =~ /^\d+(\.\d+){1,2}|current$/
+          raise Membrane::SchemaValidationError.new(
+            "Should match: String, object.name and object.version. Given: #{object}")
+        end
+      end
+
     end
   end
 end
