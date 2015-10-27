@@ -206,4 +206,15 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
       end
     end
   end
+
+  describe "#offline!" do
+    it "enforces offline mode" do
+      subject.offline!
+      expect(subject.offline?).to eq(true)
+    end
+
+    it "defaults to online" do
+      expect(subject.offline?).to eq(nil)
+    end
+  end
 end

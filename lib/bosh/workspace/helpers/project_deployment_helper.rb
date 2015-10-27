@@ -46,7 +46,7 @@ module Bosh::Workspace
 
       say("Generating deployment manifest")
       ManifestBuilder.build(project_deployment, work_dir)
-      
+
       if domain_name = project_deployment.domain_name
         say("Transforming to dynamic networking (dns)")
         DnsHelper.transform(project_deployment.merged_file, domain_name)
@@ -55,6 +55,14 @@ module Bosh::Workspace
 
     def resolve_director_uuid
       use_targeted_director_uuid if director_uuid_current?
+    end
+
+    def offline!
+      @offline = true
+    end
+
+    def offline?
+      @offline
     end
 
     private
