@@ -38,8 +38,8 @@ module Bosh::Workspace
         context 'with missing properties' do
           let(:stub_content) { "---\nproperties:\n  stub: litmus\n" }
           it 'raises error' do
-            expect { subject.manifest }.to raise_error
-          end        
+            expect { subject.manifest }.to raise_error /Can't find property/
+          end
         end
 
       end
