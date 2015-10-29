@@ -58,7 +58,7 @@ module Bosh::Cli::Command
         say "Skipping upload"
       elsif release.url
         say "Uploading '#{release.url}'"
-        release_upload(release.url, release.release_dir)
+        release_upload_from_url(release.url)
       else
         say "Uploading '#{release.name_version.make_green}'"
         release_upload(release.manifest_file, release.release_dir)
@@ -82,6 +82,7 @@ module Bosh::Cli::Command
 
     def cached_stemcell_upload(stemcell)
       unless stemcell.downloaded?
+        err "Stemcell not available offline: #{stemcell.file_name}" if offline?
         say "Downloading '#{stemcell.name_version.make_green}'"
         stemcell_download(stemcell.file_name)
       end

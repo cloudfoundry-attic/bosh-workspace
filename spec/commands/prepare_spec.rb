@@ -77,8 +77,8 @@ describe Bosh::Cli::Command::Prepare do
           let(:url) { "bosh.io/foo/bar.tgz" }
 
           it "does uploads a remote release" do
-            expect(command).to receive(:release_upload)
-              .with(release.url, release.release_dir)
+            expect(command).to receive(:release_upload_from_url)
+              .with(release.url)
             command.prepare
           end
         end
@@ -128,20 +128,29 @@ describe Bosh::Cli::Command::Prepare do
         context "stemcell downloaded" do
           let(:stemcell_downloaded) { true }
 
-          it "does not upload the stemcell" do
+          it "uploads the already downloaded stemcell" do
             expect(command).to_not receive(:stemcell_download)
             expect(command).to receive(:stemcell_upload).with(stemcell.file)
             command.prepare
           end
         end
 
-        context "stemcell downloaded" do
+        context "when stemcell not downloaded" do
           let(:stemcell_downloaded) { false }
 
-          it "does not upload the stemcell" do
+          it "downloads and uploads the stemcell" do
             expect(command).to receive(:stemcell_download).with(stemcell.file_name)
             expect(command).to receive(:stemcell_upload).with(stemcell.file)
             command.prepare
+          end
+
+          context "while being offline" do
+            before { command.offline! }
+
+            it "raises an error" do
+              expect(command).to_not receive(:stemcell_download)
+              expect{command.prepare}.to raise_error /not available offline/
+            end
           end
         end
       end

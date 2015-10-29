@@ -7,10 +7,13 @@ module Bosh::Workspace
       remote_release && remote_release["versions"].include?(version.to_s)
     end
 
-    def release_upload(manifest_file_or_release_url, release_dir)
-      Dir.chdir(release_dir) do
-        release_cmd.upload(manifest_file_or_release_url)
-      end
+    def release_upload_from_url(release_url)
+      upload_release_cmd.upload(release_url)
+    end
+
+    def release_upload(manifest_file, release_dir)
+      release_tarball = create_release(manifest_file, release_dir)
+      upload_release_cmd.upload(release_tarball)
     end
 
     def releases_dir
@@ -25,14 +28,14 @@ module Bosh::Workspace
       end
     end
 
-    def offline!
-      @offline = true
-    end
-
     private
 
-    def offline?
-      @offline
+    def create_release(release_manifest, release_dir)
+      release_tarball = release_manifest.sub('yml', 'tgz')
+      return release_tarball if File.exist?(release_tarball)
+      err "Final release tarball missing: #{release_tarball}" if offline?
+      create_release_cmd(release_dir).create(release_manifest)
+      release_tarball
     end
 
     def credentials_callback
@@ -43,8 +46,15 @@ module Bosh::Workspace
       File.join(work_dir, '.credentials.yml')
     end
 
-    def release_cmd
+    def upload_release_cmd
       Bosh::Cli::Command::Release::UploadRelease.new
+    end
+
+    def create_release_cmd(release_dir)
+      Bosh::Cli::Command::Release::CreateRelease.new.tap do |r|
+        r.add_option(:with_tarball, true)
+        r.add_option(:dir, release_dir)
+      end
     end
   end
 end

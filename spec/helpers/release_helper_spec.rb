@@ -16,22 +16,84 @@ module Bosh::Workspace
     let(:director) { instance_double('Bosh::Cli::Client::Director') }
     let(:work_dir) { asset_dir("manifests-repo") }
 
-    describe "#release_upload" do
-      let(:release_cmd) do
+    def expect_option(subject, *args)
+      expect(subject).to receive(:add_option).with(*args)
+    end
+
+    context "with upload release command" do
+      let(:upload_release_cmd) do
         instance_double "Bosh::Cli::Command::Release::UploadRelease"
       end
 
       before do
-        allow(Bosh::Cli::Command::Release::UploadRelease).to receive(:new)
-          .and_return(release_cmd)
+        allow(Bosh::Cli::Command::Release::UploadRelease)
+          .to receive(:new).and_return(upload_release_cmd)
       end
 
-      let(:manifest_file) { "foo-1.yml." }
-      subject { release_helper.release_upload(manifest_file, work_dir) }
+      describe "#release_upload_from_url" do
+        let(:url) { "http://example.com/release.tgz" }
+        subject { release_helper.release_upload_from_url(url) }
 
-      it "uploads release" do
-        expect(release_cmd).to receive(:upload).with(manifest_file)
-        subject
+        it "uploads release" do
+          expect(upload_release_cmd).to receive(:upload).with(url)
+          subject
+        end
+      end
+
+      describe "#release_upload" do
+        let(:manifest) { "foo-1.yml" }
+        let(:tarball) { "foo-1.tgz" }
+        let(:release_dir) { "foo-release" }
+        let(:exist) { true }
+        let(:create_release_cmd) do
+          instance_double("Bosh::Cli::Command::Release::CreateRelease")
+        end
+
+        subject { release_helper.release_upload(manifest, release_dir) }
+
+        before do
+          allow(Bosh::Cli::Command::Release::CreateRelease)
+            .to receive(:new).and_return(create_release_cmd)
+          allow(File).to receive(:exist?).with(tarball).and_return(exist)
+        end
+
+        context "when offline" do
+          before { release_helper.offline! }
+
+          context "with final release tarball" do
+            it "uploads final release" do
+              expect(upload_release_cmd).to receive(:upload).with(tarball)
+              subject
+            end
+          end
+
+          context "without final release tarball" do
+            let(:exist) { false }
+            it "raises an error" do
+              expect{subject}.to raise_error /tarball missing.+#{tarball}/
+            end
+          end
+        end
+
+        context "when online" do
+          context "with final release tarball" do
+            it "uploads final release" do
+              expect(upload_release_cmd).to receive(:upload).with(tarball)
+              subject
+            end
+          end
+
+          context "without final release tarball" do
+            let(:exist) { false }
+            it "creates and uploads final release" do
+              expect_option(create_release_cmd, :with_tarball, true)
+              expect_option(create_release_cmd, :dir, release_dir)
+              expect(create_release_cmd).to receive(:create).with(manifest)
+              expect(upload_release_cmd).to receive(:upload).with(tarball)
+              subject
+            end
+          end
+        end
       end
     end
 
