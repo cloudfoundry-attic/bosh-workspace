@@ -77,8 +77,8 @@ describe Bosh::Cli::Command::Prepare do
           let(:url) { "bosh.io/foo/bar.tgz" }
 
           it "does uploads a remote release" do
-            expect(command).to receive(:release_upload)
-              .with(release.url, release.release_dir)
+            expect(command).to receive(:release_upload_from_url)
+              .with(release.url)
             command.prepare
           end
         end
