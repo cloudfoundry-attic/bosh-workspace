@@ -82,6 +82,7 @@ module Bosh::Cli::Command
 
     def cached_stemcell_upload(stemcell)
       unless stemcell.downloaded?
+        err "Stemcell not available offline: #{stemcell.file_name}" if offline?
         say "Downloading '#{stemcell.name_version.make_green}'"
         stemcell_download(stemcell.file_name)
       end
