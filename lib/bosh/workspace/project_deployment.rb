@@ -1,8 +1,10 @@
 module Bosh::Workspace
   class ProjectDeployment
     include Bosh::Cli::Validation
-    attr_writer :director_uuid
+    attr_writer :director_uuid, :stub
     attr_reader :file
+
+    STUB_WHITELIST = %w(name director_uuid meta)
 
     def initialize(file)
       @file = file
@@ -33,8 +35,10 @@ module Bosh::Workspace
 
     def manifest
       return @manifest unless @manifest.nil?
-      renderer = Bosh::Template::Renderer.new(context: stub.to_json)
-      @manifest = Psych.load(renderer.render(file))
+      @manifest = Psych.load(ERB.new(File.read(file)).result)
+      validate_stub! unless stub.empty?
+      @manifest = recursive_merge(@manifest, stub) unless stub.empty?
+      @manifest
     end
 
     def stub
@@ -51,12 +55,28 @@ module Bosh::Workspace
 
     private
 
+    def validate_stub!
+      return unless stub.keys.any? { |k| !STUB_WHITELIST.include?(k) }
+      offending_keys = stub.keys - STUB_WHITELIST
+      err "Key: '#{offending_keys.first}' not allowed in stub file"
+    end
+
     def file_basename
       File.basename(@file)
     end
 
     def file_dirname
       File.dirname(@file)
+    end
+
+    def recursive_merge(source, target)
+      source.merge(target) do |_, old_value, new_value|
+        if old_value.class == Hash && new_value.class == Hash
+          recursive_merge(old_value, new_value)
+        else
+          new_value
+        end
+      end
     end
   end
 end

@@ -24,24 +24,31 @@ module Bosh::Workspace
       end
 
       context 'with stub file' do
-        let(:manifest) { { 'director_uuid' => '<%= p("stub.value") %>' } }
-        let(:stub_content) { "---\nproperties:\n  stub:\n    value: litmus\n" }
+        let(:manifest) { { 'director_uuid' => 'DIRECTOR_UUID' } }
+        let(:stub_content) do
+          {
+            'name' => 'bar',
+            'director_uuid' => 'foo-uuid',
+            'meta' => { 'foo' => 'bar' }
+          }.to_yaml
+        end
+
         before do
           allow(File).to receive(:exist?).with(stub_file).and_return(true)
           allow(File).to receive(:read).with(stub_file).and_return(stub_content)
         end
 
-        it 'reads manifest using bosh-template render' do
-          expect(subject.manifest['director_uuid']).to eq('litmus')
+        it 'merges stub with manifest' do
+          expect(subject.manifest['director_uuid']).to eq('foo-uuid')
         end
 
-        context 'with missing properties' do
-          let(:stub_content) { "---\nproperties:\n  stub: litmus\n" }
-          it 'raises error' do
-            expect { subject.manifest }.to raise_error /Can't find property/
+        context 'stub with releases' do
+          let(:stub_content) { { 'releases' => [] }.to_yaml }
+
+          it 'raises an error' do
+            expect{ subject.manifest }.to raise_error /releases.+not allowed/
           end
         end
-
       end
 
       context 'without stub file' do
