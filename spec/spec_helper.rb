@@ -65,6 +65,10 @@ def in_home_dir(&block)
   FileUtils.chdir(home_file, &block)
 end
 
+def get_tmp_yml_file_path(content)
+  get_tmp_file_path(content.to_yaml)
+end
+
 def get_tmp_file_path(content, file_name="tmp")
   tmp_file = File.open(File.join(Dir.mktmpdir, file_name), "w")
   tmp_file.write(content)
