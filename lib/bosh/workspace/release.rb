@@ -1,3 +1,4 @@
+require 'pry'
 module Bosh::Workspace
   class Release
     REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
@@ -124,19 +125,14 @@ module Bosh::Workspace
     end
 
     # transforms releases/foo-1.yml, releases/bar-2.yml to:
-    # [ { version: "1", commit: ee8d52f5d, manifest: releases/foo-1.yml } ]
+    # [ { version: "1", manifest: releases/foo-1.yml } ]
     def final_releases
       @final_releases ||= begin
         final_releases = []
         releases_tree.walk_blobs(:preorder) do |_, entry|
           next if entry[:filemode] == 40960 # Skip symlinks
           next unless version = entry[:name][/#{@name}-(.+)\.yml/, 1]
-          blame = repo_blame(File.join(releases_dir, entry[:name]))
-          final_releases << {
-            version: version,
-            manifest: blame[:orig_path],
-            commit: blame[:final_commit_id]
-          }
+          final_releases << { version: version, manifest: entry[:name] }
         end
         final_releases.sort! { |a, b| a[:version].to_i <=> b[:version].to_i }
       end
@@ -151,11 +147,17 @@ module Bosh::Workspace
     end
 
     def release
+      return @release if @release
       latest_offline_warning if latest? && offline?
-      return final_releases.last if latest?
-      final_releases.find { |v| v[:version] == @spec_version }.tap do |release|
-        missing_release_err(@spec_version, @name) unless release
-      end
+      release = final_releases.last if latest?
+      release ||= final_releases.find { |v| v[:version] == @spec_version }
+      missing_release_err(@spec_version, @name) unless release
+      @release = lookup_release_ref(release)
+    end
+
+    def lookup_release_ref(release)
+      b = repo_blame(File.join(releases_dir, release[:manifest]))
+      release.merge(manifest: b[:orig_path], commit: b[:final_commit_id])
     end
 
     def missing_release_err(version, name)
