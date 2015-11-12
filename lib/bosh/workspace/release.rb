@@ -1,4 +1,3 @@
-require 'pry'
 module Bosh::Workspace
   class Release
     REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
