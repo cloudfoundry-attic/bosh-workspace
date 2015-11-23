@@ -28,17 +28,29 @@ module Bosh::Workspace
     end
 
     def releases
-      @releases.map { |r| r.select { |key| %w[name version].include?(key) } }
+      filter_keys(@releases, %w(name version))
     end
 
     def meta
-      out = case @stemcells.size
-      when 1
-        { "stemcell" => @stemcells.first }
-      else
-        { "stemcells" => @stemcells }
-      end
-      out.merge(@meta)
+      stemcells_meta.merge(@meta)
+    end
+
+    private
+
+    def filter_keys(array, keys)
+      array.map { |s| s.select { |key| keys.include?(key) } }
+    end
+
+    def stemcells
+      filter_keys(@stemcells, %w(name version))
+    end
+
+    def stemcell
+      stemcells[1] ? nil : stemcells[0]
+    end
+
+    def stemcells_meta
+      stemcell.nil? ? { 'stemcells' => stemcells } : { 'stemcell' => stemcell }
     end
   end
 end
