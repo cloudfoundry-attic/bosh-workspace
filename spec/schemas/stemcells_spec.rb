@@ -1,7 +1,7 @@
 module Bosh::Workspace::Schemas
   describe Stemcells do
     let(:stemcell) do
-      {"name" => "foo", "version" => 1}
+      { "name" => "foo", "version" => 1, "light" => true }
     end
 
     subject { Stemcells.new.validate(stemcells) }
@@ -42,6 +42,15 @@ module Bosh::Workspace::Schemas
       let(:stemcells) { stemcell["version"] = "foo"; [stemcell] }
       it { expect { subject }.to raise_error(/version.*should match/i) }
     end
+
+    context "without optional light key" do
+      let(:stemcells) { [stemcell.delete_if { |k| k == "light" }] }
+      it { expect { subject }.to_not raise_error }
+    end
+
+    context "light non boolean" do
+      let(:stemcells) { stemcell["light"] = "foo"; [stemcell] }
+      it { expect { subject }.to raise_error /true or false/ }
+    end
   end
 end
-
