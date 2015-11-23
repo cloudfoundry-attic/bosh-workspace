@@ -8,8 +8,8 @@ describe Bosh::Workspace::StubFile do
     meta: meta,
     merged_file: ".deployments/foo.yml")
   }
-  let(:meta) {{ "foo" => "bar" }}
-  let(:stemcells) { [ { "name" => "foo", "version" => "2"} ] }
+  let(:meta) { { "foo" => "bar" } }
+  let(:stemcells) { [{ "name" => "foo", "version" => "2" }] }
   let(:path) { "foo/.stubs/bar.yml"}
 
   let(:stub_file) { Bosh::Workspace::StubFile.new(project_deployment) }
@@ -55,7 +55,7 @@ describe Bosh::Workspace::StubFile do
 
     context "1 stemcell" do
       let(:stemcells) { [ stemcell_foo ] }
-      its(:meta) { should include "stemcell" => stemcell_foo }
+      its(:meta) { is_expected.to include("stemcell" => stemcell_foo) }
       its(:meta) { should include meta }
     end
 
@@ -69,6 +69,14 @@ describe Bosh::Workspace::StubFile do
       let(:meta) { { "stemcell" => stemcell_bar } }
       let(:stemcells) { [ stemcell_foo ] }
       its(:meta) { should include "stemcell" => stemcell_bar }
+    end
+
+    context "when using a light stemcell" do
+      let(:stemcells) { stemcell_foo['light'] = true; [stemcell_foo] }
+
+      it "does not contain a light stemcell key in meta" do
+        expect(subject.meta['stemcell'].keys).to_not include 'light'
+      end
     end
   end
 end

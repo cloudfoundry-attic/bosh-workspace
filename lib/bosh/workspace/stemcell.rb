@@ -5,6 +5,7 @@ module Bosh::Workspace
     def initialize(stemcell, stemcells_dir)
       @name = stemcell["name"]
       @version = stemcell["version"]
+      @light = stemcell["light"]
       @file = File.join(stemcells_dir, file_name)
     end
 
@@ -13,11 +14,12 @@ module Bosh::Workspace
     end
 
     def file_name
-      name.gsub(/^bosh-/, "bosh-stemcell-#{version}-") + ".tgz"
+      prefix = @light ? 'light-' : ''
+      name.gsub(/^bosh-/, "#{prefix}bosh-stemcell-#{version}-") + '.tgz'
     end
 
     def downloaded?
-      File.exists? file
+      File.exist? file
     end
   end
 end

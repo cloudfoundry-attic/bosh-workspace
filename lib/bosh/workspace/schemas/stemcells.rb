@@ -5,7 +5,8 @@ module Bosh::Workspace
         Membrane::SchemaParser.parse do
           [{
             "name"    => String,
-            "version" => StemcellVersion.new
+            "version" => StemcellVersion.new,
+            optional("light") => bool
           }]
         end.validate object
       end
