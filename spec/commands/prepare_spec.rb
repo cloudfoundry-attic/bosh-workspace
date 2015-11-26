@@ -12,8 +12,7 @@ describe Bosh::Cli::Command::Prepare do
     end
     let(:stemcell) do
       instance_double("Bosh::Workspace::Stemcell",
-        name: "bar", version: "2", name_version: "bar/2",
-        file: ".stemcesll/bar-2.tgz", file_name: "bar-2.tgz")
+        name: "bar", version: "2", name_version: "bar/2")
     end
 
     before do
@@ -111,39 +110,17 @@ describe Bosh::Cli::Command::Prepare do
         let(:stemcell_uploaded) { true }
 
         it "does not upload the stemcell" do
-          expect(command).to_not receive(:stemcell_download)
-          expect(command).to_not receive(:stemcell_upload)
+          expect(command).to_not receive(:cached_stemcell_upload)
           command.prepare
         end
       end
 
       context "stemcell not uploaded" do
         let(:stemcell_uploaded) { false }
-
-        before do
-          allow(stemcell).to receive(:downloaded?)
-          .and_return(stemcell_downloaded)
-        end
-
-        context "stemcell downloaded" do
-          let(:stemcell_downloaded) { true }
-
-          it "uploads the already downloaded stemcell" do
-            expect(command).to_not receive(:stemcell_download)
+          it "uploads the stemcell" do
             expect(command).to receive(:stemcell_upload_url).with("https://bosh.io/d/stemcells/#{stemcell.name}?v=#{stemcell.version}")
             command.prepare
           end
-        end
-
-        context "when stemcell not downloaded" do
-          let(:stemcell_downloaded) { false }
-
-          it "downloads and uploads the stemcell" do
-            expect(command).to receive(:stemcell_upload_url).with("https://bosh.io/d/stemcells/#{stemcell.name}?v=#{stemcell.version}")
-            command.prepare
-          end
-
-        end
       end
     end
   end
