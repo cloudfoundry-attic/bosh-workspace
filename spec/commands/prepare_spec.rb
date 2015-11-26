@@ -17,7 +17,7 @@ describe Bosh::Cli::Command::Prepare do
     end
 
     before do
-      allow(command).to receive(:require_project_deployment)
+      allow(command).to receive(:rquire_project_deployment)
       allow(command).to receive(:auth_required)
       allow(command).to receive(:project_deployment_releases)
         .and_return(releases)
@@ -130,7 +130,7 @@ describe Bosh::Cli::Command::Prepare do
 
           it "uploads the already downloaded stemcell" do
             expect(command).to_not receive(:stemcell_download)
-            expect(command).to receive(:stemcell_upload).with(stemcell.file)
+            expect(command).to receive(:stemcell_upload_url).with("https://bosh.io/d/stemcells/#{stemcell.name}?v=#{stemcell.version}")
             command.prepare
           end
         end
@@ -139,19 +139,10 @@ describe Bosh::Cli::Command::Prepare do
           let(:stemcell_downloaded) { false }
 
           it "downloads and uploads the stemcell" do
-            expect(command).to receive(:stemcell_download).with(stemcell.file_name)
-            expect(command).to receive(:stemcell_upload).with(stemcell.file)
+            expect(command).to receive(:stemcell_upload_url).with("https://bosh.io/d/stemcells/#{stemcell.name}?v=#{stemcell.version}")
             command.prepare
           end
 
-          context "while being offline" do
-            before { command.offline! }
-
-            it "raises an error" do
-              expect(command).to_not receive(:stemcell_download)
-              expect{command.prepare}.to raise_error /not available offline/
-            end
-          end
         end
       end
     end

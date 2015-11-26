@@ -16,6 +16,12 @@ module Bosh::Workspace
       stemcell_cmd.upload(stemcell_file)
     end
 
+    def stemcell_upload_url(stemcell_url)
+      say "Uploading stemcell from URL '#{stemcell_url}'"
+      nl
+      stemcell_cmd.upload(stemcell_url)
+    end
+
     def stemcell_uploaded?(name, version)
       existing = director.list_stemcells.select do |sc|
         sc['name'] == name && sc['version'] == version.to_s
