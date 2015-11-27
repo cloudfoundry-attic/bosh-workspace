@@ -139,7 +139,7 @@ describe Bosh::Cli::Command::Prepare do
           let(:stemcell_downloaded) { false }
 
           it "downloads and uploads the stemcell" do
-            expect(command).to receive(:stemcell_download).with(stemcell.file_name)
+            expect(command).to receive(:stemcell_download).with(stemcell)
             expect(command).to receive(:stemcell_upload).with(stemcell.file)
             command.prepare
           end
