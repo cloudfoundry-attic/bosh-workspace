@@ -32,8 +32,9 @@ module Bosh::Cli::Command
     usage "deploy"
     desc "Deploy according to the currently selected deployment manifest"
     option "--recreate", "recreate all VMs in deployment"
+    option "--skip-manifest", "skip generating deployment manifest"
     def deploy
-      if project_deployment?
+      if project_deployment? && !options[:skip_manifest]
         require_project_deployment
         build_project_deployment
       end
