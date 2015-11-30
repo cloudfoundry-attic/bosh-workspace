@@ -41,7 +41,7 @@ module Bosh::Workspace
 
     def download_stemcell_from_bosh_io(stemcell)
 
-      url=sprintf("https://bosh.io/d/stemcells/%s?v=%s", stemcell.name, stemcell.version)
+      url = "https://bosh.io/d/stemcells/#{stemcell.name}?v=#{stemcell.version}"
 
       response = HTTPClient.new.head(url)
 
