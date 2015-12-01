@@ -44,7 +44,15 @@ module Bosh::Workspace
     def stub
       return @stub unless @stub.nil?
       stub_file = File.expand_path(File.join(file_dirname, "../stubs", file_basename))
-      @stub = File.exist?(stub_file) ? Psych.load(File.read(stub_file)) : {}
+      @stub = File.exist?(stub_file) ? load_stub(stub_file) : {}
+    end
+
+    def load_stub(stub_file)
+      Psych.load(File.executable?(stub_file) ? execute_stub(stub_file) : File.read(stub_file))
+    end
+
+    def execute_stub(stub_file)
+      `#{stub_file}`
     end
 
     %w[name templates releases stemcells meta domain_name].each do |var|

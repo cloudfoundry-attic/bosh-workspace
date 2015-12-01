@@ -51,6 +51,32 @@ module Bosh::Workspace
         end
       end
 
+      context 'with executable stub file' do
+        let(:manifest) do
+          {
+            'name' => 'NAME',
+            'director_uuid' => 'DIRECTOR_UUID',
+            'meta' =>  { 'foo' => 'bar', 'bar' => 'foo' }
+          }
+        end
+        let(:stub_output) do
+          "name: bar\ndirector_uuid: bar-uuid\nmeta:\n  foo: foobar\n"
+        end
+
+        before do
+          allow(File).to receive(:exist?).with(stub_file).and_return(true)
+          allow(File).to receive(:executable?).with(stub_file).and_return(true)
+          allow_any_instance_of(Bosh::Workspace::ProjectDeployment)
+          .to receive(:execute_stub).with(stub_file).and_return(stub_output)
+        end
+
+        it 'merges stub output with manifest' do
+          expect(subject.manifest['name']).to eq('bar')
+          expect(subject.manifest['director_uuid']).to eq('bar-uuid')
+          expect(subject.manifest['meta']).to eq({ 'foo' => 'foobar', 'bar' => 'foo' })
+        end
+      end
+
       context 'without stub file' do
         let(:manifest) { { 'director_uuid' => 'litmus' } }
 
@@ -64,11 +90,41 @@ module Bosh::Workspace
       end
     end
 
+    describe "#load_stub" do
+      context "executable file" do
+        let(:stub_file) { asset_dir("manifests-repo/stubs/foobar.sh") }
+
+        it "returns output as yaml" do
+          expect(subject.load_stub(stub_file)).to eq({ "name" => "foobar" })
+        end
+      end
+
+      context "normal file" do
+        let(:stub_file) { asset_dir("manifests-repo/stubs/foo.yml") }
+
+        it "returns content as yaml" do
+          expect(subject.load_stub(stub_file)).to eq({ 
+            "meta" => { "stub" => { "value" => "value" }}
+          })
+        end
+      end
+    end
+
+    describe "#execute_stub" do
+      context "executable file" do
+        let(:stub_file) { asset_dir("manifests-repo/stubs/foobar.sh") }
+
+        it "returns output" do
+          expect(subject.execute_stub(stub_file)).to eq('name: foobar')
+        end
+      end
+    end
+
     describe "#perform_validation" do
       context "valid" do
         it "validates" do
           allow_any_instance_of(Schemas::ProjectDeployment)
-            .to receive(:validate).with(manifest)
+          .to receive(:validate).with(manifest)
           expect(subject).to be_valid
         end
       end
@@ -76,8 +132,8 @@ module Bosh::Workspace
       context "invalid" do
         it "has errors" do
           allow_any_instance_of(Schemas::ProjectDeployment)
-            .to receive(:validate).with(manifest)
-            .and_raise(Membrane::SchemaValidationError.new("foo"))
+          .to receive(:validate).with(manifest)
+          .and_raise(Membrane::SchemaValidationError.new("foo"))
           expect(subject).to_not be_valid
           expect(subject.errors).to include "foo"
         end
@@ -91,18 +147,18 @@ module Bosh::Workspace
 
     describe "attr readers" do
       let(:manifest) { {
-          "name" => :name,
-          "director_uuid" => :director_uuid,
-          "templates" => :templates,
-          "releases" => :releases,
-          "stemcells" => :stemcells,
-          "meta" => :meta,
-          "domain_name" => :domain_name,
-        } }
+                         "name" => :name,
+                         "director_uuid" => :director_uuid,
+                         "templates" => :templates,
+                         "releases" => :releases,
+                         "stemcells" => :stemcells,
+                         "meta" => :meta,
+                         "domain_name" => :domain_name,
+      } }
 
       let(:director_uuid) { uuid }
       %w(name director_uuid templates releases stemcells meta domain_name)
-        .each do |attr|
+      .each do |attr|
         its(attr.to_sym) { should eq attr.to_sym }
       end
     end
