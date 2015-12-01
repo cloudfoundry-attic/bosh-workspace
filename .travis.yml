@@ -3,6 +3,8 @@ cache: bundler
 sudo: false
 rvm:
   - 2.0
+  - 2.1
+  - 2.2
 before_script:
   - wget https://github.com/cloudfoundry-incubator/spiff/releases/download/v1.0.7/spiff_linux_amd64.zip -O /tmp/spiff.zip
   - unzip /tmp/spiff.zip && mkdir bin && mv spiff bin && chmod +x bin/spiff
