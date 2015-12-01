@@ -23,12 +23,13 @@ describe Bosh::Workspace::StemcellHelper do
     end
 
     describe "#stemcell_download" do
-      let(:name) { "foo" }
-      subject { stemcell_helper.stemcell_download(name) }
+      let(:stemcell) { instance_double("Bosh::Workspace::Stemcell", :name => "foo", :version => "1") }
+
+      subject { stemcell_helper.stemcell_download(stemcell) }
 
       it "downloads stemcell" do
         expect(Dir).to receive(:chdir).and_yield
-        expect(stemcell_cmd).to receive(:download_public).with(name)
+        expect(stemcell_helper).to receive(:download_stemcell_from_bosh_io).with(stemcell)
         subject
       end
     end

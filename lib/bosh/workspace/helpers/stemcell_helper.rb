@@ -1,12 +1,15 @@
+require 'httpclient'
+require 'cli/download_with_progress'
+
 module Bosh::Workspace
   module StemcellHelper
     include ProjectDeploymentHelper
 
-    def stemcell_download(stemcell_name)
+    def stemcell_download(stemcell)
       Dir.chdir(stemcells_dir) do
-        say "Downloading stemcell '#{stemcell_name}'"
+        say "Downloading stemcell '#{stemcell.name}' version '#{stemcell.version}'"
         nl
-        stemcell_cmd.download_public(stemcell_name)
+        download_stemcell_from_bosh_io(stemcell)
       end
     end
 
@@ -36,10 +39,38 @@ module Bosh::Workspace
       end
     end
 
+    def download_stemcell_from_bosh_io(stemcell)
+
+      url = "https://bosh.io/d/stemcells/#{stemcell.name}?v=#{stemcell.version}"
+
+      response = HTTPClient.new.head(url)
+
+      if response.status == 302
+        location = response.header['location'][0]
+        response2 = HTTPClient.new.head(location)
+
+        if response2.status == 200
+          size = response2.header['Content-Length'][0]
+        else
+          say("HTTP #{response2.status} : #{location}".make_red)
+          say(" - redirected from: : #{url}".make_red)
+          return
+        end
+      else
+        say("HTTP #{response.status} : #{url} (expecting 302 - redirect)".make_red)
+        return
+      end
+
+      download_with_progress = Bosh::Cli::DownloadWithProgress.new(location, size.to_i)
+      download_with_progress.perform
+    end
+
     private
 
     def stemcell_cmd
       @stemcell_cmd ||= Bosh::Cli::Command::Stemcell.new
     end
+
   end
+
 end
