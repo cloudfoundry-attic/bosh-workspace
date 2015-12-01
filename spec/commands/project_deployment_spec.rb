@@ -99,5 +99,18 @@ describe Bosh::Cli::Command::ProjectDeployment do
         expect(command.exit_code).to eq(1)
       end
     end
+
+    context "with --skip-manifest option" do
+      let(:is_project_deployment) { true }
+      let(:exit_code) { 0 }
+
+      it "should not require project deployment" do
+        command.add_option(:skip_manifest, true)
+        expect(command).not_to receive(:require_project_deployment)
+        expect(command).not_to receive(:build_project_deployment)
+        subject
+        expect(command.exit_code).to eq(0)
+      end
+    end
   end
 end
