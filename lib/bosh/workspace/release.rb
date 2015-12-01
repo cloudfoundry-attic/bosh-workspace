@@ -76,11 +76,11 @@ module Bosh::Workspace
       repo_exists? ? open_repo : init_repo
     end
 
-    def fetch_repo(repo = repo)
+    def fetch_repo(_repo = repo)
       return if offline?
-      repo.fetch('origin', REFSPEC, credentials: @credentials_callback)
-      commit = repo.references['refs/remotes/origin/HEAD'].resolve.target_id
-      update_repo_with_ref(repo, commit)
+      _repo.fetch('origin', REFSPEC, credentials: @credentials_callback)
+      commit = _repo.references['refs/remotes/origin/HEAD'].resolve.target_id
+      update_repo_with_ref(_repo, commit)
     end
 
     def repo_exists?(dir = @repo_dir)
