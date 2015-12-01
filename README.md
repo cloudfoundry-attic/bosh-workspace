@@ -125,6 +125,12 @@ Example `.credentials.yml` file:
 
 ## Install Notes
 
+### OSX
+cmake isneeded and libssh2 is optionally (only needed when using cloning over ssh)
+```
+brew install cmake libssh2
+```
+
 ### Ubuntu
 cmake and libcurl4-openssl-dev is needed for rugged install
 
