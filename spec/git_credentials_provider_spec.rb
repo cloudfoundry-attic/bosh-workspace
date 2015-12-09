@@ -8,7 +8,7 @@ module Bosh::Workspace
     let(:url) { 'http://foo.com/bar.git' }
     let(:user) { nil }
     let(:result) { nil }
-    let(:allowed_types) { [:plain_text] }
+    let(:allowed_types) { [:plaintext] }
     let(:credentials) do
       instance_double "Bosh::Workspace::Credentials",
                       :valid? => valid, url_protocols: url_protocols
@@ -38,7 +38,7 @@ module Bosh::Workspace
 
       context "with username/password" do
         let(:result) { { username: user, password: 'barpw' } }
-        let(:allowed_types) { [:plain_text] }
+        let(:allowed_types) { [:plaintext] }
 
         it 'returns Rugged user password credentials' do
           expect(Rugged::Credentials::UserPassword).to receive(:new) do |args|

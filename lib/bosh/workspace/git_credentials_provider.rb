@@ -56,7 +56,7 @@ module Bosh::Workspace
       when %i(ssh_key)
         key_file = temp_key_file(credentials[:private_key])
         Rugged::Credentials::SshKey.new username: user, privatekey: key_file
-      when %i(plain_text)
+      when %i(plaintext)
         Rugged::Credentials::UserPassword.new(credentials)
       end
     end
