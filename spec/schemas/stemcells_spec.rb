@@ -38,6 +38,11 @@ module Bosh::Workspace::Schemas
       it { expect { subject }.to_not raise_error }
     end
 
+    context "version string with all digetes without dots" do
+      let(:stemcells) { stemcell["version"] = '0000'; [stemcell] }
+      it { expect { subject }.to_not raise_error }
+    end
+
     context "invalid version" do
       let(:stemcells) { stemcell["version"] = "foo"; [stemcell] }
       it { expect { subject }.to raise_error(/version.*should match/i) }
