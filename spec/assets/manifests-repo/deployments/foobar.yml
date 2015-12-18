@@ -1,0 +1,4 @@
+name: foobar
+templates:
+  - foo/bar.yml
+meta: {}
