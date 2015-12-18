@@ -1,11 +1,10 @@
 module Bosh::Workspace
   describe ProjectDeployment do
     subject { Bosh::Workspace::ProjectDeployment.new manifest_file }
-    let(:manifest_content) { ruby_code + manifest.to_yaml }
+    let(:manifest_content) { manifest.to_yaml }
     let(:manifest_file) { get_tmp_file_path(manifest_content, file_name) }
     let(:file_name) { "foo.yml" }
     let(:manifest) { :manifest }
-    let(:ruby_code) { "<% ruby_var=42 %>" }
 
     describe ".new" do
       context "deployment file does not exist" do
@@ -17,13 +16,19 @@ module Bosh::Workspace
     end
 
     describe '#manifest' do
-      let(:stub_file) { /stubs\/#{file_name}/ }
-      before do
-        allow(File).to receive(:exist?).with(manifest_file).and_return(true)
-        allow(File).to receive(:read).with(manifest_file).and_return(manifest_content)
-      end
-
       context 'with stub file' do
+        let!(:stub_file) do
+          path = "../../stubs/#{stub_filename}"
+          File.expand_path(path, manifest_file).tap do |file|
+            FileUtils.mkdir_p File.dirname(file)
+            IO.write(file, stub_content)
+          end
+        end
+
+	after { FileUtils.rm(stub_file) }
+
+        let(:stub_filename) { File.basename(manifest_file) }
+
         let(:manifest) { { 'director_uuid' => 'DIRECTOR_UUID' } }
         let(:stub_content) do
           {
@@ -31,11 +36,6 @@ module Bosh::Workspace
             'director_uuid' => 'foo-uuid',
             'meta' => { 'foo' => 'bar' }
           }.to_yaml
-        end
-
-        before do
-          allow(File).to receive(:exist?).with(stub_file).and_return(true)
-          allow(File).to receive(:read).with(stub_file).and_return(stub_content)
         end
 
         it 'merges stub with manifest' do
@@ -52,6 +52,8 @@ module Bosh::Workspace
       end
 
       context 'with executable stub file' do
+        let(:stub_file) { asset_dir("manifests-repo/stubs/foobar.sh") }
+        let(:manifest_file) { asset_dir("manifests-repo/deployments/foobar.yml") }
         let(:manifest) do
           {
             'name' => 'NAME',
@@ -59,63 +61,20 @@ module Bosh::Workspace
             'meta' =>  { 'foo' => 'bar', 'bar' => 'foo' }
           }
         end
-        let(:stub_output) do
-          "name: bar\ndirector_uuid: bar-uuid\nmeta:\n  foo: foobar\n"
-        end
-
-        before do
-          allow(File).to receive(:exist?).with(stub_file).and_return(true)
-          allow(File).to receive(:executable?).with(stub_file).and_return(true)
-          allow_any_instance_of(Bosh::Workspace::ProjectDeployment)
-          .to receive(:execute_stub).with(stub_file).and_return(stub_output)
-        end
 
         it 'merges stub output with manifest' do
-          expect(subject.manifest['name']).to eq('bar')
+          expect(subject.manifest['name']).to eq('foobar')
           expect(subject.manifest['director_uuid']).to eq('bar-uuid')
           expect(subject.manifest['meta']).to eq({ 'foo' => 'foobar', 'bar' => 'foo' })
         end
       end
 
       context 'without stub file' do
+        let(:file_name) { 'bar.yml' }
         let(:manifest) { { 'director_uuid' => 'litmus' } }
-
-        before do
-          allow(File).to receive(:exist?).with(stub_file).and_return(false)
-        end
 
         it 'reads manifest without errors' do
           expect(subject.manifest['director_uuid']).to eq('litmus')
-        end
-      end
-    end
-
-    describe "#load_stub" do
-      context "executable file" do
-        let(:stub_file) { asset_dir("manifests-repo/stubs/foobar.sh") }
-
-        it "returns output as yaml" do
-          expect(subject.load_stub(stub_file)).to eq({ "name" => "foobar" })
-        end
-      end
-
-      context "normal file" do
-        let(:stub_file) { asset_dir("manifests-repo/stubs/foo.yml") }
-
-        it "returns content as yaml" do
-          expect(subject.load_stub(stub_file)).to eq({ 
-            "meta" => { "stub" => { "value" => "value" }}
-          })
-        end
-      end
-    end
-
-    describe "#execute_stub" do
-      context "executable file" do
-        let(:stub_file) { asset_dir("manifests-repo/stubs/foobar.sh") }
-
-        it "returns output" do
-          expect(subject.execute_stub(stub_file)).to eq('name: foobar')
         end
       end
     end
