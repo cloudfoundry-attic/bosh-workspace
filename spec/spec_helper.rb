@@ -15,6 +15,8 @@ require "rspec/its"
 require "tmpdir"
 require "archive/zip"
 
+require "pry"
+
 # bosh_cli
 require "cli"
 
