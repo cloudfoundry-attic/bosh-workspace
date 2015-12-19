@@ -1,6 +1,7 @@
 module Bosh::Workspace
   class ProjectDeployment
     include Bosh::Cli::Validation
+    include Bosh::Exec
     attr_writer :director_uuid, :stub
     attr_reader :file
 
@@ -67,11 +68,23 @@ module Bosh::Workspace
     end
 
     def load_stub
-      YAML.load(executable_stub? ? execute_stub! : IO.read(stub_file))
+      begin
+        YAML.load(executable_stub? ? execute_stub! : IO.read(stub_file))
+      rescue Psych::SyntaxError => e
+        say "Error loading stub file for deployment #{file} due to invalid YAML"
+        err "error: #{e.message}"
+      end
     end
 
     def execute_stub!
-      `#{stub_file}`
+      sh(stub_file, yield: :on_false) do |result|
+        execute_stub_failed!(result.command, result.output) if result.failed?
+      end.output
+    end
+
+    def execute_stub_failed!(stub, output)
+      say("An error occured while executing stub file: #{stub}")
+      err("error: '#{output}'")
     end
 
     def validate_stub!

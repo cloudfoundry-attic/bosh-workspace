@@ -67,6 +67,31 @@ module Bosh::Workspace
           expect(subject.manifest['director_uuid']).to eq('bar-uuid')
           expect(subject.manifest['meta']).to eq({ 'foo' => 'foobar', 'bar' => 'foo' })
         end
+
+
+        context 'which are invalid' do
+          let(:result) { Bosh::Exec::Result.new('foo.sh', 'foo: error:', exit_code) }
+          
+          before do
+            expect(subject).to receive(:sh).and_yield(result).and_return(result)
+          end
+
+          context 'non valid yaml returned' do
+            let(:exit_code) { 0 }
+            
+            it 'raises an error' do 
+              expect{ subject.manifest }.to raise_error /mapping values are not allowed/
+            end
+          end
+
+          context 'failure during execution' do
+            let(:exit_code) { 1 }
+            
+            it 'raises an error' do 
+              expect{ subject.manifest }.to raise_error /foo: error/
+            end
+          end
+        end
       end
 
       context 'without stub file' do
