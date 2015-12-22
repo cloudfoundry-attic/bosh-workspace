@@ -1,6 +1,7 @@
 module Bosh::Workspace
   class ProjectDeployment
     include Bosh::Cli::Validation
+    include Bosh::Exec
     attr_writer :director_uuid, :stub
     attr_reader :file
 
@@ -35,7 +36,7 @@ module Bosh::Workspace
 
     def manifest
       return @manifest unless @manifest.nil?
-      @manifest = Psych.load(ERB.new(File.read(file)).result)
+      @manifest = YAML.load(ERB.new(IO.read(file)).result)
       validate_stub! unless stub.empty?
       @manifest = recursive_merge(@manifest, stub) unless stub.empty?
       @manifest
@@ -43,16 +44,7 @@ module Bosh::Workspace
 
     def stub
       return @stub unless @stub.nil?
-      stub_file = File.expand_path(File.join(file_dirname, "../stubs", file_basename))
-      @stub = File.exist?(stub_file) ? load_stub(stub_file) : {}
-    end
-
-    def load_stub(stub_file)
-      Psych.load(File.executable?(stub_file) ? execute_stub(stub_file) : File.read(stub_file))
-    end
-
-    def execute_stub(stub_file)
-      `#{stub_file}`
+      @stub = stub_file ? load_stub : {}
     end
 
     %w[name templates releases stemcells meta domain_name].each do |var|
@@ -63,14 +55,46 @@ module Bosh::Workspace
 
     private
 
+    def stubs_dir
+      File.expand_path(File.join(file_dirname, "../stubs"))
+    end
+
+    def stub_file
+      Dir[File.join(stubs_dir, "#{file_basename('.*')}*")].first
+    end
+
+    def executable_stub?
+      File.executable?(stub_file)
+    end
+
+    def load_stub
+      begin
+        YAML.load(executable_stub? ? execute_stub! : IO.read(stub_file))
+      rescue Psych::SyntaxError => e
+        say "Error loading stub file for deployment #{file} due to invalid YAML"
+        err "error: #{e.message}"
+      end
+    end
+
+    def execute_stub!
+      sh(stub_file, yield: :on_false) do |result|
+        execute_stub_failed!(result.command, result.output) if result.failed?
+      end.output
+    end
+
+    def execute_stub_failed!(stub, output)
+      say("An error occured while executing stub file: #{stub}")
+      err("error: '#{output}'")
+    end
+
     def validate_stub!
       return unless stub.keys.any? { |k| !STUB_WHITELIST.include?(k) }
       offending_keys = stub.keys - STUB_WHITELIST
       err "Key: '#{offending_keys.first}' not allowed in stub file"
     end
 
-    def file_basename
-      File.basename(@file)
+    def file_basename(filter = '')
+      File.basename(@file, filter)
     end
 
     def file_dirname
