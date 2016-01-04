@@ -135,7 +135,7 @@ brew install cmake libssh2
 cmake and libcurl4-openssl-dev is needed for rugged install
 
 ```
-sudo apt-get install cmake libcurl4-openssl-dev
+sudo apt-get install cmake libcurl4-openssl-dev libssh2-1-dev
 ```
 
 ## Experimental
