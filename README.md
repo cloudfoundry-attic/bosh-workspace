@@ -128,7 +128,7 @@ Example `.credentials.yml` file:
 ### OSX
 cmake isneeded and libssh2 is optionally (only needed when using cloning over ssh)
 ```
-brew install cmake libssh2
+brew install cmake libssh2 pkg-config
 ```
 
 ### Ubuntu
