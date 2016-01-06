@@ -60,7 +60,9 @@ module Bosh::Workspace
     end
 
     def stub_file
-      Dir[File.join(stubs_dir, "#{file_basename('.*')}*")].first
+      [file_basename, file_basename('.*')].map do |file|
+        Dir[File.join(stubs_dir, file)]
+      end.flatten.compact.first
     end
 
     def executable_stub?
