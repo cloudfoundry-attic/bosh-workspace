@@ -8,14 +8,14 @@ desc = "behaves as bosh-workspace deployment"
 RSpec.shared_examples desc do |deployment_file, result_file, stub_file|
   let(:workdir) { File.expand_path(File.join(deployment_file, '../..')) }
   let(:stub) do
-    result = {} unless File.exist?(stub_file)
-    result ||= YAML.load_file(stub_file) || {}
+    return nil unless File.exist?(stub_file)
+    result = YAML.load_file(stub_file) || {}
     result.merge({'director_uuid' => '00000000-0000-0000-0000-000000000000'})
   end
 
   subject do
     Bosh::Workspace::ProjectDeployment.new(deployment_file).tap do |d|
-      d.stub = stub
+      d.stub = stub if stub
       d.validate
     end
   end
