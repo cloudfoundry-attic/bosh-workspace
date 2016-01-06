@@ -24,9 +24,17 @@ module Bosh::Workspace
     end
 
     describe '#url_protocols' do
-      it "returns credentials when found multiple times" do
-        expect(subject).to receive(:git_protocol_from_url)
+      before do
+        allow(subject).to receive(:git_protocol_from_url)
           .with('foo').and_return(:https)
+      end
+
+      it "returns credentials when found multiple times" do
+        expect(subject.url_protocols).to eq('foo' => :https)
+      end
+
+      it "it can be called after find_by_url has been invoked" do
+        subject.find_by_url("foo")
         expect(subject.url_protocols).to eq('foo' => :https)
       end
     end

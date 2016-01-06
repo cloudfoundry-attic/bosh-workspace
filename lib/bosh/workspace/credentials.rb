@@ -26,7 +26,7 @@ module Bosh::Workspace
 
     def credentials
       @credentials ||= begin
-        Hash[raw_credentials.map { |c| [c.delete('url'), symbolize_keys(c)] }]
+        Hash[raw_credentials.map { |c| c = c.dup; [c.delete('url'), symbolize_keys(c)] }]
       end
     end
 
