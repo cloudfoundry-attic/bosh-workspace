@@ -451,7 +451,6 @@ module Bosh::Workspace
     end
 
     context "correct checkout behavior:" do
-      let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
       let(:release_data) { { "name" => name, "version" => version,
                              "git" => repo, "ref" => :fooref } }
       let(:repo) { 'foo/bar' }
@@ -472,6 +471,7 @@ module Bosh::Workspace
             { 'refs/remotes/origin/HEAD' =>
               double(resolve: double(target_id: :oid)) }
           end
+          allow(subject).to receive(:repo_exists?).and_return(true)
         end
 
         it "calls checkout_tree and checkout" do
