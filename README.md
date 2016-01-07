@@ -65,6 +65,7 @@ templates:
   - cf/cf-deployment.yml
   - cf/cf-jobs.yml
   - cf/cf-properties.yml
+  - cf/cf-resource-pools.yml
   - cf/cf-infrastructure-warden.yml
   - cf/cf-minimal-dev.yml
 
