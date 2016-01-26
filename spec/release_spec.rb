@@ -210,6 +210,37 @@ module Bosh::Workspace
       end
     end
 
+    context "given a release that has the whole templates/ dir symlinked from a submodule" do
+      let(:repo) { extracted_asset_dir("supermodule-all-templates-symlinked", "supermodule-all-templates-symlinked-boshrelease-repo.zip") }
+      let(:subrepo) { extracted_asset_dir("submodule-boshrelease", "submodule-boshrelease-repo.zip") }
+      let(:name) { "supermodule-all-templates-symlinked" }
+      let(:version) { "1" }
+
+      before do
+        FileUtils.rm_rf(releases_dir)
+        allow_any_instance_of(Rugged::Submodule).to receive(:url).and_return(subrepo)
+      end
+
+      describe "#update_repo" do
+        subject { Rugged::Repository.new(File.join(releases_dir, name)) }
+
+        context "with templates in submodules" do
+          before do
+            release = load_release("name" => name, "version" => 1, "git" => repo)
+          end
+
+          it "clones + checks out required submodules" do
+            expect(subject.submodules["src/submodule"].workdir_oid)
+                .to eq "95eed8c967af969d659a766b0551a75a729a7b65"
+          end
+
+          it "doesn't clone/checkout extraneous submodules" do
+            expect(subject.submodules["src/other"].workdir_oid).to eq nil
+          end
+        end
+      end
+    end
+
     context "given a release with deprecated structure within 'releases' folder" do
       let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
 
