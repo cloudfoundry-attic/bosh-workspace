@@ -19,10 +19,17 @@ module Bosh::Workspace
     end
 
     def require_project_deployment
-      unless project_deployment?
-        err("Deployment is not a project deployment: #{deployment}")
-      end
+      no_deployment_err unless deployment
+      not_a_bosh_workspace_deployment unless project_deployment?
       validate_project_deployment
+    end
+
+    def no_deployment_err
+      err "No deployment set"
+    end
+
+    def not_a_bosh_workspace_deployment
+      err "Deployment is not a bosh-workspace deployment: #{deployment}"
     end
 
     def create_placeholder_deployment

@@ -83,12 +83,23 @@ describe Bosh::Workspace::ProjectDeploymentHelper do
     let(:project_deployment_helper) { ProjectDeploymentHelperTester.new(director, deployment) }
 
     before do
-      expect(subject).to receive(:project_deployment?)
+      allow(subject).to receive(:project_deployment?)
         .and_return(:is_project_deployment)
+    end
+
+    context "no deployment is set" do
+      let(:deployment) { nil }
+
+      it "raises an help full error" do
+        expect{ subject.require_project_deployment }
+          .to raise_error /no deployment set/i
+      end
     end
 
     context "project deployment" do
       let(:is_project_deployment) { true }
+      let(:deployment) { '.deployment/foo.yml' }
+
       it "validates & builds" do
         expect(subject).to receive(:validate_project_deployment)
         subject.require_project_deployment
