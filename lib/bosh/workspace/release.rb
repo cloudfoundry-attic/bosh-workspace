@@ -181,6 +181,7 @@ module Bosh::Workspace
     end
 
     def symlink_templates
+      return [symlink_target(templates_dir)] if File.symlink?(templates_dir)
       return [] unless File.exist?(templates_dir)
       Find.find(templates_dir)
         .select { |f| File.symlink?(f) }.map { |f| symlink_target(f) }
