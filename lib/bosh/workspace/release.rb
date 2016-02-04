@@ -1,6 +1,6 @@
 module Bosh::Workspace
   class Release
-    REFSPEC = ['HEAD:refs/remotes/origin/HEAD']
+    REFSPEC = ['HEAD:refs/remotes/origin/HEAD','*:refs/remotes/origin/*']
     attr_reader :name, :git_url, :repo_dir
 
     def initialize(release, releases_dir, credentials_callback, options = {})
