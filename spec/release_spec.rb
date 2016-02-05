@@ -318,6 +318,30 @@ module Bosh::Workspace
           end
         end
 
+        context "specific tag latest release" do
+          let(:release_data) do
+            {"name" => name, "version" => "latest", "ref" => "\"refs/tags/v8\"", "git" => repo}
+          end
+
+          it "checks out repo" do
+
+            release.update_repo
+            expect(subject).to match(/foo-8.yml/)
+          end
+        end
+
+        context "specific tag from different branch with latest release" do
+          let(:release_data) do
+            {"name" => name, "version" => "9.1", "ref" => "\"refs/tags/v9.1\"", "git" => repo}
+          end
+
+          it "checks out repo" do
+            release.update_repo
+            expect(subject).to match(/foo-9.1.yml/)
+            expect(subject).to_not match(/foo-9.2.yml/)
+          end
+        end
+
         context "updated version" do
           let(:version) { "11" }
 
