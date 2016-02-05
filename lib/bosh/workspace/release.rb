@@ -39,7 +39,15 @@ module Bosh::Workspace
     end
 
     def ref
-      @ref && ( repo.ref(@ref).resolve.target.oid || repo.lookup(@ref).oid )
+      if !@ref then
+        return nil
+      end
+      begin
+        oid = repo.ref(@ref).resolve.target.oid
+      rescue
+        oid = repo.lookup(@ref).oid
+      end
+      return oid
     end
 
     def release_dir

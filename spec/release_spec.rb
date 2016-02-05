@@ -521,6 +521,8 @@ module Bosh::Workspace
           expect(Rugged::Repository).to receive(:new)
             .and_return(repository).at_least(:once)
           expect(repository).to receive(:fetch)
+          expect(repository).to receive(:ref)
+            .and_raise(Rugged::ReferenceError)
           expect(repository).to receive(:references) do
             { 'refs/remotes/origin/HEAD' =>
               double(resolve: double(target_id: :oid)) }
