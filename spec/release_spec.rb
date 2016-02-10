@@ -320,7 +320,7 @@ module Bosh::Workspace
 
         context "specific tag latest release" do
           let(:release_data) do
-            {"name" => name, "version" => "latest", "ref" => "\"refs/tags/v8\"", "git" => repo}
+            {"name" => name, "version" => "latest", "ref" => "refs/tags/v8", "git" => repo}
           end
 
           it "checks out repo" do
@@ -332,7 +332,7 @@ module Bosh::Workspace
 
         context "specific tag from different branch with latest release" do
           let(:release_data) do
-            {"name" => name, "version" => "9.1", "ref" => "\"refs/tags/v9.1\"", "git" => repo}
+            {"name" => name, "version" => "9.1", "ref" => "refs/tags/v9.1", "git" => repo}
           end
 
           it "checks out repo" do
@@ -530,10 +530,10 @@ module Bosh::Workspace
 
     context "correct checkout behavior:" do
       let(:release_data) { { "name" => name, "version" => version,
-                             "git" => repo, "ref" => :fooref } }
+                             "git" => repo, "ref" => 'e0b35d6' } }
       let(:repo) { 'foo/bar' }
       let(:repository) do
-        instance_double('Rugged::Repository', lookup: double(oid: :fooref))
+        instance_double('Rugged::Repository', lookup: double(oid: 'e0b35d6'))
       end
 
       describe "#update_repo_with_ref" do
@@ -545,8 +545,6 @@ module Bosh::Workspace
           expect(Rugged::Repository).to receive(:new)
             .and_return(repository).at_least(:once)
           expect(repository).to receive(:fetch)
-          expect(repository).to receive(:ref)
-            .and_raise(Rugged::ReferenceError)
           expect(repository).to receive(:references) do
             { 'refs/remotes/origin/HEAD' =>
               double(resolve: double(target_id: :oid)) }

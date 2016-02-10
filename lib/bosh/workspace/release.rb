@@ -39,15 +39,10 @@ module Bosh::Workspace
     end
 
     def ref
-      if !@ref then
-        return nil
-      end
-      begin
-        oid = repo.ref(@ref).resolve.target.oid
-      rescue
-        oid = repo.lookup(@ref).oid
-      end
-      return oid
+      return nil unless @ref
+      return repo.ref(@ref).target.target.oid if
+        Rugged::Reference.valid_name?(@ref) && repo.ref(@ref)
+      repo.lookup(@ref).oid
     end
 
     def release_dir
@@ -112,6 +107,8 @@ module Bosh::Workspace
     end
 
     def update_repo_with_ref(repository, ref)
+#      require 'pry'
+#     binding.pry
       repository.checkout_tree ref, strategy: :force
       repository.checkout ref, strategy: :force
     end
