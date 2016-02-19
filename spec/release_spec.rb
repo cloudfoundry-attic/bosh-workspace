@@ -241,7 +241,7 @@ module Bosh::Workspace
       end
     end
 
-    context "given a release with deprecated structure within 'releases' folder" do
+    context "given a release with deprecated structure within 'releases' folder:" do
       let(:repo) { extracted_asset_dir("foo", "foo-boshrelease-repo.zip") }
 
       describe "#update_repo" do
@@ -322,6 +322,7 @@ module Bosh::Workspace
           let(:release_data) do
             {"name" => name, "version" => "latest", "ref" => "refs/tags/v8", "git" => repo}
           end
+          let(:release) { load_release(release_data, {}, true) }
 
           it "checks out repo" do
 
@@ -334,6 +335,7 @@ module Bosh::Workspace
           let(:release_data) do
             {"name" => name, "version" => "9.1", "ref" => "refs/tags/v9.1", "git" => repo}
           end
+          let(:release) { load_release(release_data, {}, true) }
 
           it "checks out repo" do
             release.update_repo
