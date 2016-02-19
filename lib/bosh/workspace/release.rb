@@ -40,8 +40,11 @@ module Bosh::Workspace
 
     def ref
       return nil unless @ref
-      return repo.ref(@ref).target.target.oid if
-        Rugged::Reference.valid_name?(@ref) && repo.ref(@ref)
+      if Rugged::Reference.valid_name?(@ref) && repo.ref(@ref)
+        commit_ref = repo.ref(@ref).target
+        commit_ref = commit_ref.target unless commit_ref.is_a?(Rugged::Commit)
+        return commit_ref.oid
+      end
       repo.lookup(@ref).oid
     end
 
