@@ -318,7 +318,7 @@ module Bosh::Workspace
           end
         end
 
-        context "specific tag latest release" do
+        context "specific tag latest release"  do
           let(:release_data) do
             {"name" => name, "version" => "latest", "ref" => "refs/tags/v8", "git" => repo}
           end
@@ -341,6 +341,18 @@ module Bosh::Workspace
             release.update_repo
             expect(subject).to match(/foo-9.1.yml/)
             expect(subject).to_not match(/foo-9.2.yml/)
+          end
+        end
+
+        context "specific lightweight tag with latest release" do
+          let(:release_data) do
+            {"name" => name, "version" => "latest", "ref" => "refs/tags/lightweight-tag", "git" => repo}
+          end
+          let(:release) { load_release(release_data, {}, true) }
+
+          it "checks out repo" do
+            release.update_repo
+            expect(subject).to match(/foo-9.yml/)
           end
         end
 

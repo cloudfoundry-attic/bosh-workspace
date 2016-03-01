@@ -40,11 +40,8 @@ module Bosh::Workspace
 
     def ref
       return nil unless @ref
-      if Rugged::Reference.valid_name?(@ref) && repo.ref(@ref)
-        commit_ref = repo.ref(@ref).target
-        commit_ref = commit_ref.target unless commit_ref.is_a?(Rugged::Commit)
-        return commit_ref.oid
-      end
+      return find_commit_sha(repo.ref(@ref)) if
+        Rugged::Reference.valid_name?(@ref) && repo.ref(@ref)
       repo.lookup(@ref).oid
     end
 
@@ -57,6 +54,10 @@ module Bosh::Workspace
     end
 
     private
+
+    def find_commit_sha(obj)
+      defined?(obj.target) ? find_commit_sha(obj.target) : obj.oid
+    end
 
     def update_submodules
       required_submodules.each do |submodule|
