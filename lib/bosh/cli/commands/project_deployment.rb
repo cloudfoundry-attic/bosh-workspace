@@ -32,6 +32,7 @@ module Bosh::Cli::Command
     usage "deploy"
     desc "Deploy according to the currently selected deployment manifest"
     option "--recreate", "recreate all VMs in deployment"
+    option "--no-redact", "redact manifest value chanes in deployment"
     def deploy
       if project_deployment?
         require_project_deployment
