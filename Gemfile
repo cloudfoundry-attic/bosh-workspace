@@ -7,6 +7,7 @@ group :development do
   gem "guard-rspec"
   gem "rubocop"
   gem "pry"
+  gem "listen", "~> 2.8.4"
 end
 
 group :test do
