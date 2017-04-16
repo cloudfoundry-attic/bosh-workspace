@@ -45,6 +45,14 @@ module Bosh::Cli::Command
       @exit_code = command.exit_code
     end
 
+    usage "build deployment"
+    desc "Build the project deployment without triggering deploy"
+    def build_deployment
+      require_project_deployment
+      build_project_deployment
+      set_current
+    end
+
     private
 
     def deployment_cmd(options = {})
