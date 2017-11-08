@@ -148,6 +148,20 @@ git add . && git commit -m "Added cf-warden deployment"
 Congratulations you should now have a running Cloud Foundry.
 For further reference on how to start using it go to the [bosh-lite documentation](https://github.com/cloudfoundry/bosh-lite#try-your-cloud-foundry-deployment).
 
+
+### Managing sandbox and production environments
+
+The suggested way of doing this is to create many similar deployments in the
+`deployments/` folder. They typically have tha same radix like `cf` or `mysql`
+as prefix of their name, and be distinguished by a `-sandbox.yml` suffix or
+`-prod.yml` depending on your environments names.
+
+Then each of those similar deployment can express variants by including
+environment-specific Spiff stubs, or specifying specific configuration in the
+`meta` root YAML node. Easy as that. Examples of deployment variants can be
+found in [cf-boshworkspace](https://github.com/cloudfoundry-community/cf-boshworkspace/tree/master/deployments).
+
+
 ### Using private boshreleases
 When using a boshrelease from a location which requires authentication
 a `.credentials.yml` file is required, located at the root of your boshworkspace.
