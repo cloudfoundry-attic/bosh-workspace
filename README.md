@@ -1,11 +1,64 @@
 # Bosh workspace
 [![Build Status](https://img.shields.io/travis/cloudfoundry-incubator/bosh-workspace/master.svg?style=flat-square)](https://travis-ci.org/cloudfoundry-incubator/bosh-workspace) [![Test Coverage](https://img.shields.io/codeclimate/coverage/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Code Climate](https://img.shields.io/codeclimate/github/rkoster/bosh-workspace.svg?style=flat-square)](https://codeclimate.com/github/rkoster/bosh-workspace) [![Dependency Status](https://img.shields.io/gemnasium/cloudfoundry-incubator/bosh-workspace.svg?style=flat-square)](https://gemnasium.com/cloudfoundry-incubator/bosh-workspace) [![Stories in Ready](https://img.shields.io/badge/tracker-waffle.io-blue.svg?style=flat-square)](https://waffle.io/cloudfoundry-incubator/bosh-workspace)
 
-This is a `bosh` cli plugin for creating reproducible and upgradable deployments.
+## Depreciation Notice
+
+BOSH workspace is intimately related to how deployment manifests were handled
+with [BOSH](bosh-io) v1. At the time, most projects were providing Bash-based
+ad-hoc toolchains for building large YAML deployment manifests out of somewhat
+smaller YAML pieces called [Spiff](spiff-repo) *templates* and *stubs*.
+
+In this landscape, BOSH Workspace introduced an effort for providing a
+standard toolchain around Spiff, giving a chance for better organizing Spiff
+templates and stubs into what could be called “infrastructure-as-code“ git
+repositories, that could precisely describe staging and production
+environments managed by BOSH.
+
+Later, the development of BOSH Workspace has been abandonned in favor of other
+tools like [Genesis](genesis-repo) v1, then v2. And on the BOSH side, the v2
+CLI has deprecated Spiff and thus the way BOSH Workspace works. Plus,
+reference deployment manifests are progressively being distributed as
+*deployment* git repos containing a base BOSH v2 deployment along with
+*operation files* that implement variants around the base deployment. So,
+fewer and fewer projects are shipping Spiff templates anymore.
+
+So, newer ways of organizing BOSH deployment manifests have emerged like
+[Genesis](genesis-repo) that has pivoted to Genesis v2 to support BOSH v2 or
+[Gstack BOSH Environment](gbe-repo) (or GBE for intimates) that is natively
+built around the BOSH v2 CLI.
+
+[bosh-io](https://bosh.io)
+[spiff-repo][https://github.com/cloudfoundry-incubator/spiff]
+[genesis-repo](https://github.com/starkandwayne/genesis)
+[gbe-repo](https://github.com/gstackio/gstack-bosh-environment)
+
+
+## Introduction
+
+BOSH Workspace is in essence a `bosh` v1 CLI plugin for managing an organized
+layout of Spiff stubs and templates that are the basis of typical BOSH v1
+deployments. Such organized layout helps in managing consistently the various
+infrastructure-as-code environments you might have, like “sandbox”, “pre-prod”
+or ”production”, all made of BOSH deployments that are similar but not exactly
+the same.
+
+BOSH Workspace aslo noticeably introduces new handly verbs in the `bosh` v1
+CLI that make it easier to deploy things. Indeed, running
+`bosh prepare deployment` automates the uploading of BOSH Releases and BOSH
+Stemcells (the required bits for a BOSH deployment) to the BOSH server.
+
+For a good introduciton on the initial goals of the project (back in 2015),
+see the [Introducing bosh-workspace: how we deploy all things BOSH](bws-intro)
+video.
+
+[bws-intro](https://youtu.be/MyW2x35mTF8)
 
 ## Getting started
-Before you start make sure ruby, bundler and spiff are available on your system.
-Instructions for installing spiff can found [here](https://github.com/cloudfoundry-incubator/spiff#installation).
+
+Before you start make sure `ruby`, `bundler` and `spiff` are available on your
+system. Instructions for installing spiff can found
+[here](https://github.com/cloudfoundry-incubator/spiff#installation).
+
 
 ### Creating a workspace repository
 First you will have to create a new repo for our company called Foo Group (short FG).
