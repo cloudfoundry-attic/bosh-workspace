@@ -15,10 +15,10 @@ repositories, that could precisely describe staging and production
 environments managed by BOSH.
 
 Later, the development of BOSH Workspace has been abandonned in favor of other
-tools like [Genesis](genesis-repo) v1, then v2. And on the BOSH side, the v2
+tools like [Genesis](https://github.com/genesis-community/) v1, then v2. And on the BOSH side, the v2
 CLI has deprecated Spiff and thus the way BOSH Workspace works. Plus,
 reference deployment manifests are progressively being distributed as
-*deployment* git repos containing a base BOSH v2 deployment along with
+*\*-deployment* (example: [bosh](https://github.com/cloudfoundry/bosh-deployment), [cf](https://github.com/cloudfoundry/cf-deployment)) git repos containing a base BOSH v2 deployment along with
 *operation files* that implement variants around the base deployment. So,
 fewer and fewer projects are shipping Spiff templates anymore.
 
@@ -27,10 +27,10 @@ So, newer ways of organizing BOSH deployment manifests have emerged like
 [Gstack BOSH Environment](gbe-repo) (or GBE for intimates) that is natively
 built around the BOSH v2 CLI.
 
-[bosh-io](https://bosh.io)
-[spiff-repo][https://github.com/cloudfoundry-incubator/spiff]
-[genesis-repo](https://github.com/starkandwayne/genesis)
-[gbe-repo](https://github.com/gstackio/gstack-bosh-environment)
+- [bosh-io](https://bosh.io)
+- [spiff-repo](https://github.com/cloudfoundry-incubator/spiff)
+- [genesis-repo](https://github.com/starkandwayne/genesis)
+- [gbe-repo](https://github.com/gstackio/gstack-bosh-environment)
 
 
 ## Introduction
