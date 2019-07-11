@@ -14,7 +14,7 @@ templates and stubs into what could be called “infrastructure-as-code“ git
 repositories, that could precisely describe staging and production
 environments managed by BOSH.
 
-Later, the development of BOSH Workspace has been abandonned in favor of other
+Later, the development of BOSH Workspace has been abandoned in favor of other
 tools like [Genesis](https://github.com/genesis-community/) v1, then v2. And on the BOSH side, the v2
 CLI has deprecated Spiff and thus the way BOSH Workspace works. Plus,
 reference deployment manifests are progressively being distributed as
